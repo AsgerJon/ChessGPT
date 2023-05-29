@@ -4,43 +4,30 @@
 from __future__ import annotations
 
 import os
+import sys
+import time
 from typing import NoReturn
 
 from PySide6.QtWidgets import QApplication
+from worktoy.typetools import Any
 
-from _basewindow import BaseWindow
+from _basewindow02 import BaseWindow
 
 
 def tester00() -> NoReturn:
   """Hello world"""
-  for item in []:
+  for item in [time, os, sys, Any, NoReturn, BaseWindow, QApplication]:
     print(item)
 
 
 def tester01() -> NoReturn:
   """Can chatgpt draw?"""
-
-
-def tester02() -> NoReturn:
-  """Testing a basic application with a single window"""
-  app = QApplication([])
-  window = BaseWindow()
-  window.show()
-  app.exec()
-
-
-def tester03() -> NoReturn:
-  """Renaming chess pieces"""
-  here = os.path.dirname(os.path.abspath(__file__))
-  dirName = os.path.join(here, 'src', 'visualchess', 'images')
-  chessPieces = []
-
-
-def tester04() -> NoReturn:
-  """Fizz Buzz"""
-  for i in range(1, 101):
-    print('%s%s' % ('' if i % 5 else 'Fizz', '' if i % 3 else 'Buzz') or i)
+  app = QApplication(sys.argv)
+  main = BaseWindow()
+  main.show()
+  sys.exit(app.exec())
 
 
 if __name__ == '__main__':
-  tester04()
+  tester01()
+  print(time.ctime())
