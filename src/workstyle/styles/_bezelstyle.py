@@ -12,10 +12,10 @@ from workstyle.styles import BaseStyle
 
 class BezelStyle(BaseStyle):
   """BezelStyle defines the style applied to the boundary surrounding the
-  chessboard
+  chessboard # #8A0904
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   context = 'bezels'
-  fillColor = QColor(127, 127, 239, 255)
+  fillColor = QColor(8 * 16, 9, 4, 255)
   lineStyle = Qt.PenStyle.NoPen

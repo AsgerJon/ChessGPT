@@ -15,6 +15,6 @@ class DarkSquareStyle(BaseStyle):
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   context = 'darkSquare'
-
-  fillColor = QColor(0, 0, 31, 255)
+  # #CD7741
+  fillColor = QColor(12 * 16 + 13, 7 * 16 + 7, 4 * 16 + 1, 255)
   lineStyle = Qt.PenStyle.NoPen

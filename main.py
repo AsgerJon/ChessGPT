@@ -12,8 +12,9 @@ from PySide6.QtWidgets import QApplication
 from icecream import ic
 from worktoy.typetools import Any
 
+from mainwindow import MainWindow
 from basewindow import BaseWindow
-from moreworktoy import _ClassNames
+from moreworktoy import TypeKey
 
 ic.configureOutput(includeContext=True)
 
@@ -26,19 +27,41 @@ def tester00() -> NoReturn:
 
 def tester01() -> NoReturn:
   """Can chatgpt draw?"""
-  app = QApplication(sys.argv)
-  main = BaseWindow()
+  app = QApplication([])
+  main = MainWindow()
   main.show()
-  sys.exit(app.exec())
+  app.exec()
 
 
 def tester02() -> NoReturn:
   """Testing class names"""
-  lol = _ClassNames(['lol', 1, 2, 3, 'blabla'])
+
+  print('%16s' % (hash(int) - (hash(int) // 1000) * 1000))
+  print('%16s' % (hash(float) - (hash(float) // 1000) * 1000))
+  print('%16s' % (hash(complex) - (hash(complex) // 1000) * 1000))
+  print('%16s' % (hash(str) - (hash(str) // 1000) * 1000))
+  print('%16s' % (hash(type) - (hash(type) // 1000) * 1000))
+
+  print(hash((int, str, float)))
+
+
+def tester03() -> NoReturn:
+  """Testing Index field"""
+  lol = TypeKey(int, int, int)
+  for bla in lol:
+    print(bla)
+
+  print(lol)
   ic(lol)
-  ic(type(lol))
+
+  ic(isinstance((1, 2, 3), lol))
+  ic(isinstance((1, 2, 3.5), lol))
+
+
+def tester04() -> NoReturn:
+  """lol"""
 
 
 if __name__ == '__main__':
-  tester02()
+  tester01()
   print(time.ctime())

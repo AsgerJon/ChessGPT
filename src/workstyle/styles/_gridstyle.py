@@ -11,11 +11,11 @@ from workstyle.styles import BaseStyle
 
 class GridStyle(BaseStyle):
   """GridStyle defines the gridlines between the squares
-  #  MIT Licence
+  #  MIT Licence #2F0703
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   context = 'gridStyle'
 
-  lineStyle = Qt.PenStyle.SolidLine
-  lineColor = QColor(15, 15, 15, 255)
-  fillStyle = Qt.BrushStyle.NoBrush
+  lineStyle = Qt.PenStyle.NoPen
+  fillStyle = Qt.BrushStyle.SolidPattern
+  fillColor = QColor(32 + 15, 7, 3, 255)

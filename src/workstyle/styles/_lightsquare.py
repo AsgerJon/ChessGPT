@@ -15,5 +15,5 @@ class LightSquareStyle(BaseStyle):
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   context = 'lightSquare'
-  fillColor = QColor(255, 223, 223, 255)
+  fillColor = QColor(15 * 16 + 1, 12 * 16 + 15, 10 * 16 + 7, 255)
   lineStyle = Qt.PenStyle.NoPen

@@ -5,4 +5,5 @@ from __future__ import annotations
 
 from ._enums import Button
 from ._corewidget import CoreWidget
-from ._mousewidget import MouseWidget
+from ._wheremouse import WhereMouse
+from ._label import Label
