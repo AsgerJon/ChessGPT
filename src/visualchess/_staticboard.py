@@ -8,18 +8,20 @@ from typing import NoReturn
 from PySide6.QtCore import QMarginsF, QRect, QPoint, QSize
 from PySide6.QtGui import QPaintEvent, QPainter
 from PySide6.QtWidgets import QWidget
+from icecream import ic
 from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 
-from visualchess.styles import BackgroundStyle, BezelStyle, \
-  LightSquareStyle, \
-  DarkSquareStyle
+from visualchess import MouseTrackerMixin
+from workstyle.styles import BezelStyle, LightSquareStyle, DarkSquareStyle
 
 origin = QPoint(0, 0)
 gridWidth = 3
 
+ic.configureOutput(includeContext=True)
 
-class StaticBoard(QWidget):
+
+class StaticBoard(QWidget, MouseTrackerMixin):
   """StaticBoard draws a chess board.
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
@@ -28,26 +30,28 @@ class StaticBoard(QWidget):
     parentKeys = stringList('parent, main, mainWindow, window')
     parent: QWidget
     parent, args, kwargs = extractArg(QWidget, parentKeys, *args, **kwargs)
-    QWidget.__init__(self, parent)
+    QWidget.__init__(self, )
+    self.setMouseTracking(True)
     self._bezelMargins = QMarginsF(16, 16, 16, 16, )
     self._recursionPaintFlag = False
+    self.setMinimumSize(QSize(256, 256))
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
-    """Implementation of paint event"""
-    size = event.rect().size()
-    if (size.width() - size.height()) ** 2 > 4:
-      if self._recursionPaintFlag:
-        raise RecursionError('Recursion in resizing of paint view port')
-      size = QSize(size.width(), size.height())
-      newRect = QRect(origin, size)
-      newRect.moveCenter(event.rect().center())
-      self._recursionPaintFlag = True
-      return self.paintEvent(QPaintEvent(QRect))
-    self._recursionPaintFlag = True
+    """Implementation of painting"""
     painter = QPainter()
     painter.begin(self)
     viewRect = painter.viewport()
-    boardRect = viewRect - self._bezelMargins
+    viewCenter = viewRect.center()
+    s = min(viewRect.height(), viewRect.width(), )
+    viewSize = QSize(s, s)
+    viewRect = QRect(origin, viewSize)
+    baseRect = QRect(origin, viewSize)
+    viewRect.moveCenter(viewCenter)
+    boardCenter = viewRect.center()
+    boardRect = viewRect
+    boardSize = boardRect.size() - QSize(32, 32)
+    boardRect.setSize(boardSize)
+    boardRect.moveCenter(boardCenter)
     boardSide = min(boardRect.width(), boardRect.height()) - gridWidth * 7
     squareSide = boardSide // 8
     boardSide = 8 * squareSide
@@ -56,20 +60,23 @@ class StaticBoard(QWidget):
     boardTopLeft = boardRect.topLeft()
     #  Paint the bezels
     painter = BezelStyle @ painter
-    painter.drawRoundedRect(viewRect, gridWidth, gridWidth)
+    baseRect.moveCenter(boardRect.center())
+    painter.drawRoundedRect(baseRect, gridWidth, gridWidth)
     #  Collect light and dark squares
     darkSquares, lightSquares = [], []
-    left, top = boardTopLeft.left(), boardTopLeft.top()
+    left, top = boardTopLeft.x(), boardTopLeft.y()
     side = squareSide
     size = QSize(side, side)
-    for i in range(8 * 8):
-      leftTop = QPoint((i % 8) * side + left, (i // 8) * side + top)
-      if (i * (i // 8)) % 4 and (i * (i // 8) + i + (i // 8) + 1) % 4:
-        lightSquares.append(QRect(leftTop, size))
-      else:
-        darkSquares.append(QRect(leftTop, size))
+    for i in range(8):
+      for j in range(8):
+        leftTop = QPoint(left + side * i, top + side * j)
+        if i % 2 == j % 2:
+          lightSquares.append(QRect(leftTop, size))
+        else:
+          darkSquares.append(QRect(leftTop, size))
+
     LightSquareStyle @ painter
     painter.drawRects(lightSquares)
     DarkSquareStyle @ painter
-    painter.drawRects(lightSquares)
+    painter.drawRects(darkSquares)
     painter.end()

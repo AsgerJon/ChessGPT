@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QFont, QBrush, QPen, QPainter
 from worktoy.waitaminute import ProceduralError
 
-from visualchess.styles import Family
+from workstyle.styles import Family
 
 
 class MetaStyle(type):
@@ -32,7 +32,7 @@ class MetaStyle(type):
     """Creates a new style class"""
     out = super().__new__(mcls, name, __, nameSpace)
     context = nameSpace.get('context', None)
-    if context is None:
+    if context is None and not kwargs.get('_base'):
       raise ProceduralError('context', str, None)
     brush = QBrush()
     pen = QPen()
@@ -66,7 +66,7 @@ class MetaStyle(type):
     return super().__new__(MetaStyle, name, (), other)
 
 
-class BaseStyle(metaclass=MetaStyle):
+class BaseStyle(metaclass=MetaStyle, _base=True):
   """Base style is shared between all style classes
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""

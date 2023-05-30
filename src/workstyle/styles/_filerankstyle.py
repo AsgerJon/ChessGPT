@@ -4,7 +4,7 @@ files and ranks respectively"""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from visualchess.styles import Family, BaseStyle
+from workstyle.styles import Family, BaseStyle
 
 
 class FileRankStyle(BaseStyle):

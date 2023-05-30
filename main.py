@@ -9,9 +9,13 @@ import time
 from typing import NoReturn
 
 from PySide6.QtWidgets import QApplication
+from icecream import ic
 from worktoy.typetools import Any
 
-from _basewindow02 import BaseWindow
+from basewindow import BaseWindow
+from moreworktoy import _ClassNames
+
+ic.configureOutput(includeContext=True)
 
 
 def tester00() -> NoReturn:
@@ -28,6 +32,13 @@ def tester01() -> NoReturn:
   sys.exit(app.exec())
 
 
+def tester02() -> NoReturn:
+  """Testing class names"""
+  lol = _ClassNames(['lol', 1, 2, 3, 'blabla'])
+  ic(lol)
+  ic(type(lol))
+
+
 if __name__ == '__main__':
-  tester01()
+  tester02()
   print(time.ctime())

@@ -7,7 +7,7 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 
-from visualchess.styles import BaseStyle
+from workstyle.styles import BaseStyle
 
 
 class BezelStyle(BaseStyle):
@@ -17,5 +17,5 @@ class BezelStyle(BaseStyle):
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   context = 'bezels'
-  fillColor = QColor(239, 239, 239, 255)
+  fillColor = QColor(127, 127, 239, 255)
   lineStyle = Qt.PenStyle.NoPen
