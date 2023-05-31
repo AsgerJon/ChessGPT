@@ -10,7 +10,7 @@ from PySide6.QtGui import QPainter, QColor, QPen
 from PySide6.QtWidgets import QWidget
 
 
-class CheckboxButton(QWidget):
+class CheckButton(QWidget):
   """CheckButton is a custom checkbox like widget
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""

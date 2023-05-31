@@ -5,9 +5,7 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import QSize, Signal
 from PySide6.QtGui import QPaintEvent, QPainter
-from PySide6.QtWidgets import QLabel, QGridLayout
 from icecream import ic
 
 from workstyle import WhereMouse

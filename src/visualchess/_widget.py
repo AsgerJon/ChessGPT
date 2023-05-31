@@ -5,13 +5,10 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import QSize
-from PySide6.QtGui import QPaintEvent, QPainter
+from PySide6.QtGui import QPaintEvent
 from icecream import ic
 
-from visualchess import PaintBoard
 from workstyle import WhereMouse
-from workstyle.styles import BezelStyle
 
 ic.configureOutput(includeContext=True)
 

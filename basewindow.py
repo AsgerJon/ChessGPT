@@ -13,7 +13,7 @@ from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ProceduralError
 
-from visualchess import StaticBoard, CheckboxButton
+from visualchess import StaticBoard, CheckButton
 from workstyle import Label
 
 ic.configureOutput(includeContext=True)
@@ -72,7 +72,7 @@ class BaseWindow(QMainWindow):
     """Setting up widgets"""
     self._baseSize = QSize(256, 256)
     self._sizeHint = QSize(256, 256)
-    self._checkBox = CheckboxButton()
+    self._checkBox = CheckButton()
     self._checkBox.setFixedSize(32, 32)
     self._board = StaticBoard()
     self.setupActions()
