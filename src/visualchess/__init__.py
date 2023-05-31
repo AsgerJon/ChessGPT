@@ -5,7 +5,6 @@ allows us to input chess moves visually."""
 from __future__ import annotations
 
 from ._paintboard import PaintBoard
+from ._staticboard import StaticBoard
 from ._widget import TestWidget
 from ._checkbutton import CheckboxButton
-
-from ._staticboard import StaticBoard

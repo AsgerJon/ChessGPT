@@ -12,6 +12,7 @@ from worktoy.parsing import maybeType
 from worktoy.typetools import CallMeMaybe, TypeBag
 from worktoy.waitaminute import ProceduralError, ReadOnlyError
 
+from workstyle import WhereMouse
 from workstyle.styles import BezelStyle, GridStyle, LightSquareStyle, \
   DarkSquareStyle
 
@@ -21,7 +22,7 @@ Rect = TypeBag(QRectF, QRect)
 ic.configureOutput(includeContext=True)
 
 
-class PaintBoard:
+class PaintBoard(WhereMouse):
   """PaintBoard paints the board on a paint device
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
@@ -40,31 +41,26 @@ class PaintBoard:
     """Creates an instance fitting the given paint event"""
     return cls._paintStyles
 
-  def __init__(self, ) -> None:
-    self._outerRectangle = None
-    self._gridRatio = 6.25e-03
-    self._bezelRatio = 40e-03
+  def __init__(self, *args, **kwargs) -> None:
+    WhereMouse.__init__(self, *args, **kwargs)
+    self._outerRectangle = QSizeF(256, 256)
+    self._gridRatio = 8 / 400
+    self._bezelRatio = 32 / 400
     self._boardSizeRatio = 1 - self._bezelRatio
     self.__content__ = None
+    self._globalCenter = None
+    self._globalSize = None
+    self._boardSize = None
+    self._boardHeight = None
+    self._boardWidth = None
+    self._boardRect = None
+    self._squareSize = None
+    self._squareStep = None
+    self._bezelSquare = None
 
-  def __call__(self, cls) -> type:
-    """Decorates a paint event"""
-    setattr(cls, 'paintBoard', self)
-    setattr(cls, 'fitBoard', self.fitInRect)
-    setattr(cls, 'paintStyles', self.getPaintStyles())
-    return cls
-
-  def fitInRect(self, rect: Rect) -> NoReturn:
-    """Fits this instance in given rectangle"""
-    if isinstance(rect, QRect):
-      return self.fitInRect(rect.toRectF())
-    self._outerRectangle = rect
-    self._resetContent()
-    self._createContent()
-
-  def getBezelRatio(self) -> float:
-    """Getter-function for bezel ratio"""
-    return self._bezelRatio
+  def getBoardSizeRatio(self) -> float:
+    """Getter-function for the board size ratio"""
+    return self._boardSizeRatio
 
   def getOuterRectangle(self) -> QRectF:
     """Getter-function for the outer rectangle."""
@@ -73,38 +69,56 @@ class PaintBoard:
     if isinstance(self._outerRectangle, QRectF):
       return self._outerRectangle
 
-  def getCenter(self) -> QPointF:
-    """Getter-function for the global center"""
-    return self.getOuterRectangle().center()
+  def getGlobalSize(self) -> QSizeF:
+    """Getter-function for outer rectangle"""
+    if self._outerRectangle is None:
+      raise ProceduralError()
+    if self._globalSize is None:
+      self._globalSize = self._outerRectangle.size()
+    return self._globalSize
 
-  def getSize(self) -> QSizeF:
-    """Getter-function for the global size"""
-    return self.getOuterRectangle().size()
+  def getGlobalCenter(self) -> QPointF:
+    """Getter-function for outer center"""
+    if self._outerRectangle is None:
+      raise ProceduralError()
+    if self._globalCenter is None:
+      self._globalCenter = self._outerRectangle.center()
+    return self._globalCenter
 
-  def getBaseRect(self) -> QRectF:
+  def getBezelSquare(self) -> QRectF:
     """Getter-function for background rectangle. The borders around the
     board will remain on this rectangle."""
-    outerSize = self.getOuterRectangle().size()
-    baseSide = min(outerSize.width(), outerSize.height())
-    baseSquare = QRectF(PaintBoard.origin, QSizeF(baseSide, baseSide))
-    baseSquare.moveCenter(self.getOuterRectangle().center())
-    return baseSquare
+    bezelSide = min(self._globalSize.height(), self._globalSize.width())
+    bezelSquare = QRectF(PaintBoard.origin, QSizeF(bezelSide, bezelSide))
+    bezelSquare.moveCenter(self._globalCenter)
+    self._bezelSquare = bezelSquare
+    return self._bezelSquare
 
-  def getBaseSize(self) -> QSizeF:
-    """Getter-function for base size"""
-    return self.getBaseRect().size()
+  def getBoardHeight(self) -> float:
+    """Getter-function for board height"""
+    ratio = self.getBoardSizeRatio()
+    self._boardHeight = self._bezelSquare.height() * ratio
+    return self._boardHeight
+
+  def getBoardWidth(self) -> float:
+    """Getter-function for board width"""
+    ratio = self.getBoardSizeRatio()
+    self._boardWidth = self._bezelSquare.width() * ratio
+    return self._boardWidth
+
+  def getBoardSize(self) -> QSizeF:
+    """Getter-function for board size"""
+    self._boardSize = QSizeF(self._boardHeight, self._boardWidth)
 
   def getBoardRect(self) -> QRectF:
     """Getter-function for the board rectangle containing the squares
     inside the bezels"""
-    size = self.getBaseSize() * self.getBezelRatio()
-    boardRect = QRectF(self.origin, size)
-    boardRect.moveCenter(self.getCenter())
-    return boardRect
-
-  def getBoardSize(self) -> QSizeF:
-    """Getter-function for board size"""
-    return self.getBoardRect().size()
+    ratio = self.getBoardSizeRatio()
+    self._boardHeight = self._bezelSquare.height() * ratio
+    self._boardWidth = self._bezelSquare.width() * ratio
+    self._boardSize = QSizeF(self._boardWidth, self._boardHeight)
+    self._boardRect = QRectF(PaintBoard.origin, self._boardSize)
+    return self._boardRect
 
   def getBoardTopLeft(self) -> QPointF:
     """Getter-function for top left"""
@@ -116,7 +130,7 @@ class PaintBoard:
 
   def squareStep(self) -> float:
     """Getter-function for the step size"""
-    return (self.getBoardSize().width() + self.getBoardSize().width()) / 16
+    return (self.getBoardSize().width() + self.getBoardSize().height()) / 16
 
   def collectSquares(self) -> Squares:
     """Collects the squares"""
@@ -132,41 +146,3 @@ class PaintBoard:
         else:
           dark.append(square)
     return (light, dark)
-
-  def _resetContent(self) -> NoReturn:
-    """Resets the current content. This is required when applying to a
-    different size."""
-    self.__content__ = None
-
-  def _createContent(self) -> NoReturn:
-    """Creator function for content"""
-    bezel = self.getBaseRect()
-    grid = self.getBoardRect()
-    light, dark = self.collectSquares()
-    self.__content__ = {
-      'bezel': bezel,
-      'grid': grid,
-      'light': light,
-      'dark': dark
-    }
-
-  def _getContent(self) -> dict:
-    """Getter-function for contents"""
-    if self.__content__ is None:
-      self._createContent()
-      return self._getContent()
-    return self.__content__
-
-  def __getitem__(self, key: str) -> Any:
-    """Dictionary operations"""
-    out = self._getContent().get(key, None)
-    if out is None:
-      raise KeyError(key)
-
-  def __setitem__(self, key: str, *_) -> Never:
-    """Illegal setter"""
-    raise ReadOnlyError(key)
-
-  def __delitem__(self, key: str, ) -> Never:
-    """Illegal setter"""
-    raise ReadOnlyError(key)

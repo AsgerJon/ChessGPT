@@ -16,7 +16,6 @@ from workstyle.styles import BezelStyle
 ic.configureOutput(includeContext=True)
 
 
-@PaintBoard()
 class TestWidget(WhereMouse):
   """Widget test
   #  MIT Licence
@@ -24,17 +23,6 @@ class TestWidget(WhereMouse):
 
   def __init__(self, *args, **kwargs) -> None:
     WhereMouse.__init__(self, *args, **kwargs)
-    self.setFixedSize(QSize(400, 400))
-    """Decorated paint event"""
-    ic(getattr(getattr(self, '__class__'), 'paintBoard'))
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """Decorated paint event"""
-    ic()
-    painter = QPainter()
-    painter.begin(self, )
-    rect = painter.viewport()
-    fitBoard = getattr(self, 'fitBoard')
-    fitBoard(self.paintBoard, rect)
-    paintStyles = getattr(self, 'paintStyles')
-    painter.end()

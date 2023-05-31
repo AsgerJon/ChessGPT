@@ -7,7 +7,7 @@ from typing import NoReturn
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout
 
-from visualchess import TestWidget
+from visualchess import TestWidget, StaticBoard
 from workstyle import CoreWidget
 
 
@@ -20,14 +20,14 @@ class MainWindow(QMainWindow):
     QMainWindow.__init__(self, )
     self._baseWidget = None
     self._baseLayout = None
-    self._testWidget = None
+    self._staticBoard = None
 
   def setupWidgets(self) -> bool:
     """Sets up the widgets"""
     self._baseWidget = CoreWidget()
     self._baseLayout = QVBoxLayout()
-    self._testWidget = TestWidget()
-    self._baseLayout.addWidget(self._testWidget)
+    self._staticBoard = StaticBoard()
+    self._baseLayout.addWidget(self._staticBoard)
     self._baseWidget.setLayout(self._baseLayout)
     self.setCentralWidget(self._baseWidget)
     return self.setupActions()
