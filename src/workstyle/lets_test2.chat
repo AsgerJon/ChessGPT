@@ -1,0 +1,58 @@
+{
+  "version" : "0.2.0",
+  "activeDialogId" : 0,
+  "uiState" : {
+    "sidePanelOpen" : false
+  },
+  "dialogs" : [ {
+    "name" : "Create File unittest - no repeats",
+    "id" : 0,
+    "messages" : [ {
+      "type" : "USER",
+      "context" : {
+        "type" : "CLASS",
+        "psiData" : {
+          "lineOffset" : 9,
+          "name" : "File",
+          "text" : "class File(Enum):\n  \"\"\"Enums representing the files on a chessboard\"\"\"\n  NULL = 0\n  A = 1\n  B = 2\n  C = 3\n  D = 4\n  E = 5\n  F = 6\n  G = 7\n  H = 8\n\n  def __str__(self) -> str:\n    \"\"\"String Representation\"\"\"\n    return '%s' % self.name\n\n  @classmethod\n  def __getitem__(cls, index: int | str) -> File:\n    \"\"\"Lookup function\"\"\"\n    if isinstance(index, int):\n      return cls._getFromInt(index)\n    if isinstance(index, str):\n      return cls._getFromStr(index)\n    raise TypeError\n\n  @classmethod\n  def _getFromInt(cls, index: int) -> File:\n    \"\"\"Getter-function for instance at given index\"\"\"\n    for file in File:\n      if file.value == index:\n        return file\n    raise IndexError\n\n  @classmethod\n  def _getFromStr(cls, key: str) -> File:\n    \"\"\"Getter-function by string\"\"\"\n    if len(key) - 1:\n      raise KeyError\n    chars = ['NULL', *string.ascii_lowercase[:8]]\n    for (i, char) in enumerate(chars):\n      if char == key:\n        return cls._getFromInt(i)\n    raise KeyError",
+          "file" : "F:\\cloud\\ChessGPT\\src\\visualchess\\_enums.py"
+        }
+      },
+      "rawContent" : "I would like you to create a unittest for File without repeating the File code. Just show me the unittest.",
+      "content" : {
+        "0" : {
+          "type" : "MARKDOWN",
+          "content" : "I would like you to create a unittest for File without repeating the File code. Just show me the unittest."
+        }
+      }
+    }, {
+      "type" : "AI",
+      "context" : {
+        "type" : "CLASS",
+        "psiData" : {
+          "lineOffset" : 9,
+          "name" : "File",
+          "text" : "class File(Enum):\n  \"\"\"Enums representing the files on a chessboard\"\"\"\n  NULL = 0\n  A = 1\n  B = 2\n  C = 3\n  D = 4\n  E = 5\n  F = 6\n  G = 7\n  H = 8\n\n  def __str__(self) -> str:\n    \"\"\"String Representation\"\"\"\n    return '%s' % self.name\n\n  @classmethod\n  def __getitem__(cls, index: int | str) -> File:\n    \"\"\"Lookup function\"\"\"\n    if isinstance(index, int):\n      return cls._getFromInt(index)\n    if isinstance(index, str):\n      return cls._getFromStr(index)\n    raise TypeError\n\n  @classmethod\n  def _getFromInt(cls, index: int) -> File:\n    \"\"\"Getter-function for instance at given index\"\"\"\n    for file in File:\n      if file.value == index:\n        return file\n    raise IndexError\n\n  @classmethod\n  def _getFromStr(cls, key: str) -> File:\n    \"\"\"Getter-function by string\"\"\"\n    if len(key) - 1:\n      raise KeyError\n    chars = ['NULL', *string.ascii_lowercase[:8]]\n    for (i, char) in enumerate(chars):\n      if char == key:\n        return cls._getFromInt(i)\n    raise KeyError",
+          "file" : "F:\\cloud\\ChessGPT\\src\\visualchess\\_enums.py"
+        }
+      },
+      "rawContent" : "Here's an example unittest for the `File` class:\n\n```python\nimport unittest\nfrom enum import Enum\nfrom typing import List\nfrom file import File\n\nclass TestFile(unittest.TestCase):\n    def test_str(self):\n        self.assertEqual(str(File.A), 'A')\n        self.assertEqual(str(File.H), 'H')\n\n    def test_getitem(self):\n        self.assertEqual(File[1], File.A)\n        self.assertEqual(File['A'], File.A)\n        with self.assertRaises(TypeError):\n            File[1.0]\n        with self.assertRaises(KeyError):\n            File['AA']\n\n    def test_getFromInt(self):\n        self.assertEqual(File._getFromInt(1), File.A)\n        with self.assertRaises(IndexError):\n            File._getFromInt(0)\n\n    def test_getFromStr(self):\n        self.assertEqual(File._getFromStr('A'), File.A)\n        with self.assertRaises(KeyError):\n            File._getFromStr('AA')\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\nThis unittest tests the `__str__`, `__getitem__`, `_getFromInt`, and `_getFromStr` methods of the `File` class. It checks that the string representation of each enum value is correct, that the lookup function works for both integer and string inputs, and that the getter functions return the correct enum value. \n\nNote that this unittest assumes that the `File` class is defined in a separate module called `file.py`. If your `File` class is defined in a different module or file, you'll need to adjust the import statement accordingly. \n\nSources:\n- Python documentation on unittest: https://docs.python.org/3/library/unittest.html\n- Example unittests for enums: https://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python",
+      "content" : {
+        "0" : {
+          "type" : "MARKDOWN",
+          "content" : "Here's an example unittest for the `File` class:\n"
+        },
+        "1" : {
+          "type" : "CODE",
+          "content" : "import unittest\nfrom enum import Enum\nfrom typing import List\nfrom file import File\n\nclass TestFile(unittest.TestCase):\n    def test_str(self):\n        self.assertEqual(str(File.A), 'A')\n        self.assertEqual(str(File.H), 'H')\n\n    def test_getitem(self):\n        self.assertEqual(File[1], File.A)\n        self.assertEqual(File['A'], File.A)\n        with self.assertRaises(TypeError):\n            File[1.0]\n        with self.assertRaises(KeyError):\n            File['AA']\n\n    def test_getFromInt(self):\n        self.assertEqual(File._getFromInt(1), File.A)\n        with self.assertRaises(IndexError):\n            File._getFromInt(0)\n\n    def test_getFromStr(self):\n        self.assertEqual(File._getFromStr('A'), File.A)\n        with self.assertRaises(KeyError):\n            File._getFromStr('AA')\n\nif __name__ == '__main__':\n    unittest.main()\n",
+          "extension" : "py",
+          "language" : "python"
+        },
+        "2" : {
+          "type" : "MARKDOWN",
+          "content" : "This unittest tests the `__str__`, `__getitem__`, `_getFromInt`, and `_getFromStr` methods of the `File` class. It checks that the string representation of each enum value is correct, that the lookup function works for both integer and string inputs, and that the getter functions return the correct enum value. \n\nNote that this unittest assumes that the `File` class is defined in a separate module called `file.py`. If your `File` class is defined in a different module or file, you'll need to adjust the import statement accordingly. \n\nSources:\n\n- Python documentation on unittest: https://docs.python.org/3/library/unittest.html\n- Example unittests for enums: https://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python"
+        }
+      }
+    } ]
+  } ]
+}

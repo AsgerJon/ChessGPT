@@ -5,26 +5,24 @@ rectangles"""
 from __future__ import annotations
 
 from PySide6.QtCore import QRectF, QSizeF, QPointF, QSize
-from worktoy.core import maybe
+from icecream import ic
+
+from visualchess import File, Rank
+from workstyle.styles import BoardDims
+
+ic.configureOutput(includeContext=True)
 
 
-def chessBoardFunc(rect: QRectF, **kwargs) -> dict[str, list[QRectF]]:
+def chessBoardFunc(rect: QRectF, ) -> dict[str, list[QRectF]]:
   """The chessBoardFunc function takes a QSizeF and returns the necessary
   rectangles
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
+  viewPort = rect
   origin = QPointF(0, 0)
-  bezelRatio = kwargs.get('bezelRatio', None)
-  boardRatio = kwargs.get('boardRatio', None)
-  gridRatio = kwargs.get('gridRatio', None)
-  if boardRatio is None and bezelRatio is None:
-    bezelRatio = 32 / 400
-    boardRatio = 1 - bezelRatio
-  if boardRatio is None:
-    boardRatio = 1 - bezelRatio
-  if bezelRatio is None:
-    bezelRatio = 1 - boardRatio
-  gridRatio = maybe(gridRatio, float(8 / 400))
+  bezelRatio = BoardDims.bezelRatio
+  boardRatio = BoardDims.boardRatio
+  gridRatio = BoardDims.gridRatio
   _globalRect = rect
   _globalCenter = _globalRect.center()
   _globalSize = _globalRect.size()
@@ -58,7 +56,35 @@ def chessBoardFunc(rect: QRectF, **kwargs) -> dict[str, list[QRectF]]:
         light.append(rect)
       else:
         dark.append(rect)
+  _borderMid = bezelRatio * _bezelHeight / 2
+  _size = QSize(2 * _borderMid, 2 * _borderMid)
+  fileRects, rankRects = [], []
+  left0 = _boardLeft
+  right0 = _boardRect.right() + _borderMid
+  top0 = _boardTop
+  bottom0 = _boardRect.bottom()
+  file0 = left0 + step / 2
+  files = [f for f in File if f.value]
+  ranks = [r for r in Rank if r.value]
+  for (i, file) in enumerate(files):
+    topRect = QRectF(origin, _size)
+    bottomRect = QRectF(origin, _size)
+    bottomCenter = QPointF(file0 + i * step, bottom0 + _borderMid)
+    topCenter = QPointF(file0 + i * step, top0 - _borderMid)
+    topRect.moveCenter(topCenter)
+    bottomRect.moveCenter(bottomCenter)
+    fileRects.append((bottomRect, topRect, '%s' % file))
+  fileY0 = bottom0 - step / 2
+  left0 = _boardLeft - _borderMid
+  for (i, rank) in enumerate(ranks):
+    leftRect, rightRect = QRectF(origin, _size), QRectF(origin, _size)
+    leftCenter = QPointF(left0, fileY0 - step * i)
+    rightCenter = QPointF(right0, fileY0 - step * i)
+    leftRect.moveCenter(leftCenter)
+    rightRect.moveCenter(rightCenter)
+    rankRects.append((leftRect, rightRect, '%s' % rank))
 
-  bezel = _bezelSquare
   grid = _boardRect
-  return dict(light=light, dark=dark, bezel=[bezel], grid=[grid])
+  return dict(light=light, dark=dark, bezel=[viewPort], grid=[grid],
+              files=fileRects, ranks=rankRects,
+              debug=_bezelWidth - _borderMid, bezelRect=viewPort)

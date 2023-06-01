@@ -13,5 +13,5 @@ class BackgroundStyle(BaseStyle):
   """BackgroundStyle"""
 
   context = 'background'
-  fillColor = QColor(247, 247, 255, 255)
+  fillColor = QColor(223, 223, 255, 255)
   lineStyle = Qt.PenStyle.NoPen
