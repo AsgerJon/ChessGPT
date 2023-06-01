@@ -8,7 +8,11 @@ from __future__ import annotations
 import os
 from enum import IntEnum
 
+from PIL import ImageQt, Image
+from PySide6.QtGui import QPixmap
 from icecream import ic
+
+ic.configureOutput(includeContext=True)
 
 
 class Piece(IntEnum):
@@ -28,19 +32,26 @@ class Piece(IntEnum):
     """Code Representation"""
     return '%s.%s' % (self.__class__.__qualname__, self._name_)
 
+  def __add__(self, other: ChessColor) -> str:
+    """Returns the filename of the image combining this color and that
+    piece type."""
+    return '%s_%s.png' % (other.name.lower(), self.name.lower())
+
 
 class ChessColor(IntEnum):
   """Enum for White and Black"""
   WHITE = 0
   BLACK = 1
 
+  def __str__(self) -> str:
+    """String Representation"""
+    return self.name.capitalize()
 
-def loadPiece(piece: Piece, sideColor: ChessColor):
-  """The loadPiece function is responsible for loading images, in particular
-  chess pieces, to instances of QPixmap which may then be inserted by the
-  rest of the PySide6 widget framework"""
-  #  MIT Licence
-  #  Copyright (c) 2023 Asger Jon Vistisen
+  def __repr__(self) -> str:
+    """Code Representation"""
+    return '%s.%s' % (self.__class__.__qualname__, self._name_)
 
-  ic(os.getcwd())
-  ic(os.getenv('CHESSGPT'))
+  def __add__(self, other: Piece) -> str:
+    """Returns the filename of the image combining this color and that
+    piece type."""
+    return '%s_%s.png' % (self.name.lower(), other.name.lower())

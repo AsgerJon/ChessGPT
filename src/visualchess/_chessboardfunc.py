@@ -18,6 +18,8 @@ def chessBoardFunc(rect: QRectF, ) -> dict[str, list[QRectF]]:
   rectangles
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
+  files = [f for f in File if f.value]
+  ranks = [r for r in Rank if r.value]
   viewPort = rect
   origin = QPointF(0, 0)
   bezelRatio = BoardDims.bezelRatio
@@ -46,12 +48,16 @@ def chessBoardFunc(rect: QRectF, ) -> dict[str, list[QRectF]]:
   _squareSide = _boardSide * (1 - float(gridRatio)) / 8
   _squareStep = _boardSide / 8
   light, dark = [], []
+  squares = []
   left0, top0, step, = _boardLeft, _boardTop, _squareStep
   size = QSize(_squareSide, _squareSide)
-  for i in range(8):
-    for j in range(8):
+  for (i, file) in enumerate(files):
+    for (j, rank) in enumerate(ranks):
       topLeft = QPointF(left0 + i * step, top0 + j * step)
       rect = QRectF(topLeft, size)
+      color = 'light' if i % 2 == j % 2 else 'dark'
+      entry = {'rect': rect, 'file': file, 'rank': rank, 'color': color}
+      squares.append(entry)
       if i % 2 == j % 2:
         light.append(rect)
       else:
@@ -64,8 +70,6 @@ def chessBoardFunc(rect: QRectF, ) -> dict[str, list[QRectF]]:
   top0 = _boardTop
   bottom0 = _boardRect.bottom()
   file0 = left0 + step / 2
-  files = [f for f in File if f.value]
-  ranks = [r for r in Rank if r.value]
   for (i, file) in enumerate(files):
     topRect = QRectF(origin, _size)
     bottomRect = QRectF(origin, _size)
@@ -87,4 +91,5 @@ def chessBoardFunc(rect: QRectF, ) -> dict[str, list[QRectF]]:
   grid = _boardRect
   return dict(light=light, dark=dark, bezel=[viewPort], grid=[grid],
               files=fileRects, ranks=rankRects,
-              debug=_bezelWidth - _borderMid, bezelRect=viewPort)
+              debug=_bezelWidth - _borderMid, bezelRect=viewPort,
+              boardRect=_boardRect, squares=squares)

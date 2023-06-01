@@ -4,6 +4,7 @@ signals. It does not implement the __init__."""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+import time
 from typing import NoReturn
 
 from PySide6.QtCore import Qt, Signal, QObject, QTimer, QPointF, QEvent
@@ -36,37 +37,43 @@ class _WhereMouse(CoreWidget):
 
     self._doubleClickBanTimer = QTimer(self)
     self._doubleClickBanTimer.setSingleShot(True)
-    self._doubleClickBanTimer.timeout.connect(self.click.emit)
+    self._doubleClickBanTimer.timeout.connect(
+      self._handleDoubleClickBanTimeout)
 
     self._releaseTimer = QTimer(self)
     self._releaseTimer.setSingleShot(True)
-    self._releaseTimer.timeout.connect(self.click.emit)
-    self._releaseTimer.timeout.connect(self._doubleClickBanTimer.start)
+    self._releaseTimer.timeout.connect(self._handleReleaseTimeout)
 
     self._activeButton = Qt.MouseButton.NoButton
     self._clickTimeLimit = 500
     self._releaseTimerDelay = 100
     self._doubleClickBanPeriod = 200
 
+    self.click.connect(self.debugger)
+
     self._point = None
+
+  def debugger(self) -> NoReturn:
+    """lol"""
 
   def _handlePressTimeout(self) -> NoReturn:
     """If a button is held in for two long the click signal is cancelled."""
-    self._pressTimer.stop()
 
   def _handleReleaseTimeout(self) -> NoReturn:
     """After button release, a delay allows for a double click to occur,
     which prevents the single click emission. If the single click does
     happen, it places a ban on the double click for a time."""
+    if self._pressTimer.isActive():
+      return
     self.click.emit()
+    self._doubleClickBanTimer.start()
 
   def _handleDoubleClickBanTimeout(self) -> NoReturn:
     """Double clicks are banned for a period after a single click emits."""
 
   def mousePressEvent(self, event) -> NoReturn:
     """Implementation"""
-    if self == event:
-      self._pressTimer.start(self._clickTimeLimit)
+    self._pressTimer.start(self._clickTimeLimit)
 
   def mouseReleaseEvent(self, event) -> NoReturn:
     """Implementation"""
@@ -79,7 +86,6 @@ class _WhereMouse(CoreWidget):
     if self._doubleClickBanTimer.isActive():
       return
     if event.button() == Qt.LeftButton:
-      self._pressTimer.stop()
       self._releaseTimer.stop()
       self.doubleClick.emit()
 

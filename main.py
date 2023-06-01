@@ -10,26 +10,27 @@ import time
 from typing import NoReturn
 
 import torch
-from PySide6.QtCore import QRectF
+from PySide6.QtCore import QRectF, QPointF
 from PySide6.QtWidgets import QApplication
 from icecream import ic
 from worktoy.typetools import Any
 
-from mainwindow import MainWindow
 from basewindow import BaseWindow
+from mainwindow import MainWindow
 from moreworktoy import TypeKey
-from visualchess import Piece, ChessColor, loadPiece
+from visualchess import Piece
+from workstyle import GameWindow
 
 ic.configureOutput(includeContext=True)
 
 
-def tester00() -> NoReturn:
+def tester00() -> None:
   """Hello world"""
   for item in [time, os, sys, Any, NoReturn, BaseWindow, QApplication]:
     print(item)
 
 
-def tester01() -> NoReturn:
+def tester01() -> None:
   """Can chatgpt draw?"""
   app = QApplication([])
   main = MainWindow()
@@ -37,7 +38,7 @@ def tester01() -> NoReturn:
   app.exec()
 
 
-def tester02() -> NoReturn:
+def tester02() -> None:
   """Testing class names"""
 
   print('%16s' % (hash(int) - (hash(int) // 1000) * 1000))
@@ -49,7 +50,7 @@ def tester02() -> NoReturn:
   print(hash((int, str, float)))
 
 
-def tester03() -> NoReturn:
+def tester03() -> None:
   """Testing Index field"""
   lol = TypeKey(int, int, int)
   for bla in lol:
@@ -62,17 +63,21 @@ def tester03() -> NoReturn:
   ic(isinstance((1, 2, 3.5), lol))
 
 
-def tester04() -> NoReturn:
+def tester04() -> None:
   """lol"""
   ic([*range(8)])
   ic([string.ascii_uppercase[:8]])
 
 
-def tester05() -> NoReturn:
+def tester05() -> None:
   """Testing File Enum"""
+  app = QApplication([])
+  main = GameWindow()
+  main.show()
+  app.exec()
 
 
-def tester06() -> NoReturn:
+def tester06() -> None:
   """Testing torch roll"""
   lol = torch.linspace(0, 7, 8).to(torch.float32)
   print(lol)
@@ -80,7 +85,7 @@ def tester06() -> NoReturn:
   print(lol)
 
 
-def tester07() -> NoReturn:
+def tester07() -> None:
   """Reddit distractions"""
 
   board_matrix = [
@@ -108,7 +113,8 @@ def tester07() -> NoReturn:
   line = board_matrix[0]
 
   newList = []
-  [newList.append(line) for _ in range(7)]
+  for _ in range(7):
+    newList.append(line)
 
   for item in newList:
     print(item)
@@ -118,19 +124,19 @@ def tester07() -> NoReturn:
     print(item)
 
 
-def tester08() -> NoReturn:
+def tester08() -> None:
   """More reddit lulz"""
   ic(QRectF())
   ic(True if QRectF() else False)
 
 
-def tester09() -> NoReturn:
+def tester09() -> None:
   """Fuck you"""
   for piece in Piece:
     ic(piece)
 
 
-def tester10() -> NoReturn:
+def tester10() -> None:
   """lol"""
   line = string.ascii_uppercase[:8]
   num = [i ** 2 for i in range(8)]
@@ -140,11 +146,14 @@ def tester10() -> NoReturn:
     print(key, val)
 
 
-def tester11() -> NoReturn:
+def tester11() -> None:
   """LOL"""
-  loadPiece(Piece.BISHOP, ChessColor.WHITE)
+  rect = QRectF(QPointF(0, 0), QPointF(16, 16))
+  ic(rect)
+  rect.adjust(-2, 0, -2, -2)
+  ic(rect)
 
 
 if __name__ == '__main__':
-  tester11()
+  tester01()
   print(time.ctime())

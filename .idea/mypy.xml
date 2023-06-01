@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MypyConfigService">
+    <option name="customMypyPath" value="C:\tools\miniforge3\envs\PySide6\Scripts\mypy.exe" />
+    <option name="mypyConfigFilePath" value="F:\cloud\ChessGPT\mypy.ini" />
+  </component>
+</project>

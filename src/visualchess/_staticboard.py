@@ -3,21 +3,22 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+import time
 from typing import NoReturn
 
-from PySide6.QtCore import QSize, QPointF, QRectF, Qt, Signal, QSizeF
-from PySide6.QtGui import QPaintEvent, QPainter
+from PySide6.QtCore import QSize, QPointF, QRectF, Qt, Signal, QSizeF, QRect
+from PySide6.QtGui import QPaintEvent, QPainter, QResizeEvent
 from icecream import ic
-from worktoy.core import plenty, maybe
-from worktoy.stringtools import stringList
-from worktoy.waitaminute import ProceduralError
+from worktoy.core import maybe
 
-from visualchess import chessBoardFunc, Rank, File, Square
+from visualchess import chessBoardFunc, Rank, File
 from workstyle import WhereMouse
 from workstyle.styles import BezelStyle, GridStyle, LightSquareStyle, \
   DarkSquareStyle, FileRankStyle, HoverStyle
 
 ic.configureOutput(includeContext=True)
+
+Labels = list[tuple[QRectF, QRectF, str]]
 
 
 class StaticBoard(WhereMouse):
@@ -26,6 +27,7 @@ class StaticBoard(WhereMouse):
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   hoverSquare = Signal(File, Rank)
+  boardSize = Signal(QSizeF)
 
   def __init__(self, *args, **kwargs) -> None:
     WhereMouse.__init__(self, *args, **kwargs)
@@ -34,7 +36,6 @@ class StaticBoard(WhereMouse):
     self._allowResize = True
     self._fixedSize = QSize(400, 400)
     self._boardRect = None
-    self._bezelRect = None
     self._borderWidth = None
     self._square = None
     self._rank = None
@@ -44,6 +45,82 @@ class StaticBoard(WhereMouse):
     self.move.connect(self._handleMouseMove)
     self.enter.connect(self._handleMouseMove)
     self.leave.connect(self._handleMouseLeave)
+    #  Styles
+    self._lightSquareStyle = LightSquareStyle
+    self._darkSquareStyle = DarkSquareStyle
+    self._bezelStyle = BezelStyle
+    self._gridStyle = GridStyle
+    self._fileRankStyle = FileRankStyle
+    self._hoverStyle = HoverStyle
+    #  From chessBoardFunc
+    self._bezelRect = None
+    self._boardRect = None
+    self._lightSquares = None
+    self._darkSquares = None
+    self._fileRects = None
+    self._rankRects = None
+    self._squares = []
+
+  def _getBoard(self, rect: QRectF = None) -> NoReturn:
+    """Updates the geometric information"""
+    viewPort = maybe(rect, self.visibleRegion().boundingRect())
+    if isinstance(viewPort, QRect):
+      viewPort = viewPort.toRectF()
+    if isinstance(viewPort, QRectF):
+      res = chessBoardFunc(viewPort)
+    else:
+      raise TypeError
+    self._bezelRect = res.get('bezelRect', None)
+    self._boardRect = res.get('boardRect', None)
+    self._lightSquares = res.get('light', None)
+    self._darkSquares = res.get('dark', None)
+    self._fileRects = res.get('files', None)
+    self._rankRects = res.get('ranks', None)
+    self._squares = []
+    for light, dark in zip(self._lightSquares, self._darkSquares):
+      self._squares.append(light)
+      self._squares.append(dark)
+
+  def _getBezelRect(self) -> QRectF:
+    """Getter-Function for the QRectF including the surrounding bezels"""
+    if self._bezelRect is None:
+      self._getBoard()
+      return self._getBezelRect()
+    return self._bezelRect
+
+  def _getBoardRect(self) -> QRectF:
+    """Getter-Function for the QRectF including only the squares
+    themselves"""
+    if self._boardRect is None:
+      self._getBoard()
+      return self._getBoardRect()
+    return self._boardRect
+
+  def _getLightSquares(self) -> Labels:
+    if self._lightSquares is None:
+      self._getBoard()
+      return self._getLightSquares()
+    return self._lightSquares
+
+  def _getDarkSquares(self) -> Labels:
+    if self._darkSquares is None:
+      self._getBoard()
+      return self._getDarkSquares()
+    return self._darkSquares
+
+  def _getFileRects(self) -> list[QRectF]:
+    """Getter-function for list of files"""
+    if self._fileRects is None:
+      self._getBoard()
+      return self._getFileRects()
+    return self._fileRects
+
+  def _getRankRects(self) -> list[QRectF]:
+    """Getter-function for list of ranks"""
+    if self._rankRects is None:
+      self._getBoard()
+      return self._getRankRects()
+    return self._rankRects
 
   def _handleMouseLeave(self) -> NoReturn:
     """Handles mouse leave"""
@@ -64,7 +141,6 @@ class StaticBoard(WhereMouse):
     x, y = self._point.x(), self._point.y()
     if left < x < right and top < y < bottom:
       squareWidth, squareHeight = width / 8, height / 8
-
       _file = File.find(int((x - left) // squareWidth) + 1)
       _rank = Rank.find(int(8 - (y - top) // squareHeight))
       if self._file == _file:
@@ -151,29 +227,26 @@ class StaticBoard(WhereMouse):
     painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
     fixedRect = QRectF(QPointF(0., 0.), self._fixedSize)
     rect = painter.viewport() if self._allowResize else fixedRect
-    rects = chessBoardFunc(rect, )
-    self._bezelRect = rects.get('bezelRect')
-    styles = dict(
-      light=LightSquareStyle, dark=DarkSquareStyle,
-      bezel=BezelStyle, grid=GridStyle, )
-    keys = stringList('bezel, grid, light, dark')
-    for key in keys:
-      style, rect = styles.get(key, None), rects.get(key, None)
-      if not plenty(style, rect):
-        raise ValueError()
-      style @ painter
-      painter.drawRects(rect)
+    self._getBoard(rect)
+    self._bezelStyle @ painter
+    painter.drawRoundedRect(self._getBezelRect(), 4, 4, )
+    self._gridStyle @ painter
+    painter.drawRect(self._getBoardRect())
+    self._lightSquareStyle @ painter
+    painter.drawRects(self._getLightSquares())
+    self._darkSquareStyle @ painter
+    painter.drawRects(self._getDarkSquares())
     centerFlag = Qt.AlignmentFlag.AlignCenter
     FileRankStyle @ painter
-    for file in rects['files']:
+    for file in self._getFileRects():
       painter.drawText(file[0], centerFlag, file[2])
       painter.drawText(file[1], centerFlag, file[2])
-    for rank in rects['ranks']:
+    for rank in self._getRankRects():
       painter.drawText(rank[0], centerFlag, rank[2])
       painter.drawText(rank[1], centerFlag, rank[2])
-    HoverStyle @ painter
-    painter.drawRects(self._getHoverRects())
     painter.end()
-    self._boardRect = rects.get('grid', None)[0]
-    if self._boardRect is None:
-      raise ProceduralError('boardRect')
+
+  def resizeEvent(self, event: QResizeEvent) -> NoReturn:
+    """Implementation triggering the resize signal"""
+    WhereMouse.resizeEvent(self, event)
+    self.boardSize.emit(event.size())

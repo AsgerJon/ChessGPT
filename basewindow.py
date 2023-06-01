@@ -3,6 +3,7 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+import time
 from typing import NoReturn
 
 from PySide6.QtCore import QSize, QSizeF, Slot
@@ -42,7 +43,7 @@ class BaseWindow(QMainWindow):
     self._helpMenu = self.menuBar().addMenu('Help')
     self._debugMenu = self.menuBar().addMenu('DEBUG')
     self._debugAction01 = self._debugMenu.addAction('Debug 01')
-    self.setMouseTracking(True)
+    # self.setMouseTracking(True)
     self._baseSize = None
     self._baseWidget = None
     self._baseLayout = None
@@ -97,6 +98,10 @@ class BaseWindow(QMainWindow):
     """Reimplementation of show"""
     if self.setupWidgets():
       QMainWindow.show(self)
+
+  def clickDebug(self, *_) -> NoReturn:
+    """Print statusbar message"""
+    print('%s' % time.ctime())
 
   def lockSizeFunc(self, *_) -> NoReturn:
     """Function locking the resizing"""

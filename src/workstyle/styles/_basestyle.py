@@ -3,6 +3,8 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+from typing import NoReturn
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QFont, QBrush, QPen, QPainter
 from worktoy.waitaminute import ProceduralError
@@ -74,6 +76,18 @@ class BaseStyle(metaclass=MetaStyle, _base=True):
   _styleDictionary = {}
 
   @classmethod
+  def getStyleDictionary(cls) -> dict:
+    """Getter-function for style dictionary"""
+    return cls._styleDictionary
+
+  @classmethod
+  def extendDictionary(cls, ) -> NoReturn:
+    """Extends style dictionary"""
+    styleDict = BaseStyle.getStyleDictionary()
+    styleDict |= {getattr(cls, 'context', None): cls}
+    setattr(BaseStyle, '_styleDictionary', styleDict)
+
+  @classmethod
   def __init_subclass__(cls, **kwargs: object) -> object:
     """Records the creation of new subclass"""
     if kwargs.get('_base', False):
@@ -81,4 +95,9 @@ class BaseStyle(metaclass=MetaStyle, _base=True):
     context = getattr(cls, 'context', None)
     if context is None:
       raise ProceduralError('context', str, None)
-    BaseStyle._styleDictionary |= dict(context=cls)
+    cls.extendDictionary()
+
+  @classmethod
+  def __subclasscheck__(cls, subclass) -> bool:
+    """The Styles are subclasses."""
+    return True if BaseStyle in cls.__bases__ else False
