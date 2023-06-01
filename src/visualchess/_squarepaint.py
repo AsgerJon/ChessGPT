@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import Slot, QRectF, QSizeF
+from PySide6.QtCore import Slot, QRectF, QSizeF, QSize
 from PySide6.QtGui import QPaintEvent, QPainter
 
 from visualchess import ChessColor, Piece, Square
@@ -44,6 +44,7 @@ class SquarePaint(WhereMouse):
   def __init__(self, *args, **kwargs) -> None:
     WhereMouse.__init__(self, *args, **kwargs)
     self._pixMaps = None
+    self.setMinimumSize(QSize(400, 400))
 
   @Slot(str, str)
   def applyMove(self) -> NoReturn:
