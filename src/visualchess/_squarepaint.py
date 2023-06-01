@@ -46,18 +46,22 @@ class SquarePaint(WhereMouse):
     self._pixMaps = None
     self.setMinimumSize(QSize(400, 400))
 
-  @Slot(str, str)
-  def applyMove(self) -> NoReturn:
-    """Triggers repaint updating chess position"""
-
-  def _collectPixMaps(self) -> NoReturn:
-    """Loads all pix maps"""
-    self._pixMaps = {}
-    for piece in Piece:
-      for color in ChessColor:
-        key = (color, piece)
-        val = Load(piece, color).loadPieceQPixmap()
-        self._pixmaps |= {key: val}
+  #
+  # @Slot(str, str)
+  # def applyMove(self) -> NoReturn:
+  #   """Triggers repaint updating chess position"""
+  #
+  # def _collectPixMaps(self) -> NoReturn:
+  #   """Loads all pix maps"""
+  #   self._pixMaps = {}
+  #   for piece in Piece:
+  #     for color in ChessColor:
+  #       key = (color, piece)
+  #       val = Load(piece, color).loadPieceQPixmap()
+  #       if isinstance(self._pixMaps, dict):
+  #         self._pixMaps |= {key: val}
+  #       else:
+  #         raise TypeError
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """First calls the parent paintEvent before applying the context

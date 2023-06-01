@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
 
   def _createBaseLayout(self) -> bool:
     """Creator-function for the base layout"""
-    self._baseLayout = QGridLayout()
+    self._baseLayout = QGridLayout()  # type: ignore
     return False if self._baseLayout is None else True
 
   def getBaseLayout(self) -> QGridLayout:
@@ -83,6 +83,7 @@ class MainWindow(QMainWindow):
   def setupWidgets(self) -> bool:
     """Sets up the widgets"""
     self.getCheckButton().setFixedSize(QSize(48, 48))
+    self.getBaseLayout().addWidget(self.getBoard(), 0, 0)
     self.getBaseLayout().addWidget(self.getCheckButton(), 1, 1)
     self.getBaseWidget().setLayout(self.getBaseLayout())
     self.setCentralWidget(self.getBaseWidget())

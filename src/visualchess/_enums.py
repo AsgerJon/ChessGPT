@@ -19,7 +19,6 @@ from workstyle.styles import LightSquareStyle, DarkSquareStyle
 
 class File(Enum):
   """Enums representing the files on a chessboard"""
-  NULL = 0
   A = 1
   B = 2
   C = 3
@@ -77,7 +76,6 @@ class File(Enum):
 
 class Rank(Enum):
   """Enumx representing the ranks on a chessboard"""
-  NULL = 0
   rank0 = 1
   rank1 = 2
   rank2 = 3
@@ -162,17 +160,6 @@ class Shade(Enum):
 class Square(InstanceIteration):
   """Instances of Squares represent squares on the chess board"""
 
-  _instances = []
-  _NULL = None
-  __index__ = None
-
-  @classmethod
-  def getNull(cls) -> Square:
-    """Getter-function for NULL instance"""
-    if cls._NULL is None:
-      cls._NULL = cls(_root=True)
-    return cls._NULL
-
   @classmethod
   def createAll(cls, ) -> NoReturn:
     """Creates all instances"""
@@ -180,7 +167,7 @@ class Square(InstanceIteration):
     ranks = [r for r in Rank if r.value]
     for file in files:
       for rank in ranks:
-        cls._instances.append(cls(file, rank, _root=True))
+        cls(file, rank, _root=True)
 
   @classmethod
   def pointRect(cls, point: QPointF, boardRect: QRectF) -> Optional[Square]:
@@ -197,7 +184,6 @@ class Square(InstanceIteration):
     for item in cls._instances:
       if item.getFile() == file and item.getRank() == rank:
         return item
-    return cls._NULL
 
   @classmethod
   def __new__(cls, *args, **kwargs) -> Square:
@@ -223,6 +209,9 @@ class Square(InstanceIteration):
     self._rank = maybeType(Rank, *args)
     self._piece = None
     self._pieceColor = None
+
+  def __str__(self) -> str:
+    """String Representation"""
 
   def getFile(self) -> File:
     """Getter-function for file"""
