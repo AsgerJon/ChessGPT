@@ -6,13 +6,16 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import Slot, QRectF, QSizeF, QSize
-from PySide6.QtGui import QPaintEvent, QPainter
+from PySide6.QtCore import QSize, QRect, QPoint
+from PySide6.QtGui import QPaintEvent, QPainter, QPixmap
+from icecream import ic
+from worktoy.core import maybe
 
-from visualchess import ChessColor, Piece, Square
-from visualchess.chesspieces import Load
+from visualchess import Square
 from workstyle import WhereMouse
-from workstyle.styles import BezelStyle, BoardDims, GridStyle
+from workstyle.styles import BezelStyle, GridStyle, FileData, BoardDims
+
+ic.configureOutput(includeContext=True)
 
 
 class SquarePaint(WhereMouse):
@@ -21,58 +24,51 @@ class SquarePaint(WhereMouse):
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
-  @staticmethod
-  def fitSquareRect(rect: QRectF) -> QRectF:
-    """Returns the largest square QRectF that fits in rect"""
-    dim = min(rect.width(), rect.height())
-    size = QSizeF(dim, dim)
-    squareRect = QRectF(BoardDims.origin, size)
-    squareRect.moveCenter(rect.center())
-    return squareRect
-
-  @staticmethod
-  def fitSquareMarginsRect(rect: QRectF) -> QRectF:
-    """Returns the largest square QRectF that fits in given rect with the
-    style margins deducted"""
-    marginLeft = BoardDims.marginLeft
-    marginTop = BoardDims.marginTop
-    marginRight = BoardDims.marginRight
-    marginBottom = BoardDims.marginBottom
-    rect.adjust(marginLeft, marginTop, -marginRight, -marginBottom)
-    return SquarePaint.fitSquareRect(rect)
-
   def __init__(self, *args, **kwargs) -> None:
     WhereMouse.__init__(self, *args, **kwargs)
     self._pixMaps = None
     self.setMinimumSize(QSize(400, 400))
+    self.click.connect(self.debug)
+    self.doubleClick.connect(self.debug2)
+    self._boardPix = None
 
-  #
-  # @Slot(str, str)
-  # def applyMove(self) -> NoReturn:
-  #   """Triggers repaint updating chess position"""
-  #
-  # def _collectPixMaps(self) -> NoReturn:
-  #   """Loads all pix maps"""
-  #   self._pixMaps = {}
-  #   for piece in Piece:
-  #     for color in ChessColor:
-  #       key = (color, piece)
-  #       val = Load(piece, color).loadPieceQPixmap()
-  #       if isinstance(self._pixMaps, dict):
-  #         self._pixMaps |= {key: val}
-  #       else:
-  #         raise TypeError
+  def debug(self, *_) -> NoReturn:
+    """Debug"""
+
+  def debug2(self, *_) -> NoReturn:
+    """Debug"""
+
+  def createPixMap(self) -> NoReturn:
+    """Creates the pixmap"""
+    self._boardPix = FileData.createPixmap()
+
+  def getBoardPix(self) -> QPixmap:
+    """Creates the pixmap"""
+    if self._boardPix is None:
+      self.createPixMap()
+      return self.getBoardPix()
+    return self._boardPix
+
+  def paintPixMap(self, fid: str = None) -> NoReturn:
+    """Creates a pixmap of the chessboard"""
+    pix = self.getBoardPix()
+    SquarePaint.paintEvent(pix, QRect(QPoint(0, 0), pix.size()))
+    filePath = maybe(fid, FileData.getImageFilePath())
+    imgFmt = FileData.imageFormat
+    pix.save(filePath, imgFmt)
+    self._boardPix = pix
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """First calls the parent paintEvent before applying the context
     specific operation"""
     painter = QPainter()
     painter.begin(self)
+    view = painter.viewport()
     BezelStyle @ painter
     rX, rY = BoardDims.cornerRadiusX, BoardDims.cornerRadiusY
-    painter.drawRoundedRect(self.fitSquareRect(painter.viewport()), rX, rY, )
+    painter.drawRoundedRect(Square.fitSquareRect(view), rX, rY, )
     GridStyle @ painter
-    boardRect = self.fitSquareMarginsRect(painter.viewport())
+    boardRect = Square.fitSquareMarginsRect(view)
     painter.drawRect(boardRect)
     for square in Square:
       square.applyPaint(painter)

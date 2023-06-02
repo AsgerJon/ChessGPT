@@ -3,6 +3,8 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+from typing import NoReturn
+
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QMainWindow, QGridLayout
 
@@ -21,6 +23,26 @@ class MainWindow(QMainWindow):
     self._baseLayout = None
     self._board = None
     self._checkButton = None
+    self._fileMenu = self.menuBar().addMenu('Files')
+    self._editMenu = self.menuBar().addMenu('Edit')
+    self._helpMenu = self.menuBar().addMenu('Help')
+    self._debugMenu = self.menuBar().addMenu('DEBUG')
+    self._saveAction = self._fileMenu.addAction('Save')
+    self._saveAction.triggered.connect(self.savePixmapFunc)
+    self._saveAsAction = self._fileMenu.addAction('Save As')
+    self._saveAsAction.triggered.connect(self.savePixmapAsFunc)
+    self._lastSavedFileName = None
+
+  def savePixmapFunc(self, fid: str = None) -> NoReturn:
+    """Saves the pixmap showing the board to the disk"""
+    dialog = SavePixmapDialog(self)
+    if self.lastSavedFileName is None:
+        self.lastSavedFileName = dialog.savePixmap(self.pixmap)
+    else:
+        dialog.savePixmap(self.pixmap, self.lastSavedFileName)
+    self.getBoard().paintPixMap(fid)
+
+  def savePixmapAsFunc(self, fid: str = None):
 
   def _createCheckButton(self) -> bool:
     """Creator-function for check button"""

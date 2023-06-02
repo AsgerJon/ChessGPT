@@ -3,7 +3,7 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from ._geometries import BoardDims
+from ._filedata import FileData, BoardDims
 from ._styledecorators import Family
 from ._basestyle import BaseStyle
 from ._filerankstyle import FileRankStyle

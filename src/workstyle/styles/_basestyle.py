@@ -56,9 +56,9 @@ class MetaStyle(type):
 
   def __matmul__(cls, other: QPainter) -> QPainter:
     """Testing style application to QPainter"""
-    other.setPen(cls.pen)
-    other.setBrush(cls.brush)
-    other.setFont(cls.font)
+    other.setPen(getattr(cls, 'pen', ))
+    other.setBrush(getattr(cls, 'brush', ))
+    other.setFont(getattr(cls, 'font', ))
     return other
 
   def __rshift__(cls, other: dict) -> type:
@@ -72,7 +72,6 @@ class BaseStyle(metaclass=MetaStyle, _base=True):
   """Base style is shared between all style classes
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
-
   _styleDictionary = {}
 
   @classmethod

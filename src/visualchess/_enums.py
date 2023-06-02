@@ -9,24 +9,26 @@ from typing import Optional, NoReturn
 
 from PySide6.QtCore import QPointF, QRectF, QSizeF
 from PySide6.QtGui import QPainter
+from icecream import ic
 from worktoy.core import plenty
 from worktoy.parsing import maybeType, maybeTypes
 from worktoy.typetools import TypeBag
 
-from moreworktoy import InstanceIteration
-from workstyle.styles import LightSquareStyle, DarkSquareStyle
+from workstyle.styles import LightSquareStyle, DarkSquareStyle, BoardDims
+
+ic.configureOutput(includeContext=True)
 
 
 class File(Enum):
   """Enums representing the files on a chessboard"""
-  A = 1
-  B = 2
-  C = 3
-  D = 4
-  E = 5
-  F = 6
-  G = 7
-  H = 8
+  A = 0
+  B = 1
+  C = 2
+  D = 3
+  E = 4
+  F = 5
+  G = 6
+  H = 7
 
   def __str__(self) -> str:
     """String Representation"""
@@ -35,7 +37,7 @@ class File(Enum):
     return 'NULL'
 
   @classmethod
-  def find(cls, index: int | str) -> File:
+  def find(cls, index: TypeBag(int, str)) -> File:
     """Lookup function"""
     if isinstance(index, int):
       return cls._getFromInt(index)
@@ -76,19 +78,19 @@ class File(Enum):
 
 class Rank(Enum):
   """Enumx representing the ranks on a chessboard"""
-  rank0 = 1
-  rank1 = 2
-  rank2 = 3
-  rank3 = 4
-  rank4 = 5
-  rank5 = 6
-  rank6 = 7
-  rank7 = 8
+  rank1 = 0
+  rank2 = 1
+  rank3 = 2
+  rank4 = 3
+  rank5 = 4
+  rank6 = 5
+  rank7 = 6
+  rank8 = 7
 
   def __str__(self) -> str:
     """String Representation"""
     if self.value:
-      return '%s' % (int(self.name.replace('rank', '')) + 1)
+      return '%s' % (int(self.name.replace('rank', '')))
     return 'NULL'
 
   @classmethod
@@ -157,16 +159,93 @@ class Shade(Enum):
     return LightSquareStyle if self else DarkSquareStyle
 
 
-class Square(InstanceIteration):
+class IterMeta(type):
+
+  def __init__(cls, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+    cls.createAll()
+
+  def __len__(cls) -> int:
+    return len(cls.__instances__)
+
+  def __iter__(cls) -> IterMeta:
+    return cls
+
+  def __next__(cls) -> object:
+    return cls.__next__()
+
+
+class Square(metaclass=IterMeta):
   """Instances of Squares represent squares on the chess board"""
+
+  @staticmethod
+  def fitSquareRect(rect: QRectF) -> QRectF:
+    """Returns the largest square QRectF that fits in rect"""
+    dim = min(rect.width(), rect.height())
+    size = QSizeF(dim, dim)
+    squareRect = QRectF(BoardDims.origin, size)
+    squareRect.moveCenter(rect.center())
+    return squareRect
+
+  @staticmethod
+  def fitSquareMarginsRect(rect: QRectF) -> QRectF:
+    """Returns the largest square QRectF that fits in given rect with the
+    style margins deducted"""
+    marginLeft = BoardDims.marginLeft
+    marginTop = BoardDims.marginTop
+    marginRight = BoardDims.marginRight
+    marginBottom = BoardDims.marginBottom
+    rect.adjust(marginLeft, marginTop, -marginRight, -marginBottom)
+    print(marginLeft, marginTop, -marginRight, -marginBottom)
+    return Square.fitSquareRect(rect)
+
+  __instances__ = []
+  __index__ = 0
+
+  @classmethod
+  def getIndex(cls) -> int:
+    """Getter-function for the index"""
+    return cls.__index__
+
+  @classmethod
+  def setIndex(cls, index: int) -> NoReturn:
+    """Setter-function for the index"""
+    cls.__index__ = index
+
+  @classmethod
+  def incIndex(cls) -> NoReturn:
+    """Incrementing index"""
+    cls.__index__ += 1
+
+  @classmethod
+  def decIndex(cls) -> NoReturn:
+    """Decrementing index"""
+    cls.__index__ -= 1
+
+  @classmethod
+  def __len__(cls, ) -> int:
+    """Iteration"""
+    return len(cls.__instances__)
+
+  @classmethod
+  def __iter__(cls, ) -> type:
+    """Iteration"""
+    cls.__index__ = 0
+    return cls
+
+  @classmethod
+  def __next__(cls) -> Square:
+    """Iteration"""
+    cls.incIndex()
+    if cls.getIndex() > len(cls):
+      raise StopIteration
+    return cls.__instances__[cls.getIndex() - 1]
 
   @classmethod
   def createAll(cls, ) -> NoReturn:
     """Creates all instances"""
-    files = [f for f in File if f.value]
-    ranks = [r for r in Rank if r.value]
-    for file in files:
-      for rank in ranks:
+    for file in File:
+      for rank in Rank:
         cls(file, rank, _root=True)
 
   @classmethod
@@ -181,20 +260,24 @@ class Square(InstanceIteration):
       return None
     file = File.byValue(int((x0 - left) / width * 8))
     rank = Rank.byValue(int((bottom - y0) / height * 8))
-    for item in cls._instances:
+    for item in cls:
       if item.getFile() == file and item.getRank() == rank:
         return item
 
   @classmethod
   def __new__(cls, *args, **kwargs) -> Square:
+    if not cls.__instances__ and not kwargs.get('_root', False):
+      cls.createAll()
     if kwargs.get('_root', False):
-      return super().__new__(cls)
-    if not cls._instances:
+      cunt = super().__new__(cls)
+      cls.__instances__.append(cunt)
+      return cunt
+    if not cls.__instances__:
       cls.createAll()
     _file = maybeType(File, *args)
     _rank = maybeType(Rank, *args)
     if plenty(_file, _rank):
-      for item in cls._instances:
+      for item in cls.__instances__:
         if item.getFile() == _file and item.getRank() == _rank:
           return item
       raise ValueError
@@ -202,9 +285,8 @@ class Square(InstanceIteration):
     rect = maybeTypes(QRectF, *args)
     if isinstance(point, QPointF) and isinstance(rect, QRectF):
       return cls.pointRect(point, rect)
-    return cls._NULL
 
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args, **_) -> None:
     self._file = maybeType(File, *args)
     self._rank = maybeType(Rank, *args)
     self._piece = None
@@ -212,6 +294,12 @@ class Square(InstanceIteration):
 
   def __str__(self) -> str:
     """String Representation"""
+    return '%s%s' % (self._file, self._rank)
+
+  def __repr__(self) -> str:
+    """Code Representation"""
+    words = [self.getFile().__repr__(), self.getRank().__repr__()]
+    return 'Square(%s, %s)' % (*words,)
 
   def getFile(self) -> File:
     """Getter-function for file"""
@@ -232,15 +320,17 @@ class Square(InstanceIteration):
   def rectOnBoard(self, boardRect: QRectF) -> QRectF:
     """Transforms the square to its QRectF representation """
     left0, width = boardRect.left(), boardRect.width(),
-    top0, height = boardRect.top0(), boardRect.height()
-    left = left0 + int(self.getFile().value - 1 * (width / 8))
-    top = top0 + int(self.getFile().value - 1 * (height / 8))
+    top0, height = boardRect.top(), boardRect.height()
+    left = left0 + int(self.getFile().value * (width / 8))
+    top = top0 + int(self.getRank().value * (height / 8))
     size = QSizeF(width / 8, height / 8)
     return QRectF(QPointF(left, top), size)
 
   def applyPaint(self, painter: QPainter) -> NoReturn:
     """Applies self to given painter"""
-    self.getShade().getStyle() @ painter
+    style = self.getShade().getStyle()
+    style @ painter
     viewPort = painter.viewport()
-    rect = self.rectOnBoard(viewPort)
+    boardRect = self.fitSquareMarginsRect(viewPort)
+    rect = self.rectOnBoard(boardRect)
     painter.drawRect(rect)

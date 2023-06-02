@@ -1,0 +1,46 @@
+from PySide6.QtCore import QFile as QFile
+from PySide6.QtGui import QPixmap
+from _typeshed import Incomplete
+from typing import NoReturn
+from worktoy.parsing import maybeType as maybeType
+
+class Data:
+    def __init__(self, name: str, defVal: object = ..., type_: type = ..., **kwargs) -> None: ...
+    def getValue(self) -> object: ...
+    def setValue(self, value: object) -> NoReturn: ...
+    def delValue(self) -> NoReturn: ...
+    def __get__(self, instance, owner) -> object: ...
+    def __set__(self, instance, value) -> NoReturn: ...
+    def __del__(self, *args) -> NoReturn: ...
+    def __getattr__(self, key: str) -> object: ...
+
+class Factory(Data):
+    def __init__(self, *args, **kwargs) -> None: ...
+    def __call__(self, *args, **kwargs) -> object: ...
+    def getValue(self) -> object: ...
+
+class FileData:
+    SCALE: int
+    envName: Incomplete
+    imageFormat: Incomplete
+    imageName: Incomplete
+    imageSize: Incomplete
+    imageWidth: Incomplete
+    imageHeight: Incomplete
+    @classmethod
+    def getImageFilePath(cls) -> str: ...
+    @classmethod
+    def createPixmap(cls) -> QPixmap: ...
+    @classmethod
+    def getScale(cls) -> float: ...
+
+class BoardDims:
+    bezelPixels: Incomplete
+    marginLeft: Incomplete
+    marginTop: Incomplete
+    marginRight: Incomplete
+    marginBottom: Incomplete
+    gridPixels: Incomplete
+    cornerRadiusX: Incomplete
+    cornerRadiusY: Incomplete
+    origin: Incomplete

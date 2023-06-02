@@ -2,7 +2,7 @@
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
-
+from _savefiledialog import SavePixmapDialog
 from ._enums import Button
 from ._corewidget import CoreWidget
 from ._wheremouse import WhereMouse
