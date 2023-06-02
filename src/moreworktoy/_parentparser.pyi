@@ -1,3 +1,0 @@
-from PySide6.QtWidgets import QWidget
-
-def parentParser(*args, **kwargs) -> QWidget: ...
