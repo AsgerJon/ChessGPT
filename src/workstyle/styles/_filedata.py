@@ -129,7 +129,7 @@ class FileData:
 
   @classmethod
   def getScale(cls) -> float:
-    """Getter-fuinction for sclae"""
+    """Getter-function for scale"""
     return cls.SCALE
 
 

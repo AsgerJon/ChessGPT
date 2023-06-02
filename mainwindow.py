@@ -5,17 +5,39 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, QRect, QPoint
+from PySide6.QtGui import QPixmap, QResizeEvent
 from PySide6.QtWidgets import QMainWindow, QGridLayout
 
 from visualchess import CheckButton, SquarePaint
 from workstyle import CoreWidget
+from workstyle.styles import FileData
 
 
 class MainWindow(QMainWindow):
   """MainWindow
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
+
+  @staticmethod
+  def getDefaultPixName() -> str:
+    """Getter-function for default save file name"""
+    return FileData.getImageFilePath()
+
+  @staticmethod
+  def paintPixmap() -> QPixmap:
+    """Creates a pixmap of the chessboard"""
+    pix = FileData.createPixmap()
+    SquarePaint.paintEvent(pix, QRect(QPoint(0, 0), pix.size()))
+    return pix
+
+  @staticmethod
+  def savePixmapFunc() -> NoReturn:
+    """Saves the pixmap showing the board to the disk"""
+    pix = MainWindow.paintPixmap()
+    fid = MainWindow.getDefaultPixName()
+    fmt = FileData.imageFormat
+    pix.save(fid, fmt)
 
   def __init__(self, ) -> None:
     QMainWindow.__init__(self, )
@@ -29,20 +51,6 @@ class MainWindow(QMainWindow):
     self._debugMenu = self.menuBar().addMenu('DEBUG')
     self._saveAction = self._fileMenu.addAction('Save')
     self._saveAction.triggered.connect(self.savePixmapFunc)
-    self._saveAsAction = self._fileMenu.addAction('Save As')
-    self._saveAsAction.triggered.connect(self.savePixmapAsFunc)
-    self._lastSavedFileName = None
-
-  def savePixmapFunc(self, fid: str = None) -> NoReturn:
-    """Saves the pixmap showing the board to the disk"""
-    dialog = SavePixmapDialog(self)
-    if self.lastSavedFileName is None:
-        self.lastSavedFileName = dialog.savePixmap(self.pixmap)
-    else:
-        dialog.savePixmap(self.pixmap, self.lastSavedFileName)
-    self.getBoard().paintPixMap(fid)
-
-  def savePixmapAsFunc(self, fid: str = None):
 
   def _createCheckButton(self) -> bool:
     """Creator-function for check button"""
@@ -128,3 +136,7 @@ class MainWindow(QMainWindow):
     """Reimplementation ensuring widgets and actions getting setup"""
     if self.setupWidgets():
       QMainWindow.show(self)
+
+  def resizeEvent(self, event: QResizeEvent) -> NoReturn:
+    """Resize event implementation"""
+    self.getBoard().repaint()

@@ -1,181 +1,24 @@
-"""File and Rank enums"""
+"""Square"""
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-import string
-from enum import Enum
 from typing import Optional, NoReturn
 
-from PySide6.QtCore import QPointF, QRectF, QSizeF
+from PySide6.QtCore import QRectF, QPointF, QSizeF, Qt
 from PySide6.QtGui import QPainter
 from icecream import ic
 from worktoy.core import plenty
 from worktoy.parsing import maybeType, maybeTypes
-from worktoy.typetools import TypeBag
 
-from workstyle.styles import LightSquareStyle, DarkSquareStyle, BoardDims
+from moreworktoy import Iterify
+from visualchess import Rank, File, Shade
+from workstyle.styles import FileRankStyle, BoardDims
 
 ic.configureOutput(includeContext=True)
 
 
-class File(Enum):
-  """Enums representing the files on a chessboard"""
-  A = 0
-  B = 1
-  C = 2
-  D = 3
-  E = 4
-  F = 5
-  G = 6
-  H = 7
-
-  def __str__(self) -> str:
-    """String Representation"""
-    if self.value:
-      return '%s' % self.name
-    return 'NULL'
-
-  @classmethod
-  def find(cls, index: TypeBag(int, str)) -> File:
-    """Lookup function"""
-    if isinstance(index, int):
-      return cls._getFromInt(index)
-    if isinstance(index, str):
-      return cls._getFromStr(index)
-    raise KeyError
-
-  @classmethod
-  def _getFromInt(cls, index: int) -> File:
-    """Getter-function for instance at given index"""
-    for file in File:
-      if file.value == index:
-        return file
-    raise IndexError
-
-  @classmethod
-  def _getFromStr(cls, key: str) -> File:
-    """Getter-function by string"""
-    if len(key) - 1:
-      raise KeyError
-    chars = ['NULL', *string.ascii_lowercase[:8]]
-    for (i, char) in enumerate(chars):
-      if char == key.lower():
-        return cls._getFromInt(i)
-    raise KeyError
-
-  @classmethod
-  def byValue(cls, val: int) -> File:
-    """Finds the file by value"""
-    for file in cls:
-      if file.value == val:
-        return file
-
-  def __matmul__(self, other: Rank) -> Shade:
-    """Determines the shade of the squares at self and other"""
-    return Shade.LIGHT if self.value % 2 == other.value % 2 else Shade.DARK
-
-
-class Rank(Enum):
-  """Enumx representing the ranks on a chessboard"""
-  rank1 = 0
-  rank2 = 1
-  rank3 = 2
-  rank4 = 3
-  rank5 = 4
-  rank6 = 5
-  rank7 = 6
-  rank8 = 7
-
-  def __str__(self) -> str:
-    """String Representation"""
-    if self.value:
-      return '%s' % (int(self.name.replace('rank', '')))
-    return 'NULL'
-
-  @classmethod
-  def find(cls, index: int | str) -> Rank:
-    """Lookup function"""
-    if isinstance(index, int):
-      return cls._getFromInt(index)
-    if isinstance(index, str):
-      return cls._getFromStr(index)
-    raise TypeError
-
-  @classmethod
-  def _getFromInt(cls, index: int) -> Rank:
-    """Getter-function for instance at given index"""
-    for rank in Rank:
-      if rank.value == index:
-        return rank
-    raise IndexError
-
-  @classmethod
-  def _getFromStr(cls, key: str) -> Rank:
-    """Getter-function by string"""
-    if len(key) - 1:
-      raise KeyError
-    chars = ['%d' % i for i in range(9)]
-    for (i, char) in enumerate(chars):
-      if char == key:
-        return cls._getFromInt(i)
-    raise KeyError
-
-  @classmethod
-  def byValue(cls, val: int) -> Rank:
-    """Finds the rank by value"""
-    for rank in cls:
-      if rank.value == val:
-        return rank
-
-  def __matmul__(self, other: File) -> Shade:
-    """Determines the shade of the squares at self and other"""
-    return Shade.LIGHT if self.value % 2 == other.value % 2 else Shade.DARK
-
-
-class Shade(Enum):
-  """Enum for light and dark squares"""
-  DARK = 0
-  LIGHT = 1
-
-  def __bool__(self) -> bool:
-    """Light is True, and Dark is False"""
-    return True if '%s' % self.name.lower() == 'light' else False
-
-  def __eq__(self, other: Shade) -> bool:
-    """Equality operator implementation"""
-    return True if self is other else False
-
-  def __str__(self) -> str:
-    """String Representation"""
-    return 'Light' if self else 'Dark'
-
-  def __repr__(self) -> str:
-    """Code Representation"""
-    return 'Shade.%s' % ('%s' % self).upper()
-
-  def getStyle(self) -> TypeBag(LightSquareStyle, DarkSquareStyle):
-    """Style getter function"""
-    return LightSquareStyle if self else DarkSquareStyle
-
-
-class IterMeta(type):
-
-  def __init__(cls, *args, **kwargs) -> None:
-    super().__init__(*args, **kwargs)
-    cls.createAll()
-
-  def __len__(cls) -> int:
-    return len(cls.__instances__)
-
-  def __iter__(cls) -> IterMeta:
-    return cls
-
-  def __next__(cls) -> object:
-    return cls.__next__()
-
-
-class Square(metaclass=IterMeta):
+class Square(Iterify):
   """Instances of Squares represent squares on the chess board"""
 
   @staticmethod
@@ -196,7 +39,6 @@ class Square(metaclass=IterMeta):
     marginRight = BoardDims.marginRight
     marginBottom = BoardDims.marginBottom
     rect.adjust(marginLeft, marginTop, -marginRight, -marginBottom)
-    print(marginLeft, marginTop, -marginRight, -marginBottom)
     return Square.fitSquareRect(rect)
 
   __instances__ = []
@@ -298,8 +140,8 @@ class Square(metaclass=IterMeta):
 
   def __repr__(self) -> str:
     """Code Representation"""
-    words = [self.getFile().__repr__(), self.getRank().__repr__()]
-    return 'Square(%s, %s)' % (*words,)
+    file, rank = self.getFile().__repr__(), self.getRank().__repr__()
+    return 'Square(%s, %s)' % (file, rank)
 
   def getFile(self) -> File:
     """Getter-function for file"""
@@ -334,3 +176,13 @@ class Square(metaclass=IterMeta):
     boardRect = self.fitSquareMarginsRect(viewPort)
     rect = self.rectOnBoard(boardRect)
     painter.drawRect(rect)
+    fileLabels = self.getFile().getLabelRects(viewPort)
+    fileChar = '%s' % self.getFile()
+    rankLabels = self.getRank().getLabelRects(viewPort)
+    rankChar = '%s' % self.getRank()
+    FileRankStyle @ painter
+    painter.drawText(fileLabels[0], Qt.AlignmentFlag.AlignCenter, fileChar)
+    painter.drawText(fileLabels[1], Qt.AlignmentFlag.AlignCenter, fileChar)
+    painter.drawText(rankLabels[0], Qt.AlignmentFlag.AlignCenter, rankChar)
+    painter.drawText(rankLabels[1], Qt.AlignmentFlag.AlignCenter, rankChar)
+    print('painted square: %s' % self)

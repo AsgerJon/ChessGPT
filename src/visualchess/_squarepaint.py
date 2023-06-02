@@ -38,25 +38,11 @@ class SquarePaint(WhereMouse):
   def debug2(self, *_) -> NoReturn:
     """Debug"""
 
-  def createPixMap(self) -> NoReturn:
-    """Creates the pixmap"""
-    self._boardPix = FileData.createPixmap()
+  def lockSize(self) -> NoReturn:
+    """Locks the resize flag"""
 
-  def getBoardPix(self) -> QPixmap:
-    """Creates the pixmap"""
-    if self._boardPix is None:
-      self.createPixMap()
-      return self.getBoardPix()
-    return self._boardPix
-
-  def paintPixMap(self, fid: str = None) -> NoReturn:
-    """Creates a pixmap of the chessboard"""
-    pix = self.getBoardPix()
-    SquarePaint.paintEvent(pix, QRect(QPoint(0, 0), pix.size()))
-    filePath = maybe(fid, FileData.getImageFilePath())
-    imgFmt = FileData.imageFormat
-    pix.save(filePath, imgFmt)
-    self._boardPix = pix
+  def unlockSize(self) -> NoReturn:
+    """Unlocks the resize flag"""
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """First calls the parent paintEvent before applying the context

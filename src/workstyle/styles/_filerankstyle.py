@@ -7,13 +7,13 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 
-from workstyle.styles import Family, BaseStyle
+from workstyle.styles import Family, BaseStyle, FileData
 
 
 class FileRankStyle(BaseStyle):
   context = 'fileRankStyle'
   fontFamily = Family.sourceCodePro
-  fontSize = 12
+  fontSize = int(round((12 * FileData.getScale() / 400)))
   lineColor = QColor(191, 191, 255, 255)
   lineStyle = Qt.PenStyle.SolidLine
   lineWidth = 1
