@@ -15,6 +15,10 @@ class Square:
   pass
 
 
+class ChessPiece:
+  pass
+
+
 class _BoardMouseProperties(BoardLayout):
   """Property class"""
 
@@ -25,7 +29,7 @@ class _BoardMouseProperties(BoardLayout):
   changedHoverPiece = Signal(ChessPiece)
 
   def __init__(self, *args, **kwargs) -> None:
-    CoreWidget.__init__(self, *args, **kwargs)
+    BoardLayout.__init__(self, *args, **kwargs)
     self._hoverBoard = None
     self._hoverSquare = None
     self._hoverPiece = None
