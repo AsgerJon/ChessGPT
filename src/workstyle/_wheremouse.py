@@ -63,18 +63,26 @@ class _WhereMouse(CoreWidget):
 
     self._signals = [
       [self.leftClick, self.leftDoubleClick],
-      [self.middleClick, self.middleDoubleClick],
       [self.rightClick, self.rightDoubleClick],
+      [self.middleClick, self.middleDoubleClick],
       [self.backClick, self.backDoubleClick],
       [self.forwardClick, self.forwardDoubleClick],
     ]
 
+  def getSignals(self) -> list[list[Signal, Signal]]:
+    """Getter-function for mouse button signals"""
+    return self._signals
+
   def _mouseSingleClick(self, btn: Qt.MouseButton) -> NoReturn:
     """Single click signal emitter"""
+    ic(btn)
     button = Button.fromFlag(btn)
+    ic(button)
     if button == Button.NULL:
       return
-    self._signals[button][0].emit()
+    signal = self.getSignals()[button][0]
+    print(signal)
+    signal.emit()
 
   def _mouseDoubleClick(self, btn: Qt.MouseButton) -> NoReturn:
     """Double click signal emitter"""

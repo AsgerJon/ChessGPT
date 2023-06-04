@@ -53,7 +53,7 @@ class ShapeSettings:
     400 pixels will have a bezel of 0.05 * 400 = 20.
     Please note, that it is 20 in the top, bottom and left, right. So with
     5%, 10% of the side-length will be used for bezels."""
-    return int(cls.getSideLength() * 0.06)
+    return int(cls.getSideLength() * 0.08)
 
   @classmethod
   def getCornerRadius(cls, ) -> tuple[int, int]:

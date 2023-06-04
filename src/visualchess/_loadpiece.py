@@ -55,3 +55,12 @@ class ChessColor(IntEnum):
     """Returns the filename of the image combining this color and that
     piece type."""
     return '%s_%s.png' % (self.name.lower(), other.name.lower())
+
+
+def loadPiece(piece: Piece, color: ChessColor) -> QPixmap:
+  """Loads the piece defined by piece and color"""
+  _root = os.getenv('CHESSGPT')
+  there = os.path.join('src', 'visualchess', 'chesspieces', 'images')
+  name = piece + color
+  filePath = os.path.join(_root, there, name)
+  return QPixmap(filePath)
