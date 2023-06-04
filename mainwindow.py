@@ -5,10 +5,11 @@ from __future__ import annotations
 
 from typing import NoReturn
 
+from PySide6.QtCore import QSize
 from icecream import ic
 from PySide6.QtWidgets import QMainWindow, QGridLayout
 
-from visualchess import BoardWidget
+from visualchess import BoardMouse
 from workstyle import CoreWidget
 
 ic.configureOutput(includeContext=True)
@@ -21,6 +22,7 @@ class MainWindow(QMainWindow):
 
   def __init__(self, ) -> None:
     QMainWindow.__init__(self, )
+    self.setMinimumSize(QSize(384, 384))
     self._baseWidget = None
     self._baseLayout = None
     self._board = None
@@ -63,15 +65,15 @@ class MainWindow(QMainWindow):
 
   def _createBoard(self) -> bool:
     """Creator-function for the board"""
-    self._board = BoardWidget()
+    self._board = BoardMouse()
     return False if self._board is None else True
 
-  def getBoard(self) -> BoardWidget:
+  def getBoard(self) -> BoardMouse:
     """Getter-function for the board widget"""
     if self._board is None:
       self._createBoard()
       return self.getBoard()
-    if isinstance(self._board, BoardWidget):
+    if isinstance(self._board, BoardMouse):
       return self._board
     raise TypeError
 

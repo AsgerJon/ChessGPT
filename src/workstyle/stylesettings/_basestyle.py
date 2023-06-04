@@ -5,17 +5,11 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-import re
 from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QBrush, QFont, QPen, QColor, QPainter
 from icecream import ic
-from worktoy.core import maybe
-from worktoy.field import BaseField
-from worktoy.parsing import maybeType, maybeTypes, extractArg
-from worktoy.stringtools import stringList
 from worktoy.waitaminute import ProceduralError
 
-from workstyle.shapesettings import ShapeSettings
 from workstyle.styles import Family
 
 ic.configureOutput(includeContext=True)
@@ -60,7 +54,7 @@ class BaseStyle:
     font.setWeight(weight)
     viewSize = min(self.getViewPort().width(), self.getViewPort().height())
     fontSize = int(self._data.get('fontSize') * viewSize / 400)
-    font.setPointSize(ShapeSettings.adjustFontSize(fontSize))
+    font.setPointSize(fontSize)
     return font
 
   def getBrush(self) -> QBrush:
