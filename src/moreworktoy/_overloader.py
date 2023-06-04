@@ -14,9 +14,11 @@ from worktoy.waitaminute import UnexpectedStateError, ProceduralError
 from moreworktoy import TypeKey
 
 if TYPE_CHECKING:
-  pass
+  from typing import Any
 else:
-  pass
+  from worktoy.typetools import Any
+
+Bases = tuple[type, ...]
 
 ic.configureOutput(includeContext=True)
 
@@ -41,22 +43,36 @@ class OverloadMeta(type):
     """Checks if name is __dunder__"""
     return True if name.startswith('__') or name.endswith('__') else False
 
+  @classmethod
+  def __prepare__(mcls, name: str, bases: Bases) -> dict:
+    """Prepares namespace"""
+    baseNames = []
+    for base in bases:
+      baseNames.append(base.__name__)
+    baseNames.append(name)
+    nameSpace = {
+      '__meta__'     : mcls,
+      '__name__'     : name,
+      '__qualname__' : '.'.join(baseNames),
+      '__overloads__': []
+    }
+    return nameSpace
+
   def __new__(mcls, name: str, bases: tuple[type], nameSpace: dict) -> type:
     """OverLoad is a metaclass enabling overloading
     #  MIT Licence
     #  Copyright (c) 2023 Asger Jon Vistisen"""
-    attrs = nameSpace
     overloads = {}
     for (key, val) in nameSpace.items():
       typeKey = getattr(val, '__overloaded__', None)
       if typeKey is not None:
+        setattr(val, '__recursion_flag__', False)
         funcName = val.__name__
         if overloads.get(funcName, None) is None:
           overloads |= {funcName: {}}
         overloads[funcName] |= {typeKey: val}
     nameSpace['__overloads__'] = overloads
-    nameSpace['__meta__'] = mcls
-    return super().__new__(mcls, name, bases, attrs)
+    return super().__new__(mcls, name, bases, nameSpace)
 
   def __init__(cls, name: str, bases: tuple[type], nameSpace: dict) -> None:
     super().__init__(name, bases, nameSpace)
@@ -89,9 +105,52 @@ class OverloadMeta(type):
           e = """Function associated with given types: %s is not a 
           function."""
           raise TypeError(e)
-        return typeFunc(*args, **kwargs)
+        if typeFunc.__recursion_flag__:
+          raise RecursionError
+        setattr(typeFunc, '__recursion_flag__', True)
+        out = typeFunc(*args, *kwargs)
+        return
 
       setattr(cls, funcName, func)
+
+
+class OverLoad:
+  """Callable decorator"""
+
+  def __init__(self, *types) -> None:
+    self._key = TypeKey(*types)
+    self._out = None
+    self._func = None
+
+  def __rshift__(self, other: TypeKey | Bases) -> OverLoad:
+    """Sets the output to other explicitly"""
+    if isinstance(other, TypeKey):
+      self._out = other
+      return self
+    if isinstance(other, tuple):
+      if all([isinstance(type_, type) for type_ in other]):
+        return self >> TypeKey(*other)
+      msg = 'Found object of type other than type in other!'
+      raise TypeError(msg)
+    if isinstance(other, list):
+      return self >> TypeKey(*other)
+
+  def __call__(self, *args, **kwargs) -> OverLoad:
+    """If private variable '_func_ is None, then assumes that a single
+    positional argument containing a function to be decorated. Otherwise,
+    assumes a function call to wrapped function."""
+    if self._func is None:
+      self._func = args[0]
+      return self
+    if self._out is None:
+      return self._invokeFunction(*args, **kwargs)
+
+  def _invokeFunction(self, *args, **kwargs) -> Any:
+    """Invokes function"""
+    return self._func(*args, **kwargs)
+
+
+OverLoad()
 
 
 def overload(*types) -> CallMeMaybe:  # Factory
@@ -104,3 +163,90 @@ def overload(*types) -> CallMeMaybe:  # Factory
     return func
 
   return decorator
+
+
+class OverLoadify(metaclass=OverloadMeta):
+  """OverLoadify"""
+  pass
+
+
+class OverLoad:
+  """Referred to be overloaded classes"""
+
+  def __init__(self, className: str) -> None:
+    self._className = className
+    self._functions = {}
+
+  def __call__(self, *args, **kwargs) -> Any:
+    """Either assigns the class or invokes the function"""
+
+  def _assignClass(self, cls: type) -> OverLoad:
+    """Assigns the class"""
+
+
+class OuterLoaded:
+  """Outer replacement. The overloaded class calls an instance of this
+  class in replacement of an overloaded function."""
+
+  def __init__(self, className: str, funcName: str) -> None:
+    self._innerLoaded = []
+
+  def __call__(self, *args, **kwargs) -> Any:
+    """Invokes the function appropriate to the keys"""
+    for func in self._innerLoaded:
+      res = func(*args, **kwargs)
+      if res[0]:
+        return res[1]
+    key = TypeKey.keyLike()
+    msg = """No support found for given type signature: %s""" % key
+    raise TypeError(msg)
+
+
+class InnerLoaded:
+  """The inner replacement"""
+
+  def __init__(self, key: TypeKey, func: CallMeMaybe) -> None:
+    self._key = key
+    self._func = func
+
+  def getKey(self) -> TypeKey:
+    """Getter-function for key"""
+    return self._key
+
+  def _invokeFunction(self, *args, **kwargs) -> Any:
+    """Invokes the function"""
+    return self._func(*args, **kwargs)
+
+  def _compareKey(self, *args, **kwargs) -> bool:
+    """Compares arguments to keys"""
+    if len(args) != len(self.getKey()):
+      return False
+    for (arg, type_) in zip(args, self.getKey()):
+      if not isinstance(arg, type_):
+        return False
+    return True
+
+  def __call__(self, *args, **kwargs) -> Any:
+    """Compares arguments to keys and invokes function if match"""
+    if self._compareKey(*args, **kwargs):
+      return (True, self._invokeFunction(*args, **kwargs))
+    return (False, None)
+
+
+def decorate(*types) -> CallMeMaybe:
+  """This is the function written by the user. """
+  key = TypeKey(*types)
+
+
+def outerFactory(func: CallMeMaybe) -> typing.NoReturn:
+  """This collects the function"""
+
+
+def innerFactory(key: TypeKey, funcName: str) -> CallMeMaybe:
+  """This factory returns the function matching the typeKey and function
+  name"""
+
+
+def innerOverload(func: CallMeMaybe, *args, **kwargs) -> Any:
+  """This function is what should be invoked"""
+  return func(*args, **kwargs)

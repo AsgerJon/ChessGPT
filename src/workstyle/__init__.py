@@ -2,7 +2,8 @@
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
-from ._enums import Button
+
+from ._enums import Click, Button
 from ._corewidget import CoreWidget
 from ._wheremouse import WhereMouse
 from ._label import Label

@@ -6,10 +6,9 @@ from __future__ import annotations
 import os
 from typing import NoReturn
 
-from PySide6.QtCore import QSize, QFile, QPointF
+from PySide6.QtCore import QSize, QPointF, QSizeF
 from PySide6.QtGui import QPixmap, QColor
 from worktoy.core import maybe
-from worktoy.parsing import maybeType
 from worktoy.typetools import CallMeMaybe
 from worktoy.waitaminute import ReadOnlyError
 
@@ -132,6 +131,11 @@ class FileData:
     """Getter-function for scale"""
     return cls.SCALE
 
+  @classmethod
+  def getSize(cls) -> QSizeF:
+    """Getter-function for the size at the current scale"""
+    return QSizeF(cls.SCALE, cls.SCALE)
+
 
 class BoardDims:
   """Board dimensions"""
@@ -145,3 +149,18 @@ class BoardDims:
   cornerRadiusX = 8 * (FileData.getScale() / 400)
   cornerRadiusY = 8 * (FileData.getScale() / 400)
   origin = QPointF(0, 0)
+
+
+class StaticView:
+  """Dimensions relative to the board size. """
+
+  bezel = 32 / 400
+  marginLeft = 16 / 400
+  marginTop = 16 / 400
+  marginRight = 16 / 400
+  marginBottom = 16 / 400
+  gridPixels = 3 / 400
+  innerGrid = 3 / 400
+  outerGrid = 5 / 400
+  cornerRadiusX = 8 / 400
+  cornerRadiusY = 8 / 400

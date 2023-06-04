@@ -11,7 +11,7 @@ from PySide6.QtGui import QPaintEvent, QPainter, QResizeEvent
 from icecream import ic
 from worktoy.core import maybe
 
-from visualchess import chessBoardFunc, Rank, File
+from visualchess import Rank, File
 from workstyle import WhereMouse
 from workstyle.styles import BezelStyle, GridStyle, LightSquareStyle, \
   DarkSquareStyle, FileRankStyle, HoverStyle

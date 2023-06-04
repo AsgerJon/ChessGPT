@@ -3,13 +3,5 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from ._filedata import FileData, BoardDims
+from ._filedata import FileData, BoardDims, StaticView
 from ._styledecorators import Family
-from ._basestyle import BaseStyle
-from ._filerankstyle import FileRankStyle
-from ._backgroundstyle import BackgroundStyle
-from ._gridstyle import GridStyle
-from ._darksquare import DarkSquareStyle
-from ._lightsquare import LightSquareStyle
-from ._bezelstyle import BezelStyle
-from ._hover import HoverStyle

@@ -8,7 +8,8 @@ from enum import Enum
 from icecream import ic
 from worktoy.typetools import TypeBag
 
-from workstyle.styles import DarkSquareStyle, LightSquareStyle
+from workstyle.stylesettings import BaseStyle, darkSquareStyle, \
+  lightSquareStyle
 
 ic.configureOutput(includeContext=True)
 
@@ -34,6 +35,6 @@ class Shade(Enum):
     """Code Representation"""
     return 'Shade.%s' % ('%s' % self).upper()
 
-  def getStyle(self) -> TypeBag(LightSquareStyle, DarkSquareStyle):
+  def getStyle(self) -> TypeBag(BaseStyle):
     """Style getter function"""
-    return LightSquareStyle if self else DarkSquareStyle
+    return lightSquareStyle if self else darkSquareStyle

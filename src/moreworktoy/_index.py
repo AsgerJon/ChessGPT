@@ -4,6 +4,7 @@ iteration"""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+import typing
 from typing import Any
 
 from worktoy.field import BaseField
@@ -19,7 +20,7 @@ class Index(BaseField):
   def __init__(self, ) -> None:
     BaseField.__init__(self, '__index__', 0, type_=int, readOnly=False)
 
-  def __call__(self, cls: type) -> type:
+  def __call__(self, cls: type) -> typing.Any:
     """Implements iteration if class implements the 'iterable' method."""
     cls = BaseField.__call__(self, cls)
     iterable = getattr(cls, 'iterable', None)
@@ -27,6 +28,11 @@ class Index(BaseField):
       return cls
     if not isinstance(iterable, CallMeMaybe):
       return cls
+
+    def newInit(instance, *args, **kwargs) -> None:
+      """New init function"""
+      setattr(instance, '__index__', 0)
+      cls.__init__(instance, *args, **kwargs)
 
     def newIter(instance, ) -> Any:
       """Implementation of __iter__"""
@@ -44,8 +50,14 @@ class Index(BaseField):
       """Implementation of __len__"""
       return len(instance.iterable())
 
-    setattr(cls, '__iter__', newIter)
-    setattr(cls, '__next__', newNext)
-    setattr(cls, '__len__', newLen)
-
+    if isinstance(iterable, classmethod):
+      setattr(cls, '__index__', 0)
+      setattr(cls, '__iter__', classmethod(newIter))
+      setattr(cls, '__next__', classmethod(newNext))
+      setattr(cls, '__len__', classmethod(newLen))
+    else:
+      setattr(cls, '__init__', newInit)
+      setattr(cls, '__iter__', newIter)
+      setattr(cls, '__next__', newNext)
+      setattr(cls, '__len__', newLen)
     return cls

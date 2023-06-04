@@ -18,6 +18,7 @@ class Family(Enum):
   timesNewRoman = "Times New Roman"
   courierNew = "Courier New"
   verdana = "Verdana"
+  cambria = "Cambria"
   tahoma = "Tahoma"
   calibri = "Calibri"
   comicSansMs = "Comic Sans MS"
@@ -43,6 +44,7 @@ class Family(Enum):
   sourceSansPro = "Source Sans Pro"
   sourceSerifPro = "Source Serif Pro"
   sourceCodePro = "Source Code Pro"
+  modern = "Modern No. 20"
 
   def asQFont(self, size: int = None) -> QFont:
     """Creates a QFont version of self at font size given"""

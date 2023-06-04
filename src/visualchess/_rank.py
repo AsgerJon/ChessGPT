@@ -4,26 +4,28 @@
 from __future__ import annotations
 
 from enum import Enum
-
+from typing import TYPE_CHECKING
 from PySide6.QtCore import QRectF, QPointF, QSizeF
 from icecream import ic
 
-from visualchess import Square, Shade, File
-from workstyle.styles import BoardDims
+from visualchess import Shade, fitSquareRect, fitSquareMarginsRect
+
+if TYPE_CHECKING:
+  from visualchess import File
 
 ic.configureOutput(includeContext=True)
 
 
 class Rank(Enum):
   """Enumx representing the ranks on a chessboard"""
-  rank1 = 0
-  rank2 = 1
-  rank3 = 2
-  rank4 = 3
-  rank5 = 4
-  rank6 = 5
-  rank7 = 6
-  rank8 = 7
+  rank1 = 7 - 0
+  rank2 = 7 - 1
+  rank3 = 7 - 2
+  rank4 = 7 - 3
+  rank5 = 7 - 4
+  rank6 = 7 - 5
+  rank7 = 7 - 6
+  rank8 = 7 - 7
 
   def __str__(self) -> str:
     """String Representation"""
@@ -71,9 +73,8 @@ class Rank(Enum):
   def getLabelRects(self, viewPort: QRectF) -> tuple[QRectF, QRectF]:
     """Getter-function for the rectangle that would hold the label for
     this Rank when applied to the viewPort"""
-    r = Square.fitSquareMarginsRect(viewPort)
-    b = Square.fitSquareRect(viewPort)
-    origin = BoardDims.origin
+    r = fitSquareMarginsRect(viewPort)
+    b = fitSquareRect(viewPort)
     left0, top0, width, height = r.left(), r.top(), r.width(), r.height()
     s = width / 16 + height / 16
     leftLeft, leftRight = b.left(), r.left()

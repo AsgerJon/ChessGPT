@@ -6,9 +6,10 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from icecream import ic
 from worktoy.core import maybe
 from worktoy.typetools import CallMeMaybe
+from icecream import ic
+from worktoy.waitaminute import ProceduralError
 
 Bases = tuple[type, ...]
 ic.configureOutput(includeContext=True)
@@ -106,7 +107,7 @@ class IterMeta(type):
     nameSpace = {}
     for base in bases:
       baseDict = IterMeta._getterFunc(base, '__dict__')
-      if isinstance(baseDict, dict):
+      if hasattr(baseDict, 'items'):
         for (key, val) in baseDict.items():
           nameSpace |= {key: val}
       else:
@@ -115,40 +116,58 @@ class IterMeta(type):
     nameSpace |= dict(__instance__=[],
                       __index__=0,
                       __createAll__=False,
-                      __old__=False)
+                      __old__=False,
+                      __root__=False,
+                      __ready__=False,
+                      _recursionFlag=False)
     return nameSpace
 
-  @classmethod
   def __new__(mcls, name: str, bases: Bases, attrs: dict, **kwargs) -> type:
     """Creates the new class"""
-    cls = super().__new__(mcls, name, bases, attrs, **kwargs)
+    newClass = super().__new__(mcls, name, bases, attrs, **kwargs)
     createAll = attrs.get('createAll', None)
     old = attrs.get('__old__', None)
     if createAll is not None:
       if not isinstance(createAll, CallMeMaybe):
         raise TypeError
-      cls.__createAll__ = createAll
+      newClass.__createAll__ = createAll
     if old is not None:
       if not isinstance(createAll, CallMeMaybe):
         raise TypeError
-      cls.__old__ = old
-    return cls
+      newClass.__old__ = old
+
+    # setattr(newClass, '__new__', _new_)
+
+    return newClass
 
   def __init__(cls, *args, **kwargs) -> None:
     """Initialisation of class"""
     super().__init__(*args, **kwargs)
-    createAll = getattr(cls, 'createAll', None)
-    if createAll is not None:
-      createAll(cls, )
+    createAll = getattr(cls, '__createAll__', None)
+    if createAll:
+      createAll(cls)
+    cls.__ready__ = True
+    print('%s reporting ready' % cls)
 
-  def __call__(cls, *args, **kwargs) -> object:
-    """Instance creation"""
-    _instance = super().__call__(*args, **kwargs)
-    IterMeta._appendInstance(cls, _instance)
-    return _instance
+  #
+  # def __call__(cls, *args, **kwargs) -> object:
+  #   """Instance creation"""
+  #   out = cls.__old__(*args, **kwargs)
+  #   if out is None:
+  #     out = super().__call__(cls, *args, **kwargs, lol=True)
+  #     cls.__instances__.append(out)
+  #     return out
+  #   return out
+  #
+  #   _instance = super().__call__(cls, *args, **kwargs, lol=True)
+  #   if _instance is not None:
+  #     IterMeta._appendInstance(cls, _instance)
+  #   return _instance
 
   def __len__(cls) -> int:
     """Length is the number of instances"""
+    if not cls.__ready__:
+      raise ProceduralError
     __instances__ = getattr(cls, '__instances__', None)
     if __instances__ is None:
       raise AttributeError
@@ -156,11 +175,16 @@ class IterMeta(type):
 
   def __iter__(cls) -> type:
     """Iterates over instances"""
+    if not cls.__ready__:
+      raise ProceduralError
     IterMeta._setIndex(cls, 0)
     return cls
 
   def __next__(cls) -> object:
     """Iterates over instances"""
+    if not cls.__ready__:
+      raise ProceduralError
+    IterMeta._incIndex(cls)
     return IterMeta._instanceAtIndex(cls)
 
 

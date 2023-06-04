@@ -10,7 +10,11 @@ from PySide6.QtCore import QRectF, QSizeF, QPointF
 from icecream import ic
 from worktoy.typetools import TypeBag
 
-from visualchess import Shade, Rank
+from visualchess import Shade, fitSquareMarginsRect, fitSquareRect
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+  from visualchess import Rank
 
 ic.configureOutput(includeContext=True)
 
@@ -72,8 +76,8 @@ class File(Enum):
   def getLabelRects(self, viewPort: QRectF) -> tuple[QRectF, QRectF]:
     """Getter-function for the rectangle that would hold the label for
     this File when applied to the viewPort"""
-    r = Square.fitSquareMarginsRect(viewPort)
-    b = Square.fitSquareRect(viewPort)
+    r = fitSquareMarginsRect(viewPort)
+    b = fitSquareRect(viewPort)
     left0, top0, width, height = r.left(), r.top(), r.width(), r.height()
     s = width / 16 + height / 16
     upperTop, upperBottom = b.top(), r.top()

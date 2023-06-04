@@ -6,14 +6,14 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import QSize, QRect, QPoint
-from PySide6.QtGui import QPaintEvent, QPainter, QPixmap
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
-from worktoy.core import maybe
 
 from visualchess import Square
 from workstyle import WhereMouse
-from workstyle.styles import BezelStyle, GridStyle, FileData, BoardDims
+from workstyle.styles import BoardDims
+from workstyle.stylesettings import bezelStyle, gridStyle
 
 ic.configureOutput(includeContext=True)
 
@@ -50,10 +50,10 @@ class SquarePaint(WhereMouse):
     painter = QPainter()
     painter.begin(self)
     view = painter.viewport()
-    BezelStyle @ painter
+    bezelStyle @ painter
     rX, rY = BoardDims.cornerRadiusX, BoardDims.cornerRadiusY
     painter.drawRoundedRect(Square.fitSquareRect(view), rX, rY, )
-    GridStyle @ painter
+    gridStyle @ painter
     boardRect = Square.fitSquareMarginsRect(view)
     painter.drawRect(boardRect)
     for square in Square:

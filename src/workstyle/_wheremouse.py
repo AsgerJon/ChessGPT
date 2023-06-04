@@ -4,29 +4,36 @@ signals. It does not implement the __init__."""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-import time
 from typing import NoReturn
 
-from PySide6.QtCore import Qt, Signal, QObject, QTimer, QPointF, QEvent
+from PySide6.QtCore import Qt, Signal, QTimer, QPointF, QEvent
 from PySide6.QtGui import QMouseEvent, QEnterEvent
-from PySide6.QtWidgets import QWidget
 from icecream import ic
-from worktoy.field import BaseField
 
-from workstyle import CoreWidget
+from workstyle import CoreWidget, Click, Button
 
 ic.configureOutput(includeContext=True)
 
 
-@BaseField('activeButton', Qt.MouseButton.NoButton, type_=Qt.MouseButton)
 class _WhereMouse(CoreWidget):
   """LOL"""
 
-  click = Signal()
-  doubleClick = Signal()
   move = Signal(QPointF)
   leave = Signal()
   enter = Signal(QPointF)
+
+  click = Signal(Qt.MouseButton)
+  leftClick = Signal()
+  rightClick = Signal()
+  middleClick = Signal()
+  forwardClick = Signal()
+  backClick = Signal()
+  doubleClick = Signal(Qt.MouseButton)
+  leftDoubleClick = Signal()
+  rightDoubleClick = Signal()
+  middleDoubleClick = Signal()
+  forwardDoubleClick = Signal()
+  backDoubleClick = Signal()
 
   def __init__(self, *args, **kwargs) -> None:
     CoreWidget.__init__(self, *args, **kwargs)
@@ -44,17 +51,37 @@ class _WhereMouse(CoreWidget):
     self._releaseTimer.setSingleShot(True)
     self._releaseTimer.timeout.connect(self._handleReleaseTimeout)
 
-    self._activeButton = Qt.MouseButton.NoButton
+    self._singleClickButton = Qt.MouseButton.NoButton
+    self._doubleClickButton = Qt.MouseButton.NoButton
     self._clickTimeLimit = 500
     self._releaseTimerDelay = 100
     self._doubleClickBanPeriod = 200
 
-    self.click.connect(self.debugger)
-
     self._point = None
+    self.click.connect(self._mouseSingleClick)
+    self.doubleClick.connect(self._mouseDoubleClick)
 
-  def debugger(self) -> NoReturn:
-    """lol"""
+    self._signals = [
+      [self.leftClick, self.leftDoubleClick],
+      [self.middleClick, self.middleDoubleClick],
+      [self.rightClick, self.rightDoubleClick],
+      [self.backClick, self.backDoubleClick],
+      [self.forwardClick, self.forwardDoubleClick],
+    ]
+
+  def _mouseSingleClick(self, btn: Qt.MouseButton) -> NoReturn:
+    """Single click signal emitter"""
+    button = Button.fromFlag(btn)
+    if button == Button.NULL:
+      return
+    self._signals[button][0].emit()
+
+  def _mouseDoubleClick(self, btn: Qt.MouseButton) -> NoReturn:
+    """Double click signal emitter"""
+    button = Button.fromFlag(btn)
+    if button == Button.NULL:
+      return
+    self._signals[button][1].emit()
 
   def _handlePressTimeout(self) -> NoReturn:
     """If a button is held in for two long the click signal is cancelled."""
@@ -65,7 +92,7 @@ class _WhereMouse(CoreWidget):
     happen, it places a ban on the double click for a time."""
     if self._pressTimer.isActive():
       return
-    self.click.emit()
+    self.click.emit(self._singleClickButton)
     self._doubleClickBanTimer.start()
 
   def _handleDoubleClickBanTimeout(self) -> NoReturn:
@@ -79,15 +106,17 @@ class _WhereMouse(CoreWidget):
     """Implementation"""
     if self._pressTimer.isActive():
       self._pressTimer.stop()
+      self._singleClickButton = event.button()
       self._releaseTimer.start(self._releaseTimerDelay)
 
   def mouseDoubleClickEvent(self, event) -> NoReturn:
     """Implementation"""
     if self._doubleClickBanTimer.isActive():
-      return
-    if event.button() == Qt.LeftButton:
-      self._releaseTimer.stop()
-      self.doubleClick.emit()
+      if event.button() == self._singleClickButton:
+        return
+    self._doubleClickButton = event.button()
+    self._releaseTimer.stop()
+    self.doubleClick.emit(self._doubleClickButton)
 
   def mouseMoveEvent(self, event: QMouseEvent) -> NoReturn:
     """Implementation"""
@@ -100,6 +129,7 @@ class _WhereMouse(CoreWidget):
 
   def leaveEvent(self, event: QEvent) -> NoReturn:
     """Implementation"""
+    self._pressTimer.stop()
     self.leave.emit()
 
 

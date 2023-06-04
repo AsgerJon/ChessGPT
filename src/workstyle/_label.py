@@ -9,7 +9,7 @@ from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
 
 from workstyle import WhereMouse
-from workstyle.styles import LightSquareStyle
+from workstyle.stylesettings import lightSquareStyle
 
 ic.configureOutput(includeContext=True)
 
@@ -28,6 +28,6 @@ class Label(WhereMouse):
     painter = QPainter()
     painter.begin(self)
     viewRect = painter.viewport()
-    LightSquareStyle @ painter
+    lightSquareStyle @ painter
     painter.drawRoundedRect(viewRect, 0, 0)
     painter.end()
