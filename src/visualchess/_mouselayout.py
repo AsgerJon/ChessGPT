@@ -123,6 +123,14 @@ class MouseLayout(_MouseLayoutProperties):
       return self.clearHoverSquare()
     square = Square.fromPointRect(event.position(), self.getBoardRect())
     self.setHoverSquare(square)
+    hoverPiece = self.getBoardState().getPiece(square)
+    if not hoverPiece:
+      if self.getHoverPiece():
+        return self.clearHoverPiece()
+      return
+    if self.getHoverPiece() == hoverPiece:
+      return
+    self.setHoverPiece(hoverPiece)
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """The MouseLayout subclass provides the painting of chess pieces and

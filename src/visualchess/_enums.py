@@ -5,14 +5,14 @@ from __future__ import annotations
 
 from enum import IntEnum, Enum
 import os
-from typing import NoReturn
+from typing import NoReturn, Never
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from PySide6.QtGui import QPixmap, QColor
 from icecream import ic
 from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
-from worktoy.waitaminute import ReadOnlyError
+from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
 from visualchess.chesspieces import initialPosition
 
@@ -71,11 +71,22 @@ class ChessPiece(IntEnum):
       return 'white'
     return 'black'
 
+  def setColor(self, *_) -> Never:
+    """Illegal setter function"""
+    raise ReadOnlyError('color', 'set')
+
   def getPiece(self) -> str:
     """Getter-function for piece"""
     if not self.value:
       return 'empty'
     return self.name.split('_')[-1]
+
+  def setPiece(self, *_) -> Never:
+    """Illegal setter function"""
+    raise ReadOnlyError('piece', 'set')
+
+  color = property(getColor, setColor, setColor)
+  piece = property(getPiece, setPiece, setPiece)
 
   @classmethod
   def fromColorPiece(cls, color: str, piece: str) -> ChessPiece:
@@ -89,6 +100,17 @@ class ChessPiece(IntEnum):
   def __bool__(self) -> bool:
     """EMPTY is False, all other instances are True"""
     return False if self is self.EMPTY else True
+
+  def __eq__(self, other: ChessPiece) -> bool:
+    """Pieces must have same color and piece to be equal. EMPTY is not
+    equal to any, not even itself."""
+    if not (self and other):
+      return False
+    if self.color != other.color:
+      return False
+    if self.piece != other.piece:
+      return False
+    return True
 
 
 class File(IntEnum):
@@ -327,3 +349,29 @@ class BoardState:
   def items(self) -> list[tuple[Square, ChessPiece]]:
     """Implementation of items method"""
     return [(k, v) for (k, v) in self._contents.items()]
+
+  def getPiece(self, square: Square) -> ChessPiece:
+    """Getter-function for the piece on the given square"""
+    piece = self._contents.get(square, None)
+    if piece is not None:
+      if isinstance(piece, ChessPiece):
+        return piece
+      raise TypeError
+    raise UnexpectedStateError
+
+  def setPiece(self, square: Square, piece: ChessPiece) -> NoReturn:
+    """Setter-function for the piece on the given square"""
+    if piece is not None:
+      if isinstance(piece, ChessPiece):
+        self._contents[square] = piece
+      else:
+        raise TypeError
+    else:
+      raise UnexpectedStateError
+
+  def delPiece(self, square: Square) -> ChessPiece:
+    """Deleter-function for the given square. This removes the piece from
+    it. Invoking the deleter returns the chess piece"""
+    piece = self.getPiece(square)
+    self.setPiece(square, ChessPiece.EMPTY)
+    return piece
