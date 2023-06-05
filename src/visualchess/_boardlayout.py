@@ -10,10 +10,8 @@ from typing import NoReturn
 from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
-from worktoy.core import plenty
-from worktoy.parsing import maybeType
 
-from visualchess import Square, File, Rank
+from visualchess import Square
 from workstyle import CoreWidget
 from workstyle.stylesettings import backgroundStyle, bezelStyle, \
   labelStyle, outlineStyle, gridStyle, darkSquareStyle, lightSquareStyle
@@ -21,11 +19,8 @@ from workstyle.stylesettings import backgroundStyle, bezelStyle, \
 ic.configureOutput(includeContext=True)
 
 
-class BoardLayout(CoreWidget):
-  """BoardMouse is a subclass of BoardWidget that provides the mouse related
-  logic.
-  #  MIT Licence
-  #  Copyright (c) 2023 Asger Jon Vistisen"""
+class _BoardLayoutFunctions(CoreWidget):
+  """This class provides the size relating functions and settings."""
 
   _bezelRatio = 0.08
   _squareGap = 2
@@ -88,15 +83,6 @@ class BoardLayout(CoreWidget):
     """Retrieves the square at given position."""
     return square @ self.getBoardRect()
 
-  def getPointSquareRect(self, point: QPointF) -> QRectF:
-    """Getter-function for the square that would hold the given point. If
-    the chessboard is not currently under the mouse an empty rectangle is
-    returned."""
-    boardRect = self.getBoardRect()
-    x, y = point.x() - boardRect.left(), point.y() - boardRect.top()
-    x, y = x / boardRect.width() * 8, y / boardRect.height() * 8
-    return self.square2Rect(Square.fromInts(int(x), int(y)))
-
   def getLabelRects(self) -> dict[str, list[QRectF]]:
     """Getter-function for the bounding rectangles on the labels"""
     border = self._bezelRatio * self.getSideLength()
@@ -138,8 +124,19 @@ class BoardLayout(CoreWidget):
             dark.append(newRect)
     return dict(light=light, dark=dark)
 
+
+class BoardLayout(_BoardLayoutFunctions):
+  """BoardMouse is a subclass of BoardWidget that provides the mouse related
+  logic.
+  #  MIT Licence
+  #  Copyright (c) 2023 Asger Jon Vistisen"""
+
+  def __init__(self, *args, **kwargs) -> None:
+    _BoardLayoutFunctions.__init__(self, *args, **kwargs)
+
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
-    """Implementation of paint event"""
+    """The BoardLayout subclass draws the static elements of the
+    chessboard"""
     painter = QPainter()
     painter.begin(self)
     guessViewPort = self.getViewPort()
@@ -160,8 +157,6 @@ class BoardLayout(CoreWidget):
     for (rank, left, right) in zip(ranks, labels['left'], labels['right']):
       painter.drawText(left, textFlag, rank)
       painter.drawText(right, textFlag, rank)
-    outlineStyle @ painter
-    painter.drawRect(self.getInnerSquare())
     gridStyle @ painter
     painter.drawRect(self.getBoardRect())
     darkSquareStyle @ painter
@@ -169,4 +164,6 @@ class BoardLayout(CoreWidget):
     painter.drawRects(lightDark['dark'])
     lightSquareStyle @ painter
     painter.drawRects(lightDark['light'])
+    outlineStyle @ painter
+    painter.drawRect(self.getInnerSquare())
     painter.end()

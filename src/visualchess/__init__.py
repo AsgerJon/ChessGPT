@@ -5,7 +5,6 @@ allows us to input chess moves visually."""
 from __future__ import annotations
 from ._enums import File, Rank, ChessPiece, Square, BoardState
 from ._boardlayout import BoardLayout
-from ._piecelayout import PieceLayout
 from ._mouselayout import MouseLayout
 from ._loadpiece import Piece, ChessColor, loadPiece
 from ._checkbutton import CheckButton

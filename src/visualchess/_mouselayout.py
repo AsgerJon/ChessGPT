@@ -1,4 +1,4 @@
-"""MouseLayout"""
+"""PieceLayout subclasses BoardLayout and adds chess piece rendering"""
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
@@ -6,17 +6,19 @@ from __future__ import annotations
 from typing import NoReturn
 
 from PySide6.QtCore import Signal, Qt
-from PySide6.QtGui import QMouseEvent, QPaintEvent, QPainter
+from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent
 from icecream import ic
 
-from visualchess import PieceLayout, ChessPiece, Square
+from visualchess import BoardLayout, Square, BoardState, ChessPiece
 from workstyle.stylesettings import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)
 
 
-class _MouseLayoutProperties(PieceLayout):
-  """Class containing properties"""
+class _MouseLayoutProperties(BoardLayout):
+  """PieceLayout subclasses BoardLayout and adds chess piece rendering.
+  #  MIT Licence
+  #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   changedHoverSquare = Signal(Square)
   clearedHoverSquare = Signal()
@@ -24,9 +26,14 @@ class _MouseLayoutProperties(PieceLayout):
   clearedHoverPiece = Signal()
 
   def __init__(self, *args, **kwargs) -> None:
-    PieceLayout.__init__(self, *args, **kwargs)
+    BoardLayout.__init__(self, *args, **kwargs)
+    self._boardState = BoardState.InitialPosition()
     self._hoverSquare = None
     self._hoverPiece = None
+
+  def getBoardState(self) -> BoardState:
+    """Getter-function for board state"""
+    return self._boardState
 
   #########################################################################
   ######################### Hover square accessors ########################
@@ -72,9 +79,6 @@ class _MouseLayoutProperties(PieceLayout):
   #########################################################################
   ###################### END of Hover piece accessors #####################
   #########################################################################
-  def paintEvent(self, event: QPaintEvent) -> NoReturn:
-    """Implementation. At this stage the hovered rectangle is highlighted."""
-    PieceLayout.paintEvent(self, event)
 
 
 class MouseLayout(_MouseLayoutProperties):
@@ -88,6 +92,9 @@ class MouseLayout(_MouseLayoutProperties):
     self.changedHoverPiece.connect(self.changedHoverPieceFunc)
     self.clearedHoverPiece.connect(self.clearedHoverPieceFunc)
 
+  #########################################################################
+  ######################## Event Handling Functions #######################
+  #########################################################################
   def changedHoverSquareFunc(self, square: Square) -> NoReturn:
     """Handles changes to hover square"""
     self.update()
@@ -106,26 +113,36 @@ class MouseLayout(_MouseLayoutProperties):
     self.setCursor(Qt.CursorShape.ArrowCursor)
     self.update()
 
+  #########################################################################
+  #################### END OF Event Handling Functions ####################
+  ################## Reimplementation of QWidget Events  ##################
+  #########################################################################
   def mouseMoveEvent(self, event: QMouseEvent) -> NoReturn:
-    """Implementing mouse move event"""
+    """The mouse layout subclass brings the hover functionality."""
     if not self.getBoardRect().contains(event.position()):
       return self.clearHoverSquare()
     square = Square.fromPointRect(event.position(), self.getBoardRect())
     self.setHoverSquare(square)
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
-    """Implementation. At this stage the hovered rectangle is highlighted."""
-    _MouseLayoutProperties.paintEvent(self, event)
-    if self.getHoverSquare() is None:
-      return
+    """The MouseLayout subclass provides the painting of chess pieces and
+    the hovering functionality."""
+    BoardLayout.paintEvent(self, event)
     painter = QPainter()
     painter.begin(self)
-    hoveredSquareStyle @ painter
-    painter.drawRect(self.getHoverSquare() @ self.getBoardRect())
+    if self.getHoverSquare():
+      hoveredSquareStyle @ painter
+      painter.drawRect(self.getHoverSquare() @ self.getBoardRect())
+    for (square, piece) in self.getBoardState().items():
+      if isinstance(square, Square):
+        target = square @ self.getBoardRect()
+        if isinstance(piece, ChessPiece):
+          if piece:
+            pix = piece.pixMap()
+            source = pix.rect().toRectF()
+            painter.drawPixmap(target, pix, source)
     painter.end()
 
-  def hoverPiece(self, square: int, ) -> NoReturn:
-    """Method responsible for handling piece hovering"""
-
-  def grabPiece(self, square: int, ) -> NoReturn:
-    """Method responsible for handling piece grabbing"""
+  #########################################################################
+  ########################### END OF MouseLayout ##########################
+  #########################################################################

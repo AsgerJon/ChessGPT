@@ -7,7 +7,7 @@ from PySide6.QtCore import QSize
 from icecream import ic
 from PySide6.QtWidgets import QMainWindow, QGridLayout
 
-from visualchess import PieceLayout, MouseLayout
+from visualchess import MouseLayout
 from workstyle import CoreWidget
 
 ic.configureOutput(includeContext=True)
@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
 
   def __init__(self, ) -> None:
     QMainWindow.__init__(self, )
-    self.setMinimumSize(QSize(384, 384))
+    self.setMinimumSize(QSize(640, 480))
     self._baseWidget = None
     self._baseLayout = None
     self._board = None
