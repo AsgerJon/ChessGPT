@@ -9,8 +9,7 @@ from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QBrush, QFont, QPen, QColor, QPainter
 from icecream import ic
 from worktoy.waitaminute import ProceduralError
-
-from workstyle.styles import Family
+from workstyle import Family
 
 ic.configureOutput(includeContext=True)
 

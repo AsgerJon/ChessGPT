@@ -3,20 +3,14 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+from typing import NoReturn
+
 from PySide6.QtCore import Signal
 from icecream import ic
 
-from visualchess import BoardLayout
+from visualchess import BoardLayout, ChessPiece, Square
 
 ic.configureOutput(includeContext=True)
-
-
-class Square:
-  pass
-
-
-class ChessPiece:
-  pass
 
 
 class _BoardMouseProperties(BoardLayout):

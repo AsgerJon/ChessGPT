@@ -4,4 +4,4 @@
 from __future__ import annotations
 
 from ._corewidget import CoreWidget
-from ._label import Label
+from ._fontfamily import Family

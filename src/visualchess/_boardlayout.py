@@ -10,11 +10,13 @@ from typing import NoReturn
 from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
+from worktoy.core import plenty
+from worktoy.parsing import maybeType
 
+from visualchess import Square, File, Rank
 from workstyle import CoreWidget
 from workstyle.stylesettings import backgroundStyle, bezelStyle, \
-  labelStyle, \
-  outlineStyle, gridStyle, darkSquareStyle, lightSquareStyle
+  labelStyle, outlineStyle, gridStyle, darkSquareStyle, lightSquareStyle
 
 ic.configureOutput(includeContext=True)
 
@@ -82,25 +84,18 @@ class BoardLayout(CoreWidget):
     boardRect = self.getBoardRect()
     return boardRect.height() / 16 + boardRect.width() / 16
 
-  def getSquare(self, x: int, y: int) -> QRectF:
+  def square2Rect(self, square: Square) -> QRectF:
     """Retrieves the square at given position."""
-    step = self.getSquareStep()
-    boardRect = self.getBoardRect()
-    left0, top0 = boardRect.left(), boardRect.top()
-    right0, bottom0 = boardRect.right(), boardRect.bottom()
-    left, top = left0 + x * step, top0 + y * step
-    right, bottom = right0 - (7 - x) * step, bottom0 - (7 - y) * step
-    leftTop, rightBottom = QPointF(left, top), QPointF(right, bottom)
-    return QRectF(leftTop, rightBottom)
+    return square @ self.getBoardRect()
 
-  def getPointSquare(self, point: QPointF) -> QRectF:
+  def getPointSquareRect(self, point: QPointF) -> QRectF:
     """Getter-function for the square that would hold the given point. If
     the chessboard is not currently under the mouse an empty rectangle is
     returned."""
     boardRect = self.getBoardRect()
     x, y = point.x() - boardRect.left(), point.y() - boardRect.top()
     x, y = x / boardRect.width() * 8, y / boardRect.height() * 8
-    return self.getSquare(int(x), int(y))
+    return self.square2Rect(Square.fromInts(int(x), int(y)))
 
   def getLabelRects(self) -> dict[str, list[QRectF]]:
     """Getter-function for the bounding rectangles on the labels"""
@@ -131,15 +126,16 @@ class BoardLayout(CoreWidget):
     light, dark, gap = [], [], self._squareGap
     for i in range(8):
       for j in range(8):
-        base = self.getSquare(i, j)
-        center, size = base.center(), base.size()
-        newSize = QSizeF(size.width() - gap / 2, size.height() - gap / 2)
-        newRect = QRectF(self._origin, newSize)
-        newRect.moveCenter(center)
-        if i % 2 == j % 2:
-          light.append(newRect)
-        else:
-          dark.append(newRect)
+        base = self.square2Rect(Square.fromInts(i, j))
+        if isinstance(base, QRectF):
+          center, size = base.center(), base.size()
+          newSize = QSizeF(size.width() - gap / 2, size.height() - gap / 2)
+          newRect = QRectF(self._origin, newSize)
+          newRect.moveCenter(center)
+          if i % 2 == j % 2:
+            light.append(newRect)
+          else:
+            dark.append(newRect)
     return dict(light=light, dark=dark)
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:

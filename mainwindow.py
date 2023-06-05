@@ -3,13 +3,11 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import NoReturn
-
 from PySide6.QtCore import QSize
 from icecream import ic
 from PySide6.QtWidgets import QMainWindow, QGridLayout
 
-from visualchess import BoardMouse
+from visualchess import PieceLayout, MouseLayout
 from workstyle import CoreWidget
 
 ic.configureOutput(includeContext=True)
@@ -65,15 +63,15 @@ class MainWindow(QMainWindow):
 
   def _createBoard(self) -> bool:
     """Creator-function for the board"""
-    self._board = BoardMouse()
+    self._board = MouseLayout()
     return False if self._board is None else True
 
-  def getBoard(self) -> BoardMouse:
+  def getBoard(self) -> MouseLayout:
     """Getter-function for the board widget"""
     if self._board is None:
       self._createBoard()
       return self.getBoard()
-    if isinstance(self._board, BoardMouse):
+    if isinstance(self._board, MouseLayout):
       return self._board
     raise TypeError
 

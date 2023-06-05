@@ -5,3 +5,5 @@ chess set."""
 from __future__ import annotations
 
 from ._load import Load
+
+from ._initialposition import initialPosition

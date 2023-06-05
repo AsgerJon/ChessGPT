@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QFont
 from icecream import ic
 
-from workstyle.styles import Family
+from workstyle import Family
 from workstyle.stylesettings import BaseStyle
 
 ic.configureOutput(includeContext=True)
