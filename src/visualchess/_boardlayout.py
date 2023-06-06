@@ -8,10 +8,11 @@ import string
 from typing import NoReturn
 
 from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
-from PySide6.QtGui import QPaintEvent, QPainter
+from PySide6.QtGui import QPaintEvent, QPainter, QCursor
 from icecream import ic
+from worktoy.typetools import TypeBag
 
-from visualchess import Square
+from visualchess import Square, ChessPiece, Settings
 from workstyle import CoreWidget
 from workstyle.stylesettings import backgroundStyle, bezelStyle, \
   labelStyle, outlineStyle, gridStyle, darkSquareStyle, lightSquareStyle
@@ -22,17 +23,101 @@ ic.configureOutput(includeContext=True)
 class _BoardLayoutFunctions(CoreWidget):
   """This class provides the size relating functions and settings."""
 
-  _bezelRatio = 0.08
-  _squareGap = 2
-  _boardOutline = 2
-  _cornerRadius = 8
-  _adjustFontSize = 1 / 600
-  _origin = QPointF(0, 0)
+  #########################################################################
+  ############################ Static Settings ############################
+  _bezelRatio = Settings.bezelRatio
+  _squareGap = Settings.squareGap
+  _boardOutline = Settings.boardOutline
+  _cornerRadius = Settings.cornerRadius
+  _adjustFontSize = Settings.adjustFontSize
+  _origin = Settings.origin
+  _normalCursor = Settings.normalCursor
+  _hoverCursor = Settings.hoverCursor
+  _grabCursor = Settings.grabCursor
+  _deviceName = Settings.deviceName
 
+  ######################### END OF Static Settings ########################
+  # --------------------------------------------------------------------- #
+  ############## Accessor Functions for Instances of QCursor ##############
+  @classmethod
+  def getNormalCursorShape(cls) -> Qt.CursorShape:
+    """Getter function for normal cursor"""
+    if isinstance(cls._normalCursor, Qt.CursorShape):
+      return cls._normalCursor
+    raise TypeError
+
+  @classmethod
+  def getNormalCursor(cls, ) -> QCursor:
+    """Getter-function for normal cursor"""
+    cursor = QCursor()
+    cursor.setShape(cls.getNormalCursorShape())
+    if isinstance(cursor, QCursor):
+      return cursor
+    raise TypeError
+
+  @classmethod
+  def getHoverCursorShape(cls) -> Qt.CursorShape:
+    """Getter function for hover cursor"""
+    if isinstance(cls._hoverCursor, Qt.CursorShape):
+      return cls._hoverCursor
+    raise TypeError
+
+  @classmethod
+  def getHoverCursor(cls, ) -> QCursor:
+    """Getter-function for hover cursor"""
+    cursor = QCursor()
+    cursor.setShape(cls.getHoverCursorShape())
+    if isinstance(cursor, QCursor):
+      return cursor
+    raise TypeError
+
+  @classmethod
+  def getGrabCursorShape(cls) -> Qt.CursorShape:
+    """Getter function for grab cursor"""
+    if isinstance(cls._grabCursor, Qt.CursorShape):
+      return cls._grabCursor
+    raise TypeError
+
+  @classmethod
+  def getGrabCursor(cls, ) -> QCursor:
+    """Getter-function for grab cursor"""
+    cursor = QCursor()
+    cursor.setShape(cls.getGrabCursorShape())
+    if isinstance(cursor, QCursor):
+      return cursor
+    raise TypeError
+
+  ########### END OF Accessor Functions for Instances of QCursor ##########
+  # --------------------------------------------------------------------- #
+  #########################################################################
   def __init__(self, *args, **kwargs) -> None:
     CoreWidget.__init__(self, *args, **kwargs)
     self._painterViewPort = []
 
+  #########################################################################
+  ###################### Instance Setters for Cursor ######################
+
+  def setNormalCursor(self) -> NoReturn:
+    """Sets the cursor on the widget to normal shape"""
+    self.setCursor(self.getNormalCursor())
+
+  def setHoverCursor(self, ) -> NoReturn:
+    """Sets the cursor on the widget to hover shape. This should be an
+    open hand to indicate the availability to grab the item being hovered."""
+    self.setCursor(self.getHoverCursor())
+
+  def setGrabCursor(self, ) -> NoReturn:
+    """Sets the cursor on the widget to grabbing shape. This should be
+    indicated on top of the chess piece being grabbed if possible rather
+    than invoking this function."""
+    self.setCursor(self.getGrabCursor())
+
+  def setPieceCursor(self, piece: ChessPiece) -> NoReturn:
+    """Sets the cursor on the widget to grab the given piece."""
+    self.setCursor(piece.getCursor())
+
+  ################### END OF Instance Setters for Cursor ##################
+  #########################################################################
   def getViewPort(self) -> QRectF:
     """This method predicts the viewport on the widget"""
     if self._painterViewPort:
@@ -79,15 +164,10 @@ class _BoardLayoutFunctions(CoreWidget):
     boardRect = self.getBoardRect()
     return boardRect.height() / 16 + boardRect.width() / 16
 
-  def square2Rect(self, square: Square) -> QRectF:
-    """Retrieves the square at given position."""
-    return square @ self.getBoardRect()
-
   def getLabelRects(self) -> dict[str, list[QRectF]]:
     """Getter-function for the bounding rectangles on the labels"""
     border = self._bezelRatio * self.getSideLength()
     boardRect, step = self.getBoardRect(), self.getSquareStep()
-    step = self.getSquareStep()
     fileSize, rankSize = QSizeF(step, border), QSizeF(border, step)
     upperTop = boardRect.top() - border
     lowerTop = boardRect.bottom()
@@ -112,7 +192,8 @@ class _BoardLayoutFunctions(CoreWidget):
     light, dark, gap = [], [], self._squareGap
     for i in range(8):
       for j in range(8):
-        base = self.square2Rect(Square.fromInts(i, j))
+        square = Square.fromInts(i, j)
+        base = square @ self.getBoardRect()
         if isinstance(base, QRectF):
           center, size = base.center(), base.size()
           newSize = QSizeF(size.width() - gap / 2, size.height() - gap / 2)
@@ -125,14 +206,62 @@ class _BoardLayoutFunctions(CoreWidget):
     return dict(light=light, dark=dark)
 
 
-class BoardLayout(_BoardLayoutFunctions):
+class _BoardLayoutProperties(_BoardLayoutFunctions):
+  """In between method containing properties"""
+
+  def __init__(self, *args, **kwargs) -> None:
+    _BoardLayoutFunctions.__init__(self, *args, **kwargs)
+    self._mouseX = None
+    self._mouseY = None
+    self._position = None
+
+  ################### Mouse Position Accessor Functions ###################
+  # --------------------------------------------------------------------- #
+  ####################### Mouse Position as QPointF #######################
+  def getMousePosition(self) -> QPointF:
+    """Getter-function for mouse position"""
+    return QPointF(self._mouseX, self._mouseY)
+
+  def setMousePosition(self, mouse: QPointF) -> NoReturn:
+    """Getter-function for mouse position"""
+    self._position = mouse
+    self._mouseX = mouse.x()
+    self._mouseY = mouse.y()
+
+  #################### END OF Mouse Position as QPointF ###################
+  # --------------------------------------------------------------------- #
+  ########################### Mouse x-coordinate ##########################
+  def getMouseX(self) -> float:
+    """Getter-function for x position"""
+    return self._mouseX
+
+  def setMouseX(self, x: float) -> NoReturn:
+    """Setter-function for the x position of mouse cursor"""
+    self._mouseX = x
+
+  ####################### END OF Mouse x-coordinate #######################
+  # --------------------------------------------------------------------- #
+  ########################### Mouse y-coordinate ##########################
+  def getMouseY(self) -> float:
+    """Getter-function for x position"""
+    return self._mouseY
+
+  def setMouseY(self, y: float) -> NoReturn:
+    """Setter-function for y position"""
+    self._mouseY = y
+  ####################### End OF Mouse y-coordinate #######################
+  # --------------------------------------------------------------------- #
+  ################ END OF Mouse Position Accessor Functions ###############
+
+
+class BoardLayout(_BoardLayoutProperties):
   """BoardMouse is a subclass of BoardWidget that provides the mouse related
   logic.
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   def __init__(self, *args, **kwargs) -> None:
-    _BoardLayoutFunctions.__init__(self, *args, **kwargs)
+    _BoardLayoutProperties.__init__(self, *args, **kwargs)
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """The BoardLayout subclass draws the static elements of the

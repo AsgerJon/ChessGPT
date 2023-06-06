@@ -5,16 +5,19 @@ from __future__ import annotations
 
 from enum import IntEnum, Enum
 import os
-from typing import NoReturn, Never
+from typing import NoReturn, Never, TYPE_CHECKING
 
 from PySide6.QtCore import QRect, QRectF, QPointF
-from PySide6.QtGui import QPixmap, QColor
+from PySide6.QtGui import QPixmap, QColor, QCursor
 from icecream import ic
 from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
 from visualchess.chesspieces import initialPosition
+
+if TYPE_CHECKING:
+  from visualchess import Widget
 
 ic.configureOutput(includeContext=True)
 
@@ -36,21 +39,21 @@ _colors = stringList('white, black')
 
 class ChessPiece(IntEnum):
   """Chess piece enum"""
-  WHITE_KING = 6
-  WHITE_QUEEN = 5
-  WHITE_ROOK = 4
-  WHITE_BISHOP = 3
-  WHITE_KNIGHT = 2
-  WHITE_PAWN = 1
+  BLACK_KING = 6
+  BLACK_QUEEN = 5
+  BLACK_ROOK = 4
+  BLACK_BISHOP = 3
+  BLACK_KNIGHT = 2
+  BLACK_PAWN = 1
   EMPTY = 0
-  BLACK_PAWN = -1
-  BLACK_KNIGHT = -2
-  BLACK_BISHOP = -3
-  BLACK_ROOK = -4
-  BLACK_QUEEN = -5
-  BLACK_KING = -6
+  WHITE_PAWN = -1
+  WHITE_KNIGHT = -2
+  WHITE_BISHOP = -3
+  WHITE_ROOK = -4
+  WHITE_QUEEN = -5
+  WHITE_KING = -6
 
-  def pixMap(self) -> QPixmap:
+  def getPixmap(self) -> QPixmap:
     """Generates QPixmap representation of the piece"""
     if not self.value:
       pix = QPixmap(64, 64)
@@ -62,6 +65,21 @@ class ChessPiece(IntEnum):
     fileName = '%s.png' % self.name.lower()
     filePath = os.path.join(root, *there, fileName)
     return QPixmap(filePath)
+
+  def getCursor(self, point: QPointF = None) -> QCursor:
+    """Generates a QCursor instance at the given point as hot. Please
+    note, that passing a point to this function will create a QCursor
+    whose hot point is that point. The point defaults to origin which is
+    likely safe for most situations."""
+    pix = self.getPixmap()
+    x, y = -1, -1
+    if isinstance(point, QPointF):
+      x, y = point.x(), point.y()
+    return QCursor(pix, hotX=x, hotY=y)
+
+  def __rshift__(self, other: Widget) -> Widget:
+    """Creates an instance of QCursor representing the piece and applies
+    it to other widget. """
 
   def getColor(self) -> str:
     """Getter-function for color"""
@@ -255,10 +273,23 @@ class Square(Enum):
   x = property(getX, setX, setX)
   y = property(getY, setY, setY)
 
-  def __matmul__(self, boardRect: Rect) -> QRectF:
+  def __matmul__(self, other: Rect) -> QRectF:
     """Given a board rectangle, this function returns a QRectF indicating
     the space this square should take up. Please note that this is the
     full rectangle, not including any gridlines or margins."""
+    if isinstance(other, QRect):
+      return self @ (other.toRectF())
+    if isinstance(other, QRectF):
+      return self._fitInRect(other)
+    if isinstance(other, Widget):
+      return self @ other.getBoardRect()
+
+  def __rmatmul__(self, other: Rect) -> QRectF:
+    """Support for right matmul"""
+    return self @ other
+
+  def _fitInRect(self, boardRect: Rect) -> QRectF:
+    """Fits in rectangle"""
     boardRect = guardRect(boardRect)
     b = boardRect
     left0, top0, right0, bottom0 = b.left(), b.top(), b.right(), b.bottom()
@@ -317,7 +348,6 @@ class BoardState:
     instance = cls()
     for line in initialPosition:
       square = Square.fromStr(line[0])
-      print(line[1], line[2])
       piece = ChessPiece.fromColorPiece(line[1], line[2])
       instance[square] = piece
     return instance

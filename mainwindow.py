@@ -7,8 +7,8 @@ from PySide6.QtCore import QSize
 from icecream import ic
 from PySide6.QtWidgets import QMainWindow, QGridLayout
 
-from visualchess import MouseLayout
 from workstyle import CoreWidget
+from visualchess import PieceGrabbing as OMGWIDGET
 
 ic.configureOutput(includeContext=True)
 
@@ -63,15 +63,15 @@ class MainWindow(QMainWindow):
 
   def _createBoard(self) -> bool:
     """Creator-function for the board"""
-    self._board = MouseLayout()
+    self._board = OMGWIDGET()
     return False if self._board is None else True
 
-  def getBoard(self) -> MouseLayout:
+  def getBoard(self) -> OMGWIDGET:
     """Getter-function for the board widget"""
     if self._board is None:
       self._createBoard()
       return self.getBoard()
-    if isinstance(self._board, MouseLayout):
+    if isinstance(self._board, OMGWIDGET):
       return self._board
     raise TypeError
 
