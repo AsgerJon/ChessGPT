@@ -118,6 +118,7 @@ class MainWindow(QMainWindow):
 
   def _debugFunc01(self) -> NoReturn:
     """Debugger 1"""
+    print(Sound.move.play())
 
   def _debugFunc02(self) -> NoReturn:
     """Debugger 2"""

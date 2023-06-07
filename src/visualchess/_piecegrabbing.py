@@ -7,12 +7,13 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import Signal, Qt, Slot
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QMouseEvent
 from icecream import ic
+from worktoy.parsing import maybeType
 from worktoy.waitaminute import UnexpectedStateError
 
-from visualchess import MouseLayout, ChessPiece, Square, SoundBoard, Sound
+from visualchess import MouseLayout, ChessPiece, Square
 
 ic.configureOutput(includeContext=True)
 
@@ -84,6 +85,10 @@ class _PieceGrabbingProperties(MouseLayout):
 class _PieceGrabbingSignals(_PieceGrabbingProperties):
   """In between class for signal handling functions"""
 
+  alertChangeHoverSquare = Signal(Square)
+  alertClearHoverSquare = Signal()
+  alertChangeHoverPiece = Signal(ChessPiece)
+  alertClearHoverPiece = Signal()
   alertGrabbedPiece = Signal(ChessPiece)
   alertDroppedPiece = Signal(ChessPiece)
   alertClearedSquare = Signal(Square)
@@ -110,10 +115,34 @@ class PieceGrabbing(_PieceGrabbingSignals):
     self.alertDroppedPiece.connect(self.handleDroppedPiece)
     self.alertClearedSquare.connect(self.handleClearedSquare)
     self.alertPiecePlaced.connect(self.handlePiecePlaced)
+    self.alertChangeHoverSquare.connect(self.handleChangeHoverSquare)
+    self.alertClearHoverSquare.connect(self.handleClearHoverSquare)
+    self.alertChangeHoverPiece.connect(self.handleChangeHoverPiece)
+    self.alertClearHoverPiece.connect(self.handleClearHoverPiece)
 
-  #########################################################################
-  ####################### Signal Handling Functions #######################
-  #########################################################################
+  ######################## Event Handling Functions #######################
+  def handleChangeHoverSquare(self, square: Square) -> NoReturn:
+    """Handles changes to hover square"""
+    if not isinstance(square, Square):
+      raise TypeError
+    self.update()
+
+  def handleClearHoverSquare(self, *square: Square) -> NoReturn:
+    """Handles the clearing of the hover square"""
+    square = maybeType(Square, *square)
+    if square is None or isinstance(square, Square):
+      self.update()
+
+  def handleChangeHoverPiece(self, piece: ChessPiece) -> NoReturn:
+    """Handles changes to the piece being hovered"""
+    self.setCursor(Qt.CursorShape.OpenHandCursor)
+    self.update()
+
+  def handleClearHoverPiece(self) -> NoReturn:
+    """Clears the hover piece func"""
+    self.setCursor(Qt.CursorShape.ArrowCursor)
+    self.update()
+
   def handleGrabbedPiece(self, piece: ChessPiece) -> NoReturn:
     """Handles the piece grabbing signal"""
     self.soundPiecePicked.emit()
@@ -137,7 +166,8 @@ class PieceGrabbing(_PieceGrabbingSignals):
     if self.getBoardState().getPiece(square) == piece:
       self.delGrabbedPiece()
 
-  #########################################################################
+  #################### END OF Event Handling Functions ####################
+  # --------------------------------------------------------------------- #
   ########################## Mouse button events ##########################
 
   def mousePressEvent(self, event: QMouseEvent) -> NoReturn:

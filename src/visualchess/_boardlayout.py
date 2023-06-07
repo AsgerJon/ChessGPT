@@ -10,7 +10,6 @@ from typing import NoReturn
 from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PySide6.QtGui import QPaintEvent, QPainter, QCursor
 from icecream import ic
-from worktoy.typetools import TypeBag
 
 from visualchess import Square, ChessPiece, Settings
 from workstyle import CoreWidget

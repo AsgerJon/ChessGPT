@@ -8,8 +8,9 @@ from worktoy.typetools import TypeBag
 from workstyle import CoreWidget
 
 from ._settings import Settings
+from ._soundeffect import SoundEffect
+from ._soundenum import Sound
 from ._speaker import Speaker
-from ._soundboard import SoundBoard
 from ._soundenum import Sound
 from ._enums import File, Rank, ChessPiece, Square, BoardState
 from ._boardlayout import BoardLayout

@@ -149,15 +149,17 @@ class IterMeta(type):
     cls.__ready__ = True
     print('%s reporting ready' % cls)
 
-  #
-  # def __call__(cls, *args, **kwargs) -> object:
-  #   """Instance creation"""
-  #   out = cls.__old__(*args, **kwargs)
-  #   if out is None:
-  #     out = super().__call__(cls, *args, **kwargs, lol=True)
-  #     cls.__instances__.append(out)
-  #     return out
-  #   return out
+  def __call__(cls, *args, **kwargs) -> object:
+    """Instance creation"""
+    out = None
+    if cls.__old__:
+      out = cls.__old__(*args, **kwargs)
+    if out is None:
+      out = super().__call__(cls, *args, **kwargs, lol=True)
+      cls.__instances__.append(out)
+      return out
+    return out
+
   #
   #   _instance = super().__call__(cls, *args, **kwargs, lol=True)
   #   if _instance is not None:
@@ -185,7 +187,7 @@ class IterMeta(type):
     if not cls.__ready__:
       raise ProceduralError
     IterMeta._incIndex(cls)
-    return IterMeta._instanceAtIndex(cls)
+    return IterMeta._instanceAtIndex(cls, cls._getIndex(cls) - 1)
 
 
 class Iterify(metaclass=IterMeta):

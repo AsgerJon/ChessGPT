@@ -3,90 +3,168 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from enum import IntEnum
 import os
 from typing import Never, NoReturn
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QUrl, QObject
+from PySide6.QtWidgets import QApplication
 from icecream import ic
+from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
 
-from visualchess import SoundBoard
+from moreworktoy import Iterify
+from visualchess import SoundEffect
+from workstyle import CoreWidget
 
 ic.configureOutput(includeContext=True)
 
 
-class Sound(IntEnum):
-  """Each sound effect is defined here as Sound enum"""
+class _SoundProperties(Iterify):
+  """Class containing the properties for the sound class"""
 
   @staticmethod
-  def getSoundPath() -> str:
+  def _getSoundPath() -> str:
     """Getter-function for sound path"""
     root = os.getenv('CHESSGPT')
     there = os.path.join(
       *stringList('src, visualchess, chesspieces, sounds'))
     return os.path.join(root, there)
 
-  MOVE = 0
-  SLIDE = 1
-  WHOOSH = 2
+  def __init__(self, *args, **kwargs) -> None:
+    parent = CoreWidget.parseParent(*args, **kwargs)
+    self._parent = QApplication.instance()
+    self._name = None
+    self._soundEffect = None
+    self._fileName = None
+    self._url = None
 
-  def getFileName(self) -> str:
+  def _getParent(self) -> CoreWidget:
+    """Getter-function for the parent widget"""
+    ic(isinstance(QApplication.instance(), QObject))
+    if isinstance(self._parent, QObject):
+      return self._parent
+    return QApplication.instance()
+
+  def _createSoundEffect(self) -> NoReturn:
+    """Creator-function for the sound effect"""
+    self._soundEffect = SoundEffect(self._getParent(), device='Razer')
+    self._soundEffect.setLoopCount(1)
+    self._soundEffect.setSource(self.url)
+
+  def _getSoundEffect(self) -> SoundEffect:
+    """Getter-function for the sound effect"""
+    if self._soundEffect is None:
+      self._createSoundEffect()
+      return self._getSoundEffect()
+    if isinstance(self._soundEffect, SoundEffect):
+      return self._soundEffect
+    raise TypeError
+
+  def _setSoundEffect(self, *_) -> Never:
+    """Illegal setter function"""
+    raise ReadOnlyError('sound effect')
+
+  def _getName(self) -> str:
+    """Getter-function for the name"""
+    return self._name
+
+  def _setName(self, *_) -> Never:
+    """Illegal setter-function"""
+    raise ReadOnlyError('name')
+
+  def _getFileName(self) -> str:
     """Getter-function for fileName"""
-    baseName = self.name.lower()
+    baseName = self._getName().lower()
     return '%s.wav' % (baseName)
 
-  def setFileName(self, *_) -> Never:
+  def _setFileName(self, *_) -> Never:
     """Illegal setter function"""
     raise ReadOnlyError('fileName')
 
-  def getFilePath(self, ) -> str:
+  def _getFilePath(self, ) -> str:
     """Getter-function for file path"""
-    return os.path.join(self.getSoundPath(), self.getFileName())
+    return os.path.join(self._getSoundPath(), self._getFileName())
 
-  def setFilePath(self, *_) -> Never:
+  def _setFilePath(self, *_) -> Never:
     """Illegal setter function"""
-    raise ReadOnlyError('soundPath')
+    raise ReadOnlyError('filePath')
 
-  def getUrl(self) -> QUrl:
-    """Getter-function for the filePath as QUrl"""
-    return QUrl.fromLocalFile(self.getFilePath())
+  def _createUrl(self) -> NoReturn:
+    """Creator function for the url"""
+    self._url = QUrl.fromLocalFile(self._getFilePath())
 
-  def setUrl(self, *_) -> Never:
-    """Illegal setter function"""
+  def _getUrl(self) -> QUrl:
+    """Getter-function for url pointing to the sound file"""
+    if self._url is None:
+      self._createUrl()
+      return self._getUrl()
+    if isinstance(self._url, QUrl):
+      return self._url
+    raise TypeError
+
+  def _setUrl(self, *_) -> Never:
+    """Illegal setter-function"""
     raise ReadOnlyError('url')
 
-  def _createSoundBoard(self) -> NoReturn:
-    """Creates the media player"""
-    setattr(self, '_soundBoard', SoundBoard())
-    _soundBoard = getattr(self, '_soundBoard')
-    _soundBoard.onPlay(self.handlePlay)
-    self._loadSound()
+  name = property(_getName, _setName, _setName)
+  fileName = property(_getFileName, _setFileName, _setFileName)
+  url = property(_getUrl, _setUrl, _setUrl)
+  filePath = property(_getFilePath, _setFilePath, _setFilePath)
+  effect = property(_getSoundEffect, _setSoundEffect, _setSoundEffect, )
+
+
+class Sound(_SoundProperties):
+  """Each sound effect is defined here as Sound enum"""
+
+  @classmethod
+  def createAll(cls, *args) -> NoReturn:
+    """Collects all wave files in given folder. Defaults to folder given
+    by soundPath"""
+    folder = cls._getSoundPath()
+    if not isinstance(folder, str):
+      raise TypeError
+    for file in os.listdir(folder):
+      name_, fileExt = os.path.splitext(file)
+      if fileExt.replace('.', '') == 'wav':
+        instance = cls(name_)
+        setattr(cls, name_, instance)
+
+  @staticmethod
+  def _parseArguments(*args, **kwargs) -> str:
+    """Parses the arguments to name"""
+    nameKeys = stringList('name, title, instanceName')
+    name, args, kwargs = extractArg(str, nameKeys, *args, **kwargs)
+    if isinstance(name, str):
+      return name
+    raise TypeError
+
+  @classmethod
+  def __old__(cls, *args, **kwargs) -> NoReturn:
+    """Attempts to find an existing instance"""
+    name = cls._parseArguments(*args, **kwargs)
+    instances = getattr(cls, '__instances__', None)
+    if instances is None:
+      raise ValueError
+    for sound in instances:
+      if sound.name == name:
+        return sound
+    return None
+
+  def __init__(self, *args, **kwargs) -> None:
+    _SoundProperties.__init__(self, *args, **kwargs)
+    self._name = self._parseArguments(*args, **kwargs)
 
   def _loadSound(self, ) -> NoReturn:
     """Loads the sound file"""
-    _soundBoard = self.getSoundBoard()
-    if not isinstance(_soundBoard, SoundBoard):
-      raise TypeError
-    _soundBoard.setSource(self.getUrl())
-
-  def getSoundBoard(self) -> SoundBoard:
-    """Getter-function for player"""
-    if getattr(self, '_soundBoard', None) is None:
-      self._createSoundBoard()
-      return self.getSoundBoard()
-    _soundBoard = getattr(self, '_soundBoard', None)
-    if isinstance(_soundBoard, SoundBoard):
-      return _soundBoard
-    raise TypeError
+    self.effect.setSource(self.url)
 
   def handlePlay(self) -> NoReturn:
     """Handler function for the play signal emitted by the sound board."""
 
   def play(self) -> NoReturn:
     """Triggers the sound effect"""
-    self.getSoundBoard().play()
+    self.effect.play()
 
   def __str__(self, ) -> str:
     """String representation"""
@@ -96,3 +174,7 @@ class Sound(IntEnum):
   def __repr__(self) -> str:
     """Code Representation"""
     return """SoundEffect.%s""" % self.name
+
+  def __call__(self) -> NoReturn:
+    """Triggers the sound effect"""
+    self.effect.play()

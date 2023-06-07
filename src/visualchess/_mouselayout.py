@@ -5,12 +5,10 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import Signal, Qt
-from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent
+from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
-from worktoy.parsing import maybeType
 
-from visualchess import BoardLayout, Square, BoardState, ChessPiece, Sound
+from visualchess import BoardLayout, Square, BoardState, ChessPiece
 from workstyle.stylesettings import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)
@@ -20,11 +18,6 @@ class _MouseLayoutProperties(BoardLayout):
   """PieceLayout subclasses BoardLayout and adds chess piece rendering.
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
-
-  alertChangeHoverSquare = Signal(Square)
-  alertClearHoverSquare = Signal()
-  alertChangeHoverPiece = Signal(ChessPiece)
-  alertClearHoverPiece = Signal()
 
   def __init__(self, *args, **kwargs) -> None:
     BoardLayout.__init__(self, *args, **kwargs)
@@ -60,14 +53,12 @@ class _MouseLayoutProperties(BoardLayout):
     """Setter-function for hovered rectangle"""
     if self._hoverSquare == square:
       return
-    self.alertChangeHoverSquare.emit(square)
     self._hoverSquare = square
 
   def delHoverSquare(self) -> NoReturn:
     """Deleter-function for the hovered rectangle"""
     if self._hoverSquare:
       self._hoverSquare = None
-      self.alertClearHoverSquare.emit()
 
   ##################### END of Hover square accessors #####################
   # --------------------------------------------------------------------- #
@@ -81,16 +72,13 @@ class _MouseLayoutProperties(BoardLayout):
     if hoverPiece == self._hoverPiece:
       return
     self._hoverPiece = hoverPiece
-    self.alertChangeHoverPiece.emit(hoverPiece)
 
   def delHoverPiece(self) -> NoReturn:
     """Deleter-function for hover piece"""
     if self._hoverPiece:
       self._hoverPiece = None
-      self.alertClearHoverPiece.emit()
 
   ###################### END of Hover piece accessors #####################
-  # --------------------------------------------------------------------- #
   #########################################################################
 
 
@@ -100,39 +88,7 @@ class MouseLayout(_MouseLayoutProperties):
   def __init__(self, *args, **kwargs) -> None:
     _MouseLayoutProperties.__init__(self, *args, **kwargs)
     self.setMouseTracking(True)
-    self.alertChangeHoverSquare.connect(self.handleChangeHoverSquare)
-    self.alertClearHoverSquare.connect(self.handleClearHoverSquare)
-    self.alertChangeHoverPiece.connect(self.handleChangeHoverPiece)
-    self.alertClearHoverPiece.connect(self.handleClearHoverPiece)
 
-  ############################## MouseLayout ##############################
-  # --------------------------------------------------------------------- #
-  ######################## Event Handling Functions #######################
-  def handleChangeHoverSquare(self, square: Square) -> NoReturn:
-    """Handles changes to hover square"""
-    if not isinstance(square, Square):
-      raise TypeError
-    self.update()
-    Sound.WHOOSH.play()
-
-  def handleClearHoverSquare(self, *square: Square) -> NoReturn:
-    """Handles the clearing of the hover square"""
-    square = maybeType(Square, *square)
-    if square is None or isinstance(square, Square):
-      self.update()
-
-  def handleChangeHoverPiece(self, piece: ChessPiece) -> NoReturn:
-    """Handles changes to the piece being hovered"""
-    self.setCursor(Qt.CursorShape.OpenHandCursor)
-    self.update()
-
-  def handleClearHoverPiece(self) -> NoReturn:
-    """Clears the hover piece func"""
-    self.setCursor(Qt.CursorShape.ArrowCursor)
-    self.update()
-
-  #################### END OF Event Handling Functions ####################
-  # --------------------------------------------------------------------- #
   ################## Reimplementation of QWidget Events  ##################
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
