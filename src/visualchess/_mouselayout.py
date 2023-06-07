@@ -10,7 +10,7 @@ from PySide6.QtGui import QPaintEvent, QPainter, QMouseEvent
 from icecream import ic
 from worktoy.parsing import maybeType
 
-from visualchess import BoardLayout, Square, BoardState, ChessPiece
+from visualchess import BoardLayout, Square, BoardState, ChessPiece, Sound
 from workstyle.stylesettings import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)
@@ -113,6 +113,7 @@ class MouseLayout(_MouseLayoutProperties):
     if not isinstance(square, Square):
       raise TypeError
     self.update()
+    Sound.WHOOSH.play()
 
   def handleClearHoverSquare(self, *square: Square) -> NoReturn:
     """Handles the clearing of the hover square"""

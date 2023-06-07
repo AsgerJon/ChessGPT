@@ -5,3 +5,4 @@ from __future__ import annotations
 
 from ._corewidget import CoreWidget
 from ._fontfamily import Family
+from ._indicator import Indicator

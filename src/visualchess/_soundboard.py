@@ -4,11 +4,11 @@ given by the SoundEnum instances."""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import NoReturn
+from typing import NoReturn, Never
 
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QMediaDevices, QAudioDevice, \
-  QAudioOutput
+  QAudioOutput, QMediaMetaData
 from icecream import ic
 from worktoy.core import maybe
 from worktoy.typetools import CallMeMaybe
@@ -93,12 +93,15 @@ class SoundBoard(_SoundPlayerProperties):
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
+  __instances__ = []
   alertPlay = Signal()
 
   def __init__(self, *args, **kwargs) -> None:
     _SoundPlayerProperties.__init__(self, *args, **kwargs)
     self.setAudioOutput(self.getSpeaker())
     self.alertPlay.connect(self.alertPlayStrong)
+    SoundBoard.__instances__.append(self)
+    self.errorOccurred.connect(self.errorHandle)
 
   def onPlay(self, slot: CallMeMaybe) -> NoReturn:
     """Adds slot to list of strong references alerted explicitly by the
@@ -113,15 +116,26 @@ class SoundBoard(_SoundPlayerProperties):
   @Slot()
   def play(self) -> NoReturn:
     """Reimplementation emitting the alertPlay signal before activating"""
+    for sound in self.__instances__:
+      sound.stop()
     self.alertPlay.emit()
     QMediaPlayer.play(self)
 
   def __str__(self, ) -> str:
     """String Representation"""
-    deviceName = self.getDevice()
+    deviceName = self.getDevice().description()
     msg = """SoundBoard instance using device: %s""" % deviceName
     return msg
 
   def __repr__(self, ) -> str:
     """Code Representation"""
     return """SoundBoard()"""
+
+  def errorHandle(self, error: QMediaPlayer.Error, msg: str) -> Never:
+    """Raises a real error form the QMediaPlayer"""
+    print(msg)
+    try:
+      raise error
+    except Exception as e:
+      print('Tried to raise: %s, but received: %s' % (error, e))
+      raise e

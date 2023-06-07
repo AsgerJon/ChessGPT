@@ -83,9 +83,6 @@ class Sound(IntEnum):
 
   def handlePlay(self) -> NoReturn:
     """Handler function for the play signal emitted by the sound board."""
-    deviceName = self.getSoundBoard().getDevice()
-    print('%s tried to play a sound!' % self)
-    print('%s uses sound device: %s' % (self, deviceName))
 
   def play(self) -> NoReturn:
     """Triggers the sound effect"""
