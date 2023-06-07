@@ -19,7 +19,7 @@ from workstyle.stylesettings import backgroundStyle, bezelStyle, \
 ic.configureOutput(includeContext=True)
 
 
-class _BoardLayoutFunctions(CoreWidget):
+class BoardLayout(CoreWidget):
   """This class provides the size relating functions and settings."""
 
   #########################################################################
@@ -89,10 +89,6 @@ class _BoardLayoutFunctions(CoreWidget):
   ########### END OF Accessor Functions for Instances of QCursor ##########
   # --------------------------------------------------------------------- #
   #########################################################################
-  def __init__(self, *args, **kwargs) -> None:
-    CoreWidget.__init__(self, *args, **kwargs)
-    self._painterViewPort = []
-
   #########################################################################
   ###################### Instance Setters for Cursor ######################
 
@@ -119,8 +115,6 @@ class _BoardLayoutFunctions(CoreWidget):
   #########################################################################
   def getViewPort(self) -> QRectF:
     """This method predicts the viewport on the widget"""
-    if self._painterViewPort:
-      return self._painterViewPort.pop()
     return self.visibleRegion().boundingRect().toRectF()
 
   def getCenter(self) -> QPointF:
@@ -204,71 +198,12 @@ class _BoardLayoutFunctions(CoreWidget):
             dark.append(newRect)
     return dict(light=light, dark=dark)
 
-
-class _BoardLayoutProperties(_BoardLayoutFunctions):
-  """In between method containing properties"""
-
-  def __init__(self, *args, **kwargs) -> None:
-    _BoardLayoutFunctions.__init__(self, *args, **kwargs)
-    self._mouseX = None
-    self._mouseY = None
-    self._position = None
-
-  ################### Mouse Position Accessor Functions ###################
-  # --------------------------------------------------------------------- #
-  ####################### Mouse Position as QPointF #######################
-  def getMousePosition(self) -> QPointF:
-    """Getter-function for mouse position"""
-    return QPointF(self._mouseX, self._mouseY)
-
-  def setMousePosition(self, mouse: QPointF) -> NoReturn:
-    """Getter-function for mouse position"""
-    self._position = mouse
-    self._mouseX = mouse.x()
-    self._mouseY = mouse.y()
-
-  #################### END OF Mouse Position as QPointF ###################
-  # --------------------------------------------------------------------- #
-  ########################### Mouse x-coordinate ##########################
-  def getMouseX(self) -> float:
-    """Getter-function for x position"""
-    return self._mouseX
-
-  def setMouseX(self, x: float) -> NoReturn:
-    """Setter-function for the x position of mouse cursor"""
-    self._mouseX = x
-
-  ####################### END OF Mouse x-coordinate #######################
-  # --------------------------------------------------------------------- #
-  ########################### Mouse y-coordinate ##########################
-  def getMouseY(self) -> float:
-    """Getter-function for x position"""
-    return self._mouseY
-
-  def setMouseY(self, y: float) -> NoReturn:
-    """Setter-function for y position"""
-    self._mouseY = y
-  ####################### End OF Mouse y-coordinate #######################
-  # --------------------------------------------------------------------- #
-  ################ END OF Mouse Position Accessor Functions ###############
-
-
-class BoardLayout(_BoardLayoutProperties):
-  """BoardMouse is a subclass of BoardWidget that provides the mouse related
-  logic.
-  #  MIT Licence
-  #  Copyright (c) 2023 Asger Jon Vistisen"""
-
-  def __init__(self, *args, **kwargs) -> None:
-    _BoardLayoutProperties.__init__(self, *args, **kwargs)
-
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """The BoardLayout subclass draws the static elements of the
     chessboard"""
     painter = QPainter()
     painter.begin(self)
     guessViewPort = self.getViewPort()
-    self._painterViewPort.append(painter.viewport())
     backgroundStyle @ painter
     r = self._cornerRadius
     painter.drawRoundedRect(guessViewPort, r, r)

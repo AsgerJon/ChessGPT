@@ -14,9 +14,8 @@ from ._speaker import Speaker
 from ._soundenum import Sound
 from ._enums import File, Rank, ChessPiece, Square, BoardState
 from ._boardlayout import BoardLayout
-from ._mouselayout import MouseLayout
 from ._piecegrabbing import PieceGrabbing
 from ._loadpiece import Piece, ChessColor, loadPiece
 from ._checkbutton import CheckButton
 
-Widget = TypeBag(CoreWidget, BoardLayout, MouseLayout, PieceGrabbing)
+Widget = TypeBag(CoreWidget, BoardLayout, PieceGrabbing)
