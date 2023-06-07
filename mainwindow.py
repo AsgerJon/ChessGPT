@@ -118,15 +118,12 @@ class MainWindow(QMainWindow):
 
   def _debugFunc01(self) -> NoReturn:
     """Debugger 1"""
-    Sound.MOVE.getSoundBoard().printTracks()
 
   def _debugFunc02(self) -> NoReturn:
     """Debugger 2"""
-    Sound.WHOOSH.getSoundBoard().printTracks()
 
   def _debugFunc03(self) -> NoReturn:
     """Debugger 3"""
-    Sound.SLIDE.getSoundBoard().printTracks()
 
   def _debugFunc04(self) -> NoReturn:
     """Debugger 4"""

@@ -88,6 +88,9 @@ class _PieceGrabbingSignals(_PieceGrabbingProperties):
   alertDroppedPiece = Signal(ChessPiece)
   alertClearedSquare = Signal(Square)
   alertPiecePlaced = Signal(ChessPiece, Square)
+  soundPiecePlaced = Signal()
+  soundPiecePicked = Signal()
+  soundPieceMoved = Signal()
 
   def __init__(self, *args, **kwargs) -> None:
     _PieceGrabbingProperties.__init__(self, *args, **kwargs)
@@ -113,6 +116,7 @@ class PieceGrabbing(_PieceGrabbingSignals):
   #########################################################################
   def handleGrabbedPiece(self, piece: ChessPiece) -> NoReturn:
     """Handles the piece grabbing signal"""
+    self.soundPiecePicked.emit()
     self.setGrabbedPiece(piece)
     square = self.getHoverSquare()
     self.setOriginSquare(square)
@@ -128,7 +132,7 @@ class PieceGrabbing(_PieceGrabbingSignals):
 
   def handlePiecePlaced(self, piece: ChessPiece, square: Square) -> NoReturn:
     """Handles piece placed signal"""
-    Sound.MOVE.play()
+    self.soundPiecePlaced.emit()
     self.getBoardState().setPiece(square, piece)
     if self.getBoardState().getPiece(square) == piece:
       self.delGrabbedPiece()
