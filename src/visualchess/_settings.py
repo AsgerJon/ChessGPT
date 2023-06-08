@@ -3,9 +3,14 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from PySide6.QtCore import QPointF, Qt
-from PySide6.QtGui import QEnterEvent, QSinglePointEvent
+from PySide6.QtCore import QPointF, Qt, QEvent
+from PySide6.QtGui import QEnterEvent, QSinglePointEvent, QMouseEvent
+from PySide6.QtWidgets import QWidget
 from icecream import ic
+from worktoy.parsing import extractArg
+from worktoy.stringtools import stringList
+
+from workstyle import CoreWidget
 
 ic.configureOutput(includeContext=True)
 
@@ -24,22 +29,40 @@ class Settings:
   deviceName = 'Razer'
   movingTimeLimit = 200
 
+  @staticmethod
+  def convertToEnterEvent(*args, **kwargs) -> QEnterEvent:
+    """Converts a QSinglePointEvent to a QEnterEvent for the same widget."""
+    eventKey = stringList('event, mouseEvent, QMouseEvent, e')
+    widgetKey = stringList('widget, parent, owner, device')
+    event, a, k = extractArg(QMouseEvent, eventKey, *args, **kwargs)
+    widget, a, k = extractArg(CoreWidget, widgetKey, *args, **kwargs)
+    if not isinstance(widget, CoreWidget):
+      raise TypeError
+    if not isinstance(event, QEvent):
+      raise TypeError
+    if isinstance(event, QSinglePointEvent):
+      localPosition = event.position()
+      scenePosition = event.scenePosition()
+      globalPosition = event.globalPosition()
+      pointingDevice = event.pointingDevice()
+    else:
+      raise TypeError
+    enterEvent = QEnterEvent(
+      localPosition, scenePosition, globalPosition, device=pointingDevice)
+    return enterEvent
 
-def convertToEnterEvent(event: QSinglePointEvent) -> QEnterEvent:
-  """
-  Converts a QSinglePointEvent to a QEnterEvent for the same widget.
-  """
-  # Retrieve the local and global positions from the QSinglePointEvent
-  localPos = event.position().toPoint()
-  widget = event.widget()
-
-  if widget is None:
-    raise AttributeError(
-      "The QSinglePointEvent does not have an associated widget.")
-
-  globalPos = widget.mapToGlobal(localPos)
-
-  # Create a QEnterEvent with the same position as the QSinglePointEvent
-  enterEvent = QEnterEvent(localPos, globalPos, localPos)
-
-  return enterEvent
+  @staticmethod
+  def mouseMoveEventFactory(*args, **kwargs) -> QMouseEvent:
+    """Factory function for instances of QMouseEvent"""
+    eventType = QEvent.Type.MouseMove
+    widgetKeys = stringList('parent, widget, main, window, scope')
+    widget, a, k = extractArg(CoreWidget, widgetKeys, *args, **kwargs)
+    localPos = getattr(widget, '_position', None)
+    if localPos is None:
+      raise TypeError
+    boardRect = getattr(widget, 'boardRect', None)
+    if isinstance(widget, QWidget):
+      viewPort = QWidget.visibleRegion(widget, ).boundingRect().toRectF()
+    else:
+      raise TypeError
+    globalPos = QWidget.mapToGlobal(widget, localPos)

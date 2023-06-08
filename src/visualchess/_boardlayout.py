@@ -8,7 +8,7 @@ import string
 from typing import NoReturn
 
 from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
-from PySide6.QtGui import QPaintEvent, QPainter, QCursor
+from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
 
 from visualchess import Square, ChessPiece, Settings
@@ -22,90 +22,22 @@ ic.configureOutput(includeContext=True)
 class BoardLayout(CoreWidget):
   """This class provides the size relating functions and settings."""
 
-  #########################################################################
-  ############################ Static Settings ############################
-  _bezelRatio = Settings.bezelRatio
-  _squareGap = Settings.squareGap
-  _boardOutline = Settings.boardOutline
-  _cornerRadius = Settings.cornerRadius
-  _adjustFontSize = Settings.adjustFontSize
-  _origin = Settings.origin
-  _normalCursor = Settings.normalCursor
-  _hoverCursor = Settings.hoverCursor
-  _grabCursor = Settings.grabCursor
-  _deviceName = Settings.deviceName
-
-  ######################### END OF Static Settings ########################
-  # --------------------------------------------------------------------- #
-  ############## Accessor Functions for Instances of QCursor ##############
-  @classmethod
-  def getNormalCursorShape(cls) -> Qt.CursorShape:
-    """Getter function for normal cursor"""
-    if isinstance(cls._normalCursor, Qt.CursorShape):
-      return cls._normalCursor
-    raise TypeError
-
-  @classmethod
-  def getNormalCursor(cls, ) -> QCursor:
-    """Getter-function for normal cursor"""
-    cursor = QCursor()
-    cursor.setShape(cls.getNormalCursorShape())
-    if isinstance(cursor, QCursor):
-      return cursor
-    raise TypeError
-
-  @classmethod
-  def getHoverCursorShape(cls) -> Qt.CursorShape:
-    """Getter function for hover cursor"""
-    if isinstance(cls._hoverCursor, Qt.CursorShape):
-      return cls._hoverCursor
-    raise TypeError
-
-  @classmethod
-  def getHoverCursor(cls, ) -> QCursor:
-    """Getter-function for hover cursor"""
-    cursor = QCursor()
-    cursor.setShape(cls.getHoverCursorShape())
-    if isinstance(cursor, QCursor):
-      return cursor
-    raise TypeError
-
-  @classmethod
-  def getGrabCursorShape(cls) -> Qt.CursorShape:
-    """Getter function for grab cursor"""
-    if isinstance(cls._grabCursor, Qt.CursorShape):
-      return cls._grabCursor
-    raise TypeError
-
-  @classmethod
-  def getGrabCursor(cls, ) -> QCursor:
-    """Getter-function for grab cursor"""
-    cursor = QCursor()
-    cursor.setShape(cls.getGrabCursorShape())
-    if isinstance(cursor, QCursor):
-      return cursor
-    raise TypeError
-
-  ########### END OF Accessor Functions for Instances of QCursor ##########
-  # --------------------------------------------------------------------- #
-  #########################################################################
-  #########################################################################
   ###################### Instance Setters for Cursor ######################
 
   def setNormalCursor(self) -> NoReturn:
     """Sets the cursor on the widget to normal shape"""
-    self.setCursor(self.getNormalCursor())
+    self.setCursor(Settings.normalCursor)
 
   def setHoverCursor(self, ) -> NoReturn:
     """Sets the cursor on the widget to hover shape. This should be an
     open hand to indicate the availability to grab the item being hovered."""
-    self.setCursor(self.getHoverCursor())
+    self.setCursor(Settings.hoverCursor)
 
   def setGrabCursor(self, ) -> NoReturn:
     """Sets the cursor on the widget to grabbing shape. This should be
     indicated on top of the chess piece being grabbed if possible rather
     than invoking this function."""
-    self.setCursor(self.getGrabCursor())
+    self.setCursor(Settings.grabCursor)
 
   def setPieceCursor(self, piece: ChessPiece) -> NoReturn:
     """Sets the cursor on the widget to grab the given piece."""
@@ -130,15 +62,15 @@ class BoardLayout(CoreWidget):
     """This method returns the largest square that would fit in the
     viewport having same center as the viewport"""
     size = QSizeF(self.getSideLength(), self.getSideLength())
-    rect = QRectF(self._origin, size)
+    rect = QRectF(Settings.origin, size)
     rect.moveCenter(self.getCenter())
     return rect
 
   def getInnerSquare(self) -> QRectF:
     """The chessboard including and outline. Use only for painting and not
     for logic."""
-    side = self.getSideLength() * (1 - 2 * self._bezelRatio)
-    rect = QRectF(self._origin, QSizeF(side, side))
+    side = self.getSideLength() * (1 - 2 * Settings.bezelRatio)
+    rect = QRectF(Settings.origin, QSizeF(side, side))
     rect.moveCenter(self.getCenter())
     return rect
 
@@ -146,8 +78,8 @@ class BoardLayout(CoreWidget):
     """Getter-function for the square that exactly contains the
     chessboard."""
     inner = self.getInnerSquare()
-    side = inner.width() / 2 + inner.height() / 2 - 2 * self._boardOutline
-    rect = QRectF(self._origin, QSizeF(side, side))
+    side = inner.width() / 2 + inner.height() / 2 - 2 * Settings.boardOutline
+    rect = QRectF(Settings.origin, QSizeF(side, side))
     rect.moveCenter(self.getCenter())
     return rect
 
@@ -159,7 +91,7 @@ class BoardLayout(CoreWidget):
 
   def getLabelRects(self) -> dict[str, list[QRectF]]:
     """Getter-function for the bounding rectangles on the labels"""
-    border = self._bezelRatio * self.getSideLength()
+    border = Settings.bezelRatio * self.getSideLength()
     boardRect, step = self.getBoardRect(), self.getSquareStep()
     fileSize, rankSize = QSizeF(step, border), QSizeF(border, step)
     upperTop = boardRect.top() - border
@@ -182,7 +114,7 @@ class BoardLayout(CoreWidget):
 
   def getSquares(self) -> dict[str, list[QRectF]]:
     """Getter-function for all squares split according to square color"""
-    light, dark, gap = [], [], self._squareGap
+    light, dark, gap = [], [], Settings.squareGap
     for i in range(8):
       for j in range(8):
         square = Square.fromInts(i, j)
@@ -190,7 +122,7 @@ class BoardLayout(CoreWidget):
         if isinstance(base, QRectF):
           center, size = base.center(), base.size()
           newSize = QSizeF(size.width() - gap / 2, size.height() - gap / 2)
-          newRect = QRectF(self._origin, newSize)
+          newRect = QRectF(Settings.origin, newSize)
           newRect.moveCenter(center)
           if i % 2 == j % 2:
             light.append(newRect)
@@ -205,7 +137,7 @@ class BoardLayout(CoreWidget):
     painter.begin(self)
     guessViewPort = self.getViewPort()
     backgroundStyle @ painter
-    r = self._cornerRadius
+    r = Settings.cornerRadius
     painter.drawRoundedRect(guessViewPort, r, r)
     bezelStyle @ painter
     painter.drawRoundedRect(self.getOuterSquare(), r, r)

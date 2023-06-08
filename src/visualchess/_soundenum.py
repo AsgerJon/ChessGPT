@@ -9,6 +9,7 @@ from typing import Never, NoReturn
 from PySide6.QtCore import QUrl, QObject
 from PySide6.QtWidgets import QApplication
 from icecream import ic
+from worktoy.core import maybe
 from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
@@ -33,7 +34,7 @@ class _SoundProperties(Iterify):
 
   def __init__(self, *args, **kwargs) -> None:
     parent = CoreWidget.parseParent(*args, **kwargs)
-    self._parent = QApplication.instance()
+    self._parent = maybe(parent, QApplication.instance())
     self._name = None
     self._soundEffect = None
     self._fileName = None
@@ -41,7 +42,6 @@ class _SoundProperties(Iterify):
 
   def _getParent(self) -> CoreWidget:
     """Getter-function for the parent widget"""
-    ic(isinstance(QApplication.instance(), QObject))
     if isinstance(self._parent, QObject):
       return self._parent
     return QApplication.instance()
@@ -116,6 +116,10 @@ class _SoundProperties(Iterify):
 
 class Sound(_SoundProperties):
   """Each sound effect is defined here as Sound enum"""
+
+  whoosh = None
+  move = None
+  slide = None
 
   @classmethod
   def createAll(cls, *args) -> NoReturn:
