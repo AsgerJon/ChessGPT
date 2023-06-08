@@ -10,6 +10,7 @@ from typing import NoReturn, Never, TYPE_CHECKING
 from PySide6.QtCore import QRect, QRectF, QPointF
 from PySide6.QtGui import QPixmap, QColor, QCursor
 from icecream import ic
+from worktoy.parsing import maybeType
 from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
@@ -328,14 +329,19 @@ class Square(Enum):
     return cls.fromFileRank(file, rank)
 
   @classmethod
-  def fromPointRect(cls, point: QPointF, rect: QRectF) -> Square:
+  def fromPointRect(cls, *args) -> Square:
     """Finds the square that would contain given point if squares were
     distributed on given rect"""
-    left0, top0 = rect.left(), rect.top()
-    width, height = rect.width(), rect.height()
-    x, y = point.x() - left0, point.y() - top0
-    fileVal, rankVal = int(x / width * 8), int(y / height * 8)
-    return cls.fromInts(fileVal, rankVal)
+    rect = maybeType(QRectF, *args)
+    point = maybeType(QPointF, *args)
+    if isinstance(rect, QRectF) and isinstance(point, QPointF):
+      left0, top0 = rect.left(), rect.top()
+      width, height = rect.width(), rect.height()
+      x, y = point.x() - left0, point.y() - top0
+      fileVal, rankVal = int(x / width * 8), int(y / height * 8)
+      return cls.fromInts(fileVal, rankVal)
+    else:
+      raise TypeError
 
 
 class BoardState:
@@ -387,6 +393,8 @@ class BoardState:
       if isinstance(piece, ChessPiece):
         return piece
       raise TypeError
+    ic(square, piece)
+    os.abort()
     raise UnexpectedStateError
 
   def setPiece(self, square: Square, piece: ChessPiece) -> NoReturn:

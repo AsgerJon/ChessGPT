@@ -11,7 +11,8 @@ from icecream import ic
 from PySide6.QtWidgets import QMainWindow, QGridLayout
 
 from workstyle import CoreWidget, Indicator
-from visualchess import PieceGrabbing as OMGWIDGET, Sound
+from visualchess import PieceGrabbing as OMGWIDGET
+from visualchess import Sound
 
 ic.configureOutput(includeContext=True)
 
@@ -119,7 +120,7 @@ class MainWindow(QMainWindow):
 
   def _debugFunc01(self) -> NoReturn:
     """Debugger 1"""
-    print(Sound.move.play())
+    Sound.slide.play()
 
   def _debugFunc02(self) -> NoReturn:
     """Debugger 2"""

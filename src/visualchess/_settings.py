@@ -3,6 +3,8 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+from os import abort
+
 from PySide6.QtCore import QPointF, Qt, QEvent
 from PySide6.QtGui import QEnterEvent, QSinglePointEvent, QMouseEvent
 from PySide6.QtWidgets import QWidget
@@ -37,6 +39,8 @@ class Settings:
     event, a, k = extractArg(QMouseEvent, eventKey, *args, **kwargs)
     widget, a, k = extractArg(CoreWidget, widgetKey, *args, **kwargs)
     if not isinstance(widget, CoreWidget):
+      ic(widget, type(widget))
+      abort()
       raise TypeError
     if not isinstance(event, QEvent):
       raise TypeError
@@ -66,3 +70,6 @@ class Settings:
     else:
       raise TypeError
     globalPos = QWidget.mapToGlobal(widget, localPos)
+    button = Qt.MouseButton.NoButton
+    buttons = Qt.MouseButton.NoButton | Qt.MouseButton.NoButton
+    return QMouseEvent(eventType, localPos, globalPos, button, )

@@ -5,6 +5,7 @@ logic."""
 from __future__ import annotations
 
 import string
+import sys
 from typing import NoReturn
 
 from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
@@ -47,7 +48,8 @@ class BoardLayout(CoreWidget):
   #########################################################################
   def getViewPort(self) -> QRectF:
     """This method predicts the viewport on the widget"""
-    return self.visibleRegion().boundingRect().toRectF()
+    out = self.visibleRegion().boundingRect().toRectF()
+    return out
 
   def getCenter(self) -> QPointF:
     """Getter-function for the global center"""
@@ -56,7 +58,8 @@ class BoardLayout(CoreWidget):
   def getSideLength(self) -> float:
     """Getter-function for the length of the shortest dimension in the
     viewport."""
-    return min(self.getViewPort().width(), self.getViewPort().height())
+    out = min(self.getViewPort().width(), self.getViewPort().height())
+    return out
 
   def getOuterSquare(self) -> QRectF:
     """This method returns the largest square that would fit in the
@@ -69,7 +72,7 @@ class BoardLayout(CoreWidget):
   def getInnerSquare(self) -> QRectF:
     """The chessboard including and outline. Use only for painting and not
     for logic."""
-    side = self.getSideLength() * (1 - 2 * Settings.bezelRatio)
+    side = self.getSideLength() * float((1 - 2 * Settings.bezelRatio))
     rect = QRectF(Settings.origin, QSizeF(side, side))
     rect.moveCenter(self.getCenter())
     return rect
@@ -161,4 +164,5 @@ class BoardLayout(CoreWidget):
     painter.drawRects(lightDark['light'])
     outlineStyle @ painter
     painter.drawRect(self.getInnerSquare())
+
     painter.end()

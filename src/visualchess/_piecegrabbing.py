@@ -14,13 +14,13 @@ from icecream import ic
 from worktoy.waitaminute import UnexpectedStateError
 
 from visualchess import ChessPiece, Square, BoardLayout
-from visualchess import Settings, Sound, _PieceGrabbingProperties
+from visualchess import Settings, _PieceGrabbingOperations
 from workstyle.stylesettings import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)
 
 
-class PieceGrabbing(_PieceGrabbingProperties):
+class PieceGrabbing(_PieceGrabbingOperations):
   """PieceGrabbing subclasses the MouseLayout bringing grabbing and moving
   of pieces. It is divided into a properties class with getters and setters
   as well as a main class with functionality.
@@ -28,7 +28,7 @@ class PieceGrabbing(_PieceGrabbingProperties):
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   def __init__(self, *args, **kwargs) -> None:
-    _PieceGrabbingProperties.__init__(self, *args, **kwargs)
+    _PieceGrabbingOperations.__init__(self, *args, **kwargs)
     self.setMouseTracking(True)
 
   # --------------------------------------------------------------------- #
@@ -45,7 +45,7 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.type() == QEvent.Type.MouseMove:
       if self.getGrabbedPiece():
-        pass
+        self.cancelGrabbing()
     # <********************** Remove Hover on Leave **********************> #
     # ____________________________________________________________________
     # |  When leaving the board rectangle, no square or piece should
@@ -62,7 +62,7 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # ____________________________________________________________________
     # |  When entering the event it takes keyboard focus.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    if not self.getBoardRect().contains(event.position()):
+    if self.getBoardRect().contains(event.position()):
       self.setFocus(Qt.FocusReason.MouseFocusReason)
 
   def mouseMoveEvent(self, event: QMouseEvent) -> NoReturn:
@@ -79,11 +79,10 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # |  method
     # |   - The function returns None
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    if not self.getBoardRect().contains(event.position()):
-      if self.getHoverBoardFlag():
-        self.setHoverBoardFlag(False)
-        return self.leaveEvent(event)
-      return
+    boardRect = self.getBoardRect()
+    point = event.position()
+    if not boardRect.contains(point):
+      return self.leaveBoardRect(event)
     # <************************ Setting Hover True ***********************> #
     # ____________________________________________________________________
     # |  This is the case where the mouse enters the board. It is
@@ -94,10 +93,7 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # |   - The board hover flag is set to True  - The event is
     # |  converted to an enter event
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    _enterEvent = None
-    if not self.getHoverBoardFlag():
-      self.setHoverBoardFlag(True)
-      _enterEvent = Settings.convertToEnterEvent(self, event)
+    self.enterBoardRect(event)
     # <*************************** Hover Square **************************> #
     # ____________________________________________________________________
     # |  Ensures that the hovered square on the board rect matches the
@@ -105,28 +101,15 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # |  method returns. If the enter event was set earlier, the event is
     # |  passed to other enter event method instead.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    square = Square.fromPointRect(event.position(), self.getBoardRect())
-    self.setHoverSquare(square)
-    if self.getGrabbedPiece():
-      if _enterEvent is None:
-        return
-      if isinstance(_enterEvent, QEnterEvent):
-        return self.enterEvent(_enterEvent)
-      raise TypeError
+    self.activateHoverSquare(event)
     # <*************************** Hover Piece ***************************> #
     # ____________________________________________________________________
     # |  Matches the hovered piece to the piece currently marked on the
     # |  property causing an update if necessary. Please note that this
     # |  step is not reached during grabbing operations.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    hoverPiece = self.getBoardState().getPiece(square)
-    if not hoverPiece:
-      if self.getHoverPiece():
-        return self.delHoverPiece()
-      return
-    if self.getHoverPiece() == hoverPiece:
-      return
-    self.setHoverPiece(hoverPiece)
+
+    self.activateHoverPiece(event)
 
   def mousePressEvent(self, event: QMouseEvent) -> NoReturn:
     """Implementation of mouse press event grabs the piece on the hovered
@@ -142,10 +125,11 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.button() == Qt.MouseButton.LeftButton:
       hoverPiece = self.getHoverPiece()
+      hoverSquare = self.getHoverSquare()
       if not hoverPiece:
         return
       if isinstance(hoverPiece, ChessPiece):
-        return self.setGrabbedPiece(hoverPiece)
+        return self.beginGrabbing(hoverPiece, hoverSquare)
       raise TypeError
     # <******************** Cancel Grab (Right-Click) ********************> #
     # ____________________________________________________________________
@@ -154,8 +138,7 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # |  but before it has been completed in the release method.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.button() == Qt.MouseButton.RightButton:
-      if self.getGrabbedPiece():
-        pass
+      self.cancelGrabbing()
 
   def mouseReleaseEvent(self, event: QMouseEvent) -> NoReturn:
     """Implementation of mouse release event which releases the item
@@ -168,28 +151,14 @@ class PieceGrabbing(_PieceGrabbingProperties):
     # |  occurs where no square hovered, the piece returns to its origin.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.button() == Qt.MouseButton.LeftButton:
-      grabbedPiece = self.getGrabbedPiece()
-      hoverSquare = self.getHoverSquare()
-      originSquare = self.getOriginSquare()
-      if not originSquare:
-        return
-      if grabbedPiece:
-        if hoverSquare:
-          self.getBoardState().setPiece(hoverSquare, grabbedPiece)
-        elif originSquare:
-          self.getBoardState().setPiece(originSquare, grabbedPiece)
-        else:
-          raise UnexpectedStateError
-      self.setHoverSquare(hoverSquare)
-      self.setHoverPiece(grabbedPiece)
-      self.setHoverCursor()
+      self.completeGrabbing(self.getHoverSquare())
+      return self.update()
+
     # <***************** Opens Context Menu (Right-Click) ****************> #
     # ____________________________________________________________________
     # |  Right-clicking when a grabbing operation is not in progress will
     # |  instead open a menu.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    if event.button() == Qt.MouseButton.RightButton:
-      pass  # NOT YET IMPLEMENTED
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """The MouseLayout subclass provides the painting of chess pieces and

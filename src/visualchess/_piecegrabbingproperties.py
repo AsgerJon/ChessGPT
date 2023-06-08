@@ -133,7 +133,7 @@ class _PieceGrabbingProperties(BoardLayout):
   #########################################################################
   def getGrabbedPiece(self) -> ChessPiece:
     """Getter-function for the currently grabbed piece."""
-    if self._grabbedPiece is None:
+    if not self._grabbedPiece:
       return ChessPiece.EMPTY
     if isinstance(self._grabbedPiece, ChessPiece):
       return self._grabbedPiece
@@ -149,11 +149,10 @@ class _PieceGrabbingProperties(BoardLayout):
       return
     raise TypeError
 
-  def delGrabbedPiece(self) -> ChessPiece:
+  def delGrabbedPiece(self) -> NoReturn:
     """Deleter-function for the grabbed piece. Returns the grabbed piece."""
     piece = self.getGrabbedPiece()
     self.setGrabbedPiece(ChessPiece.EMPTY)
-    return piece
 
   #########################################################################
   ############## END OF Accessor functions for grabbed piece ##############
