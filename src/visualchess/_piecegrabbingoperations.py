@@ -32,4 +32,3 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
       raise ProceduralError('Cancel grabbing')
     self.getBoardState().setPiece(originSquare, piece)
     self.setGrabbedPiece(ChessPiece.EMPTY)
-    
