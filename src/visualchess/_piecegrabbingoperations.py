@@ -39,6 +39,7 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     self.setGrabbedPiece(ChessPiece.EMPTY)
     hoverSquare = self.getHoverSquare()
     hoverPiece = self.getBoardState().getPiece(hoverSquare)
+    self.setHoverCursor()
     if isinstance(hoverPiece, ChessPiece):
       self.setHoverPiece(hoverPiece)
     Sound.whoosh.play()
@@ -48,6 +49,7 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     """Defines the operation where the mouse leaves the board rectangle."""
     if not self.getHoverBoardFlag():
       return False
+    self.setNormalCursor()
     self.delHoverSquare()
     self.delHoverPiece()
     self.setHoverBoardFlag(False)
@@ -77,6 +79,8 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
 
   def activateHoverPiece(self, event: QMouseEvent) -> NoReturn:
     """Applies hover to the piece at the square"""
+    if self.getGrabbedPiece():
+      return
     point = event.position()
     boardRect = self.getBoardRect()
     square = Square.fromPointRect(point, boardRect)
@@ -84,6 +88,10 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if isinstance(piece, ChessPiece):
       if piece != self.getHoverPiece():
         self.setHoverPiece(piece)
+        if self.getHoverPiece():
+          self.setHoverCursor()
+        else:
+          self.setNormalCursor()
       return self.update()
 
   def beginGrabbing(self, piece: ChessPiece, origin: Square) -> NoReturn:

@@ -12,7 +12,11 @@ from ._soundeffect import SoundEffect
 from ._soundenum import Sound
 from ._speaker import Speaker
 from ._soundenum import Sound
-from ._enums import File, Rank, ChessPiece, Square, BoardState
+from ._enums import File, Rank
+from ._square import Square
+from ._chesspiece import ChessPiece
+from ._boardstate import BoardState
+from ._chessmoves import ChessMoves
 from ._boardlayout import BoardLayout
 from ._piecegrabbingproperties import _PieceGrabbingProperties
 from ._piecegrabbingoperations import _PieceGrabbingOperations
