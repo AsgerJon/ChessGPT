@@ -6,12 +6,13 @@ from __future__ import annotations
 from typing import NoReturn
 
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QKeyEvent, QPixmap
 from icecream import ic
-from PySide6.QtWidgets import QMainWindow, QGridLayout
+from PySide6.QtWidgets import QMainWindow, QGridLayout, QLabel
 
 from workstyle import CoreWidget, Indicator
-from visualchess import PieceGrabbing as OMGWIDGET
+# from visualchess import PieceGrabbing as OMGWIDGET
+from linkedinwidget import MyWidget as OMGWIDGET
 from visualchess import Sound
 
 ic.configureOutput(includeContext=True)
@@ -30,6 +31,8 @@ class MainWindow(QMainWindow):
     self._board = None
     self._checkButton = None
     self._indicator = None
+    self._label = QLabel()
+    self._label.setPixmap(QPixmap(64, 16))
     self._fileMenu = self.menuBar().addMenu('Files')
     self._editMenu = self.menuBar().addMenu('Edit')
     self._helpMenu = self.menuBar().addMenu('Help')
@@ -104,7 +107,8 @@ class MainWindow(QMainWindow):
   def setupWidgets(self, ) -> bool:
     """Sets up the widgets"""
     self.getBaseLayout().addWidget(self.getBoard(), 0, 0)
-    self.getBaseLayout().addWidget(self.getIndicator(), 1, 0)
+    self.getBaseLayout().addWidget(self._label, 1, 0)
+    self.getBaseLayout().addWidget(self.getIndicator(), 2, 0)
     self.getBaseWidget().setLayout(self.getBaseLayout())
     self.setCentralWidget(self.getBaseWidget())
     return self.setupActions()

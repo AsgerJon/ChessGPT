@@ -12,7 +12,7 @@ from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
 
 if TYPE_CHECKING:
-  pass
+  from visualchess import Square
 
 ic.configureOutput(includeContext=True)
 
@@ -45,9 +45,17 @@ class File(IntEnum):
   def fromStr(cls, name: str) -> File:
     """Finds the file based on str name"""
     for file in File:
-      if file.name == name:
+      if file.name.lower() == name.lower():
         return file
     raise TypeError
+
+  def __str__(self, ) -> str:
+    """String Representation"""
+    return self.name.upper()[0]
+
+  def __repr__(self, ) -> str:
+    """Code Representation"""
+    return """File.%s""" % self.name
 
 
 class Rank(IntEnum):
@@ -76,6 +84,14 @@ class Rank(IntEnum):
       if rank.name[-1] == name[-1]:
         return rank
     raise TypeError
+
+  def __str__(self, ) -> str:
+    """String Representation"""
+    return '%s' % self.name[-1]
+
+  def __repr__(self, ) -> str:
+    """Code Representation"""
+    return """Rank.%s""" % self.name
 
 
 class Diagonal(IntEnum):
@@ -114,5 +130,30 @@ class Diagonal(IntEnum):
     """Creates a Diagonal instance from the given file sloping right."""
 
   @classmethod
-  def fromStr(cls, stringRepresentation: str) -> Diagonal:
+  def fromStr(cls, name: str) -> Diagonal:
     """Finds an instance from the given string"""
+    if len(name) != 2:
+      msg = """Diagonal names must be two characters, but received: %s of 
+      length %d!"""
+      raise ValueError(msg % (name, len(name)))
+    for item in cls:
+      if item.name == name:
+        return item
+    msg = """Unable to recognize given name as a diagonal: %s!"""
+    raise ValueError(msg % name)
+
+  @classmethod
+  def fromValue(cls, value: int) -> Diagonal:
+    """Finds the matching value"""
+    for diagonal in Diagonal:
+      if diagonal.value == value:
+        return diagonal
+    raise TypeError
+
+  def getSquares(self) -> list[Square]:
+    """Returns a list of squares contained in this diagonal"""
+    squares = []
+    file = File.fromStr(self.name[0])
+    for (i, rank) in enumerate(Rank):
+      squares.append(Square.fromFileRank(file, rank))
+    return []
