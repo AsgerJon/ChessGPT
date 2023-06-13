@@ -36,6 +36,16 @@ class Move(Enum):
   Knight300 = (-2, 1)
   Knight330 = (-1, 2)
 
+  def getKingMoves(self) -> list[Move]:
+    """Getter-function for the list of king moves"""
+    out = [Move.UP, Move.LEFT, Move.DOWN, Move.RIGHT]
+    return [*out, Move.UPRIGHT, Move.UPLEFT, Move.DOWNLEFT, Move.DOWNRIGHT, ]
+
+  def getKnightMoves(self) -> list[Move]:
+    """Getter-function for the knight moves"""
+    return [Move.Knight30, Move.Knight60, Move.Knight120, Move.Knight150,
+            Move.Knight210, Move.Knight240, Move.Knight300, Move.Knight330, ]
+
   def __add__(self, other: Square) -> Optional[Square]:
     """Offsets the given square if possible"""
     x, y = other.x + self.x, other.y + self.y
@@ -54,7 +64,7 @@ class Move(Enum):
     """Offsets the given square if possible"""
     return self + other
 
-  def __rsub__(self, other) -> Optional[Square]:
+  def __rsub__(self, other: Square) -> Optional[Square]:
     """Offsets the given square if possible"""
     return self - other
 

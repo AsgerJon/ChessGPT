@@ -9,9 +9,9 @@ from typing import NoReturn
 from PySide6.QtCore import QRect, QRectF
 from icecream import ic
 from worktoy.typetools import TypeBag
-from worktoy.waitaminute import UnexpectedStateError
+from worktoy.waitaminute import UnexpectedStateError, ProceduralError
 
-from visualchess import ChessPiece, Square
+from visualchess import ChessPiece, Square, Move
 from visualchess.chesspieces import initialPosition
 
 ic.configureOutput(includeContext=True)
@@ -87,3 +87,28 @@ class BoardState:
     piece = self.getPiece(square)
     self.setPiece(square, ChessPiece.EMPTY)
     return piece
+
+  def getMoveSquares(self, square: Square) -> list[Square]:
+    """Getter-function for the squares to which the piece on the given
+    square can move."""
+    if not self.getPiece(square):
+      return []
+
+  def getKingSquares(self, square: Square, **kwargs) -> list[Square]:
+    """Getter-function for the squares reachable by a king on the given
+    square. This method raises an exception a king is not on the given
+    square. Suppress this error by setting keyword argument 'strict' to
+    False (default is True).
+
+    Please note that this method will return moves that would put the king
+    in check! Such moves a removed by a separate method which removes all
+    moves which would put the king in check. This method does remove moves
+    that would bring the piece out of bounds."""
+    kings = [ChessPiece.WHITE_KING, ChessPiece.BLACK_KING]
+    piece, out = self.getPiece(square), []
+    if piece not in kings and kwargs.get('strict', True):
+      msg = """Expected a king on square %s, but found instead: %s"""
+      raise ProceduralError(msg % (square, self.getPiece(square)))
+    for move in Move.getKingMoves():
+      out.append(square + move)
+    return [move for move in out if move is not None]
