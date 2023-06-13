@@ -13,7 +13,7 @@ from worktoy.stringtools import stringList
 
 from moreworktoy import ArgumentError
 from visualchess import Settings
-from workstyle import CoreWidget
+from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
 Device = QAudioDevice

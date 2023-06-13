@@ -5,7 +5,6 @@ allows us to input chess moves visually."""
 from __future__ import annotations
 
 from worktoy.typetools import TypeBag
-from workstyle import CoreWidget
 
 from ._settings import Settings
 from ._soundeffect import SoundEffect
@@ -24,5 +23,7 @@ from ._piecegrabbingoperations import _PieceGrabbingOperations
 from ._piecegrabbing import PieceGrabbing
 from ._loadpiece import Piece, ChessColor, loadPiece
 from ._checkbutton import CheckButton
+
+from workside.widgets import CoreWidget
 
 Widget = TypeBag(CoreWidget, BoardLayout, PieceGrabbing)

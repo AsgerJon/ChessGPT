@@ -12,7 +12,7 @@ from icecream import ic
 from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 
-from workstyle import CoreWidget
+from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
 

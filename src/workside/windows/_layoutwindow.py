@@ -1,6 +1,6 @@
 """LayoutWindow"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QWidget
 from icecream import ic
 from worktoy.core import maybe
 
+from visualchess import PieceGrabbing
 from workside.widgets import CoreWidget, Spacer, VSpacer, HSpacer, \
   DoubleSpacer, DebugButton
 from workside.widgets import Label
@@ -40,6 +41,7 @@ class LayoutWindow(BaseWindow):
     self._baseHeaderWidget = None
     self._debugButton = None
     self._baseWidget = None
+    self._boardWidget = None
     self._fileLabel = None
     self._centralWidget = None
     self._baseGridLayout = None
@@ -61,6 +63,21 @@ class LayoutWindow(BaseWindow):
     if isinstance(self._baseVerticalBoxLayout, QVBoxLayout):
       return self._baseVerticalBoxLayout
     raise TypeError
+
+  def _createBoardWidget(self) -> NoReturn:
+    """Creator-function for the vertical base layout"""
+    self._boardWidget = PieceGrabbing()
+
+  def _getBoardWidget(self) -> PieceGrabbing:
+    """Getter-function for the vertical base layout"""
+    if self._boardWidget is None:
+      self._createBoardWidget()
+      return self._getBoardWidget()
+    if isinstance(self._boardWidget, PieceGrabbing):
+      return self._boardWidget
+    raise TypeError
+
+  PieceGrabbing
 
   def _createHorizontalBoxLayout(self) -> NoReturn:
     """Creator function for the horizontal layout"""
@@ -166,7 +183,7 @@ class LayoutWindow(BaseWindow):
     self._getBaseLayout().addWidget(self._getVSpacer(), 2, 0, )
     self._getBaseLayout().addWidget(self._getVSpacer(), 2, 1, )
     self._getBaseLayout().addWidget(self._getHSpacer(), 1, 2, )
-    self._getBaseLayout().addWidget(self._getDoubleSpacer(), 1, 1, )
+    self._getBaseLayout().addWidget(self._getBoardWidget(), 1, 1, )
     self._getBaseLayout().addWidget(self._getDebugButton(), 2, 2, )
     self._getBaseLayout().addWidget(self._getHSpacer(), 0, 2, )
     self._getBaseWidget().setLayout(self._getBaseLayout())

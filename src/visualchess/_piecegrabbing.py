@@ -11,10 +11,9 @@ from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QMouseEvent, QPaintEvent, QPainter, QEnterEvent, \
   QKeyEvent
 from icecream import ic
-from worktoy.waitaminute import UnexpectedStateError
 
 from visualchess import ChessPiece, Square, BoardLayout
-from visualchess import Settings, _PieceGrabbingOperations
+from visualchess import _PieceGrabbingOperations
 from workstyle.stylesettings import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)

@@ -5,7 +5,6 @@ logic."""
 from __future__ import annotations
 
 import string
-import sys
 from typing import NoReturn
 
 from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
@@ -13,9 +12,11 @@ from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
 
 from visualchess import Square, ChessPiece, Settings
-from workstyle import CoreWidget
-from workstyle.stylesettings import backgroundStyle, bezelStyle, \
-  labelStyle, outlineStyle, gridStyle, darkSquareStyle, lightSquareStyle
+from workside.styles import darkSquareStyle, lightSquareStyle, \
+  outlineStyle, \
+  labelStyle, backgroundStyle
+from workside.styles._styleinstances import gridStyle, bezelStyle
+from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
 

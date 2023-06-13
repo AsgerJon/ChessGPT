@@ -16,7 +16,7 @@ from worktoy.waitaminute import ReadOnlyError
 
 from moreworktoy import Iterify
 from visualchess import SoundEffect
-from workstyle import CoreWidget
+from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
 

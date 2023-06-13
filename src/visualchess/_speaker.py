@@ -15,7 +15,7 @@ from worktoy.core import maybe
 from worktoy.stringtools import stringList
 
 from visualchess import Settings
-from workstyle import CoreWidget
+from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
 
