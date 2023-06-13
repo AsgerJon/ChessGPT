@@ -16,6 +16,7 @@ from visualchess import File, Rank
 
 if TYPE_CHECKING:
   from visualchess import Widget
+  from visualchess import Move
 
 ic.configureOutput(includeContext=True)
 
@@ -32,7 +33,6 @@ def guardRect(boardRect: Rect) -> QRectF:
 
 
 class Square(Enum):
-  """Square Enum"""
   A1 = (File.A, Rank.rank1)
   A2 = (File.A, Rank.rank2)
   A3 = (File.A, Rank.rank3)
@@ -185,3 +185,9 @@ class Square(Enum):
       return cls.fromInts(fileVal, rankVal)
     else:
       raise TypeError
+
+  def __add__(self, move: Move) -> Square:
+    """Finds the square that one arrives at by applying given move"""
+    x, y = self.x() + move.x, self.y() + move.y
+    if -1 < x < 8 and -1 < y < 8:
+      return self.fromInts(x, y)

@@ -14,6 +14,7 @@ from ._speaker import Speaker
 from ._soundenum import Sound
 from ._enums import File, Rank
 from ._square import Square
+from ._move import Move
 from ._chesspiece import ChessPiece
 from ._boardstate import BoardState
 from ._chessmoves import ChessMoves

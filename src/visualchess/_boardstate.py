@@ -68,7 +68,6 @@ class BoardState:
       if isinstance(piece, ChessPiece):
         return piece
       raise TypeError
-    ic(square, piece)
     os.abort()
     raise UnexpectedStateError
 
