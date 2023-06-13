@@ -127,3 +127,33 @@ class ChessPiece(IntEnum):
     if not self:
       return self
     return ChessPiece.fromInt(-self.value)
+
+  @classmethod
+  def getKings(cls) -> list[ChessPiece]:
+    """Returns a list of all the kings"""
+    return [cls.BLACK_KING, cls.WHITE_KING]
+
+  @classmethod
+  def getKnights(cls) -> list[ChessPiece]:
+    """Returns a list of all the knights"""
+    return [cls.BLACK_KNIGHT, cls.WHITE_KNIGHT]
+
+  @classmethod
+  def getBishops(cls) -> list[ChessPiece]:
+    """Returns a list of all the bishops"""
+    return [cls.BLACK_BISHOP, cls.WHITE_BISHOP]
+
+  @classmethod
+  def getRooks(cls) -> list[ChessPiece]:
+    """Returns a list of all the rooks"""
+    return [cls.BLACK_ROOK, cls.WHITE_ROOK]
+
+  @classmethod
+  def getQueens(cls) -> list[ChessPiece]:
+    """Returns a list of all the queens"""
+    return [cls.BLACK_QUEEN, cls.WHITE_QUEEN]
+
+  @classmethod
+  def getPawns(cls) -> list[ChessPiece]:
+    """Returns a list of all the pawns"""
+    return [cls.BLACK_PAWN, cls.WHITE_PAWN]

@@ -46,6 +46,14 @@ class Move(Enum):
     return [Move.Knight30, Move.Knight60, Move.Knight120, Move.Knight150,
             Move.Knight210, Move.Knight240, Move.Knight300, Move.Knight330, ]
 
+  def getRookMoves(self) -> list[Move]:
+    """Getter-function for the Rook moves"""
+    return [Move.UP, Move.DOWN, Move.LEFT, Move.RIGHT]
+
+  def getBishopMoves(self) -> list[Move]:
+    """Getter-function for the bishop moves"""
+    return [Move.UPLEFT, Move.UPRIGHT, Move.DOWNLEFT, Move.DOWNRIGHT]
+
   def __add__(self, other: Square) -> Optional[Square]:
     """Offsets the given square if possible"""
     x, y = other.x + self.x, other.y + self.y

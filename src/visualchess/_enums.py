@@ -3,7 +3,7 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QRect, QRectF
@@ -20,6 +20,12 @@ Rect = TypeBag(QRectF, QRect)
 
 _pieces = stringList('King, Queen, Rook, Bishop, Knight, Pawn')
 _colors = stringList('white, black')
+
+
+class ChessColor(Enum):
+  """ChessColor enum"""
+  white = 0
+  black = 1
 
 
 class File(IntEnum):
