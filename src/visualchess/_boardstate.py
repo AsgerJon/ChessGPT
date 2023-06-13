@@ -94,6 +94,15 @@ class BoardState:
     if not self.getPiece(square):
       return []
 
+  def pieceGuard(self, piece: ChessPiece | str, square: Square) -> bool:
+    """This method checks if the given piece is on the given square.
+    Please note that this method is color agnostic meaning that it returns
+    true regardless of what color the piece is."""
+    placedPiece = self.getPiece(square)
+    if not placedPiece:
+      return False
+    return True if piece in [placedPiece, ~placedPiece] else False
+
   def getKingSquares(self, square: Square, **kwargs) -> list[Square]:
     """Getter-function for the squares reachable by a king on the given
     square. This method raises an exception a king is not on the given
@@ -104,11 +113,27 @@ class BoardState:
     in check! Such moves a removed by a separate method which removes all
     moves which would put the king in check. This method does remove moves
     that would bring the piece out of bounds."""
-    kings = [ChessPiece.WHITE_KING, ChessPiece.BLACK_KING]
     piece, out = self.getPiece(square), []
-    if piece not in kings and kwargs.get('strict', True):
-      msg = """Expected a king on square %s, but found instead: %s"""
+    if not self.pieceGuard(piece, square):
+      msg = """Expected """
       raise ProceduralError(msg % (square, self.getPiece(square)))
     for move in Move.getKingMoves():
       out.append(square + move)
     return [move for move in out if move is not None]
+
+  def getKnightSquares(self, square: Square, **kwargs) -> list[Square]:
+    """Getter-function for the knight moves. See docstring for king moves."""
+    knights = [ChessPiece.WHITE_KNIGHT, ChessPiece.BLACK_KNIGHT]
+    piece, out = self.getPiece(square), []
+    if piece not in knights and kwargs.get('strict', True):
+      msg = """Expected a knight on square %s, but found instead: %s"""
+      raise ProceduralError(msg % (square, self.getPiece(square)))
+    for move in Move.getKnightMoves():
+      out.append(square + move)
+    return [move for move in out if move is not None]
+
+  def getRookSquares(self, square: Square, **kwargs) -> list[Square]:
+    """Getter-function for the squares reachable by a rook from the given
+    square. Set keyword argument 'strict' to False to allow even if a rook
+    is not on the square. By default this would raise an error. """
+    

@@ -35,6 +35,16 @@ class ChessPiece(IntEnum):
   WHITE_QUEEN = -5
   WHITE_KING = -6
 
+  @classmethod
+  def fromInt(cls, index: int, ) -> ChessPiece:
+    """Returns the instance having the given int"""
+    for piece in cls:
+      if piece.value == index:
+        return piece
+    msg = """Expected an index greater than -7 and less than 7, 
+    but received: %d"""
+    raise IndexError(msg % index)
+
   def getPixmap(self) -> QPixmap:
     """Generates QPixmap representation of the piece"""
     if not self.value:
@@ -111,3 +121,9 @@ class ChessPiece(IntEnum):
     if self.piece != other.piece:
       return False
     return True
+
+  def __invert__(self, ) -> ChessPiece:
+    """Returns the piece of the opposite color"""
+    if not self:
+      return self
+    return ChessPiece.fromInt(-self.value)

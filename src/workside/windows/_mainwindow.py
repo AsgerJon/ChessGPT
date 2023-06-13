@@ -8,6 +8,7 @@ from typing import NoReturn
 from PySide6.QtCore import Qt
 from icecream import ic
 
+from visualchess import ChessPiece
 from workside.windows import LayoutWindow
 
 ic.configureOutput(includeContext=True)
@@ -41,5 +42,5 @@ class MainWindow(LayoutWindow):
 
   def debugFunc04(self) -> NoReturn:
     """omg"""
-    print(self._getDebugButton()._getLeftButton(
-    )._getDoubleClickLockoutTimer().start())
+    print(ChessPiece.WHITE_KNIGHT)
+    print(~ChessPiece.WHITE_KNIGHT)
