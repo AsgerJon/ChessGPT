@@ -178,14 +178,9 @@ class LayoutWindow(BaseWindow):
   def setupWidgets(self) -> NoReturn:
     """Sets up the widgets"""
     self._getBaseLayout().addWidget(self._getBaseHeaderWidget(), 0, 0, )
-    self._getBaseLayout().addWidget(self._getVSpacer(), 1, 0, )
-    self._getBaseLayout().addWidget(self._getHSpacer(), 0, 1, )
-    self._getBaseLayout().addWidget(self._getVSpacer(), 2, 0, )
-    self._getBaseLayout().addWidget(self._getVSpacer(), 2, 1, )
-    self._getBaseLayout().addWidget(self._getHSpacer(), 1, 2, )
-    self._getBaseLayout().addWidget(self._getBoardWidget(), 1, 1, )
-    self._getBaseLayout().addWidget(self._getDebugButton(), 2, 2, )
-    self._getBaseLayout().addWidget(self._getHSpacer(), 0, 2, )
+
+    self._getBaseLayout().addWidget(self._getBoardWidget(), 1, 0, )
+    self._getBaseLayout().addWidget(self._getDebugButton(), 2, 0, )
     self._getBaseWidget().setLayout(self._getBaseLayout())
     self.setCentralWidget(self._getBaseWidget())
 

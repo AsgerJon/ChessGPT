@@ -1,7 +1,7 @@
 """DebugButton is a subclass of AbstractButton allowing implementation of
 various functionality for use in more specific subclasses"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn
@@ -26,6 +26,8 @@ class DebugButton(AbstractButton):
   def __init__(self, *args, **kwargs) -> None:
     self._text = None
     AbstractButton.__init__(self, *args, **kwargs)
+    _policy = self.contract()
+    self.setSizePolicy(_policy)
     self.leftPressHold.connect(lambda: print(
       'AbstractButton: Left PressHold!'))
     self.leftClick.connect(lambda: print(

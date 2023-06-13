@@ -14,7 +14,7 @@ from icecream import ic
 
 from visualchess import ChessPiece, Square, BoardLayout
 from visualchess import _PieceGrabbingOperations
-from workstyle.stylesettings import hoveredSquareStyle
+from workside.styles._styleinstances import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)
 
@@ -29,6 +29,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
   def __init__(self, *args, **kwargs) -> None:
     _PieceGrabbingOperations.__init__(self, *args, **kwargs)
     self.setMouseTracking(True)
+    self.setSizePolicy(self.doubleExpand())
 
   # --------------------------------------------------------------------- #
   ########################## Mouse button events ##########################

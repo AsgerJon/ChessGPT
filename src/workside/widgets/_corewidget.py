@@ -1,7 +1,7 @@
 """CoreWidget subclasses QWidget providing common and general
 functionality."""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn
@@ -45,11 +45,11 @@ class CoreWidget(QWidget):
     return policy
 
   @classmethod
-  def expandVerticalPolicy(cls) -> QSizePolicy:
-    """Creator function for a size policy expanding vertically,
-    and contracting horizontally"""
+  def contract(cls) -> QSizePolicy:
+    """Creator function for a size policy contracting vertically,
+    and expanding horizontally"""
     return cls.createSizePolicy(
-      vertical=QSizePolicy.Policy.MinimumExpanding,
+      vertical=QSizePolicy.Policy.Maximum,
       horizontal=QSizePolicy.Policy.Maximum)
 
   @classmethod
@@ -57,8 +57,24 @@ class CoreWidget(QWidget):
     """Creator function for a size policy expanding vertically,
     and contracting horizontally"""
     return cls.createSizePolicy(
+      vertical=QSizePolicy.Policy.MinimumExpanding,
+      horizontal=QSizePolicy.Policy.Maximum)
+
+  @classmethod
+  def expandVerticalPolicy(cls) -> QSizePolicy:
+    """Creator function for a size policy expanding vertically,
+    and contracting horizontally"""
+    return cls.createSizePolicy(
       horizontal=QSizePolicy.Policy.Maximum,
       vertical=QSizePolicy.Policy.MinimumExpanding, )
+
+  @classmethod
+  def doubleExpand(cls) -> QSizePolicy:
+    """Creator function for a size policy contracting vertically,
+    and expanding horizontally"""
+    return cls.createSizePolicy(
+      vertical=QSizePolicy.Policy.MinimumExpanding,
+      horizontal=QSizePolicy.Policy.MinimumExpanding)
 
   @staticmethod
   def parseParent(*args, **kwargs) -> QWidget:

@@ -1,6 +1,6 @@
 """MainWindow"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn
@@ -20,8 +20,8 @@ class MainWindow(LayoutWindow):
 
   def __init__(self, ) -> None:
     LayoutWindow.__init__(self)
-    self.setMinimumWidth(640)
-    self.setMinimumHeight(480)
+    self.setMinimumWidth(480)
+    self.setMinimumHeight(640)
     self.setWindowTitle('Welcome to WorkSide!')
 
   def debugFunc01(self) -> NoReturn:
