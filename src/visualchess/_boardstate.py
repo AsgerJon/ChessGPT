@@ -8,7 +8,7 @@ from typing import NoReturn
 
 from PySide6.QtCore import QRect, QRectF
 from icecream import ic
-from worktoy.stringtools import stringList
+from worktoy.stringtools import stringList, monoSpace
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import UnexpectedStateError
 
@@ -260,4 +260,73 @@ class BoardState:
       square = Square.fromStr(line[0])
       piece = ChessPiece.fromColorPiece(line[1], line[2])
       self[square] = piece
- 
+
+  def emptySquares(self, squares: list[Square]) -> bool:
+    """Checks that given list of squares are all empty"""
+    if isinstance(squares, list):
+      if any([self.getPiece(s) for s in squares]):
+        return False
+      return True
+    msg = """Expected squares to be of type %s, but received %s."""
+    raise TypeError(msg % (list, type(squares)))
+
+  def lineOfSight(self, source: Square, target: Square) -> bool:
+    """Checks if there is an uninterrupted path between the pieces."""
+    squares = []
+    if source is target:
+      return True  # puts the piece back
+    if source | target:  # Indicates that source and target shares file
+      d = abs(source.rank - target.rank)
+      if d == 1:
+        return True
+      file = source.file
+      rank0 = min(source.rank, target.rank)
+      for i in range(1, d):
+        squares.append(Square.fromInts(file, rank0 + i))
+      return self.emptySquares(squares)
+    if source >> target:  # Indicates right moving diagonal
+      df, dr = (source.file - target.file), (source.rank - target.rank)
+      if (dr / df) ** 2 > 0:
+        msg = """Expected squares to be on a diagonal indicated by a slope 
+        with absolute value of unity, but received: %.3f ranks per files!"""
+        raise UnexpectedStateError(monoSpace(msg), dr / df)
+      if dr + df:
+        msg = """Expected squares to be on a right moving diagonal, 
+        but received a positive slope indicating a left moving diagonal."""
+        raise UnexpectedStateError(monoSpace(msg), dr / df)
+      d = abs(dr)
+      if abs(dr) == 1:
+        return True
+      file0 = min(source.file, target.file)
+      rank0 = max(source.rank, target.rank)
+      for i in range(1, d):
+        squares.append(Square.fromInts(file0 + i, rank0 - i))
+      return self.emptySquares(squares)
+    if source << target:  # Indicates left moving diagonal
+      df, dr = (source.file - target.file), (source.rank - target.rank)
+      if (dr / df) ** 2 > 0:
+        msg = """Expected squares to be on a diagonal indicated by a slope 
+        with absolute value of unity, but received: %.3f ranks per files!"""
+        raise UnexpectedStateError(monoSpace(msg), dr / df)
+      if df - dr:
+        msg = """Expected squares to be on a left moving diagonal, 
+        but received a negative slope indicating a right moving diagonal."""
+        raise UnexpectedStateError(monoSpace(msg), dr / df)
+      d = abs(dr)
+      if abs(dr) == 1:
+        return True
+      file0 = min(source.file, target.file)
+      rank0 = min(source.rank, target.rank)
+      for i in range(1, d):
+        squares.append(Square.fromInts(file0 + i, rank0 + i))
+      return self.emptySquares(squares)
+    if source - target:  # Indicates that source and target shares rank
+      d = abs(source.file - target.file)
+      if d == 1:
+        return True
+      rank0 = source.rank
+      file0 = min(source.rank, target.rank)
+      for i in range(1, d):
+        squares.append(Square.fromInts(file0 + i, rank0))
+      return self.emptySquares(squares)
+    return False

@@ -31,21 +31,6 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     _PieceGrabbingProperties.__init__(self, *args, **kwargs)
     self._cancelGrabbingOperation = None
 
-  def cancelGrabbing(self) -> NoReturn:
-    """Defines the operation which cancels any ongoing grabbing operation"""
-    originSquare, piece = self.getOriginSquare(), self.getGrabbedPiece()
-    if not plenty(originSquare, piece):
-      raise ProceduralError('Cancel grabbing')
-    self.getBoardState().setPiece(originSquare, piece)
-    self.setGrabbedPiece(ChessPiece.EMPTY)
-    hoverSquare = self.getHoverSquare()
-    hoverPiece = self.getBoardState().getPiece(hoverSquare)
-    self.setHoverCursor()
-    if isinstance(hoverPiece, ChessPiece):
-      self.setHoverPiece(hoverPiece)
-    Sound.whoosh.play()
-    self.update()
-
   def leaveBoardRect(self, event: QEvent) -> NoReturn:
     """Defines the operation where the mouse leaves the board rectangle."""
     if not self.getHoverBoardFlag():
@@ -107,12 +92,38 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     Sound.slide.play()
     self.update()
 
-  def checkTarget(self, source: Square) -> bool:
+  def checkTarget(self, ) -> bool:
     """Checks if the target square is valid"""
-    target = self.getHoverSquare()
+    grabbedPiece = self.getGrabbedPiece()
+    if grabbedPiece in ChessPiece.getQueenRookBishop():
+      lineOfSight = self.getBoardState().lineOfSight(
+        self.getOriginSquare(), self.getHoverSquare())
+      return True if lineOfSight else False
+    if grabbedPiece in [*ChessPiece.getKings(), *ChessPiece.getKnights()]:
+      return True
+    if grabbedPiece in ChessPiece.getPawns():
+      msg = """Pawn moves are not yet implemented!"""
+      raise NotImplementedError(msg)
+
+  def cancelGrabbing(self) -> NoReturn:
+    """Defines the operation which cancels any ongoing grabbing operation"""
+    originSquare, piece = self.getOriginSquare(), self.getGrabbedPiece()
+    if not plenty(originSquare, piece):
+      raise ProceduralError('Cancel grabbing')
+    self.getBoardState().setPiece(originSquare, piece)
+    self.setGrabbedPiece(ChessPiece.EMPTY)
+    hoverSquare = self.getHoverSquare()
+    hoverPiece = self.getBoardState().getPiece(hoverSquare)
+    self.setHoverCursor()
+    if isinstance(hoverPiece, ChessPiece):
+      self.setHoverPiece(hoverPiece)
+    Sound.whoosh.play()
+    self.update()
 
   def completeGrabbing(self, *args) -> bool:
     """Completes the grabbing operation"""
+    if not self.checkTarget():
+      return self.cancelGrabbing()
     if args:
       warn('Unexpected positional arguments received!')
     piece = self.getGrabbedPiece()

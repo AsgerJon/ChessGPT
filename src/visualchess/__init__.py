@@ -17,7 +17,6 @@ from ._move import PieceMove
 from ._chesspiece import ChessPiece
 from ._boardstate import BoardState
 from ._debugstate import DebugState
-from ._chessmoves import PieceMove
 from ._boardlayout import BoardLayout
 from ._piecegrabbingproperties import _PieceGrabbingProperties
 from ._piecegrabbingoperations import _PieceGrabbingOperations

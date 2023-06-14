@@ -52,7 +52,7 @@ def timer(timerName: str, interval: int, signal: str = None) -> CallMeMaybe:
         msg = """Expected signalName to be of type %s, but received %s!"""
         raise TypeError(msg % (str, type(signalName)))
       _timer.timeout.connect(_signal.emit)
-      setattr(self, _name, timer)
+      setattr(self, _name, _timer)
 
     def getTimer(self, ) -> QTimer:
       """Getter-function for the timer"""

@@ -10,7 +10,7 @@ from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
 from worktoy.parsing import maybeType
 from worktoy.typetools import TypeBag
-from worktoy.waitaminute import ReadOnlyError
+from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
 from visualchess import File, Rank
 
@@ -193,12 +193,6 @@ class Square(Enum):
     else:
       raise TypeError
 
-  def __add__(self, move: PieceMove) -> Square:
-    """Finds the square that one arrives at by applying given move"""
-    x, y = self.x() + move.x, self.y() + move.y
-    if -1 < x < 8 and -1 < y < 8:
-      return self.fromInts(x, y)
-
   @classmethod
   def getCorners(cls) -> list[Square]:
     """Getter-function for corners"""
@@ -211,3 +205,48 @@ class Square(Enum):
   @classmethod
   def getKingSquares(cls) -> list[Square]:
     """Getter-function for squares where kings start"""
+
+  def _guardSelfComparison(self, other: Square) -> bool:
+    """Raises an error if self and other is in fact the same square"""
+    if self is other:
+      msg = """Comparing a square with itself is not supported. This 
+      occurrence is an indication of a deeper problem with the code, which
+      is the reason for this being considered an error."""
+      raise UnexpectedStateError(msg)
+    return True
+
+  def __or__(self, other: Square) -> bool:
+    """The pipe operator | is used to indicate that the squares are on the
+    same file"""
+    self._guardSelfComparison(other)
+    return True if self.file == other.file else False
+
+  def __rshift__(self, other: Square) -> bool:
+    """Use of the right shift operator >> is taken to mean that the two
+    squares would be connected along a right-directed diagonal. Please note
+    that this is as seen from the player, which is the reverse of the
+    direction of the inner logic because PySide6 and Qt has the vertical
+    axis upside down.
+
+    The computation compares the different between ranks and files. If
+    they share a diagonal, the ratio between their differences in files
+    and ranks will be 1 or 1-. Since the PySide6 is positive from top to
+    down, a positive unit ratio means a left moving diagonal.
+    """
+    self._guardSelfComparison(other)
+    df = self.file - other.file
+    dr = self.rank - other.rank
+    return False if df + dr else True
+
+  def __lshift__(self, other: Square) -> bool:
+    """Left shift << is implemented to test the left moving diagonal. See
+    the docstring for the right shift above."""
+    self._guardSelfComparison(other)
+    df = self.file - other.file
+    dr = self.rank - other.rank
+    return True if df + dr else False
+
+  def __sub__(self, other: Square) -> bool:
+    """The subtraction operator - is taken to mean horizontal match"""
+    self._guardSelfComparison(other)
+    return True if self.rank == other.rank else False

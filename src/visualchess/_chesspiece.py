@@ -95,9 +95,6 @@ class ChessPiece(IntEnum):
     """Illegal setter function"""
     raise ReadOnlyError('piece', 'set')
 
-  color = property(getColor, setColor, setColor)
-  piece = property(getPiece, setPiece, setPiece)
-
   @classmethod
   def fromColorPiece(cls, color: str, piece: str) -> ChessPiece:
     """Finds the piece given the color and piece type"""
@@ -157,3 +154,11 @@ class ChessPiece(IntEnum):
   def getPawns(cls) -> list[ChessPiece]:
     """Returns a list of all the pawns"""
     return [cls.BLACK_PAWN, cls.WHITE_PAWN]
+
+  @classmethod
+  def getQueenRookBishop(cls) -> list[ChessPiece]:
+    """Returns a list of long range pieces"""
+    return [*cls.getQueens(), *cls.getRooks(), *cls.getBishops(), ]
+
+  color = property(getColor, setColor, setColor)
+  piece = property(getPiece, setPiece, setPiece)
