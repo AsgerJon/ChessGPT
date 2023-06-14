@@ -8,8 +8,8 @@ from __future__ import annotations
 from typing import NoReturn
 
 from PySide6.QtCore import Qt, QEvent
-from PySide6.QtGui import QMouseEvent, QPaintEvent, QPainter, QEnterEvent, \
-  QKeyEvent
+from PySide6.QtGui import QMouseEvent, QPaintEvent, QPainter, QEnterEvent
+from PySide6.QtGui import QKeyEvent
 from icecream import ic
 
 from visualchess import ChessPiece, Square, BoardLayout
@@ -151,7 +151,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # |  occurs where no square hovered, the piece returns to its origin.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.button() == Qt.MouseButton.LeftButton:
-      self.completeGrabbing(self.getHoverSquare())
+      self.completeGrabbing()
       return self.update()
 
     # <***************** Opens Context Menu (Right-Click) ****************> #

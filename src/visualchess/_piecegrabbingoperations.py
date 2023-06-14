@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from os import abort
 from typing import NoReturn
+from warnings import warn
 
 from PySide6.QtCore import QEvent
 from PySide6.QtGui import QEnterEvent, QMouseEvent
@@ -106,13 +107,19 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     Sound.slide.play()
     self.update()
 
-  def completeGrabbing(self, target: Square) -> bool:
+  def checkTarget(self, source: Square) -> bool:
+    """Checks if the target square is valid"""
+    target = self.getHoverSquare()
+
+  def completeGrabbing(self, *args) -> bool:
     """Completes the grabbing operation"""
+    if args:
+      warn('Unexpected positional arguments received!')
     piece = self.getGrabbedPiece()
     if not piece:
       return False
     self.delGrabbedPiece()
-    self.getBoardState().setPiece(target, piece)
+    self.getBoardState().setPiece(self.getHoverSquare(), piece)
     self.setHoverPiece(piece)
     self.setHoverCursor()
     self.update()

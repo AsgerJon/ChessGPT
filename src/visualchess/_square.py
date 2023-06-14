@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import NoReturn, TYPE_CHECKING
+from typing import NoReturn, TYPE_CHECKING, Never
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
@@ -16,7 +16,7 @@ from visualchess import File, Rank
 
 if TYPE_CHECKING:
   from visualchess import Widget
-  from visualchess import Move
+  from visualchess import PieceMove
 
 ic.configureOutput(includeContext=True)
 
@@ -33,6 +33,7 @@ def guardRect(boardRect: Rect) -> QRectF:
 
 
 class Square(Enum):
+  """Enum for the chess board squares"""
   A1 = (File.A, Rank.rank1)
   A2 = (File.A, Rank.rank2)
   A3 = (File.A, Rank.rank3)
@@ -102,20 +103,26 @@ class Square(Enum):
     """Getter-function for the file number"""
     return self.value[0].value
 
-  def setX(self, *_) -> NoReturn:
-    """Illegal setter-function"""
-    raise ReadOnlyError()
-
   def getY(self, ) -> int:
     """Getter-function for the rank number"""
     return self.value[1].value
 
-  def setY(self, *_) -> NoReturn:
-    """Illegal setter-function"""
+  def _noSet(self, *_) -> Never:
+    """Illegal accessor function"""
     raise ReadOnlyError()
 
-  x = property(getX, setX, setX)
-  y = property(getY, setY, setY)
+  def _getFile(self) -> File:
+    """Getter-function for file"""
+    return self.value[0]
+
+  def _getRank(self) -> Rank:
+    """Getter-function for rank"""
+    return self.value[1]
+
+  x = property(getX, _noSet, _noSet)
+  y = property(getY, _noSet, _noSet)
+  file = property(_getFile, _noSet, _noSet)
+  rank = property(_getRank, _noSet, _noSet)
 
   def __matmul__(self, other: Rect) -> QRectF:
     """Given a board rectangle, this function returns a QRectF indicating
@@ -186,8 +193,21 @@ class Square(Enum):
     else:
       raise TypeError
 
-  def __add__(self, move: Move) -> Square:
+  def __add__(self, move: PieceMove) -> Square:
     """Finds the square that one arrives at by applying given move"""
     x, y = self.x() + move.x, self.y() + move.y
     if -1 < x < 8 and -1 < y < 8:
       return self.fromInts(x, y)
+
+  @classmethod
+  def getCorners(cls) -> list[Square]:
+    """Getter-function for corners"""
+    out = []
+    for f in [File.A, File.H]:
+      for r in [Rank.rank1, Rank.rank8]:
+        out.append(cls.fromFileRank(f, r))
+    return out
+
+  @classmethod
+  def getKingSquares(cls) -> list[Square]:
+    """Getter-function for squares where kings start"""

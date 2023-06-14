@@ -10,7 +10,8 @@ from PySide6.QtCore import QPointF, QTimer
 from icecream import ic
 from worktoy.waitaminute import UnexpectedStateError
 
-from visualchess import ChessPiece, Square, BoardLayout, BoardState
+from visualchess import ChessPiece, Square, BoardLayout, BoardState, \
+  DebugState
 from visualchess import Settings, Sound
 
 ic.configureOutput(includeContext=True)
@@ -78,7 +79,9 @@ class _PieceGrabbingProperties(BoardLayout):
   ################### Accessor Functions for Chess Board ##################
   def _createBoardState(self) -> bool:
     """Creator-function for BoardState instance"""
-    self._boardState = BoardState.InitialPosition()
+    # self._boardState = BoardState.InitialPosition()
+    # self._boardState = BoardState.DebugPosition()
+    self._boardState = DebugState.DebugPosition()
     if isinstance(self._boardState, BoardState):
       return True
     raise TypeError
@@ -151,7 +154,6 @@ class _PieceGrabbingProperties(BoardLayout):
 
   def delGrabbedPiece(self) -> NoReturn:
     """Deleter-function for the grabbed piece. Returns the grabbed piece."""
-    piece = self.getGrabbedPiece()
     self.setGrabbedPiece(ChessPiece.EMPTY)
 
   #########################################################################

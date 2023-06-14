@@ -16,7 +16,7 @@ from visualchess import Square
 ic.configureOutput(includeContext=True)
 
 
-class Move(Enum):
+class PieceMove(Enum):
   """KingMove enum"""
   UP = (0, 1)
   DOWN = (0, -1)
@@ -36,23 +36,27 @@ class Move(Enum):
   Knight300 = (-2, 1)
   Knight330 = (-1, 2)
 
-  def getKingMoves(self) -> list[Move]:
+  @classmethod
+  def getKingMoves(cls) -> list[PieceMove]:
     """Getter-function for the list of king moves"""
-    out = [Move.UP, Move.LEFT, Move.DOWN, Move.RIGHT]
-    return [*out, Move.UPRIGHT, Move.UPLEFT, Move.DOWNLEFT, Move.DOWNRIGHT, ]
+    return [cls.UP, cls.LEFT, cls.DOWN, cls.RIGHT, cls.UPRIGHT, cls.UPLEFT,
+            cls.DOWNLEFT, cls.DOWNRIGHT]
 
-  def getKnightMoves(self) -> list[Move]:
+  @classmethod
+  def getKnightMoves(cls) -> list[PieceMove]:
     """Getter-function for the knight moves"""
-    return [Move.Knight30, Move.Knight60, Move.Knight120, Move.Knight150,
-            Move.Knight210, Move.Knight240, Move.Knight300, Move.Knight330, ]
+    return [cls.Knight30, cls.Knight60, cls.Knight120, cls.Knight150,
+            cls.Knight210, cls.Knight240, cls.Knight300, cls.Knight330, ]
 
-  def getRookMoves(self) -> list[Move]:
+  @classmethod
+  def getRookMoves(cls) -> list[PieceMove]:
     """Getter-function for the Rook moves"""
-    return [Move.UP, Move.DOWN, Move.LEFT, Move.RIGHT]
+    return [cls.UP, cls.DOWN, cls.LEFT, cls.RIGHT]
 
-  def getBishopMoves(self) -> list[Move]:
+  @classmethod
+  def getBishopMoves(cls) -> list[PieceMove]:
     """Getter-function for the bishop moves"""
-    return [Move.UPLEFT, Move.UPRIGHT, Move.DOWNLEFT, Move.DOWNRIGHT]
+    return [cls.UPLEFT, cls.UPRIGHT, cls.DOWNLEFT, cls.DOWNRIGHT]
 
   def __add__(self, other: Square) -> Optional[Square]:
     """Offsets the given square if possible"""
@@ -89,14 +93,14 @@ class Move(Enum):
     raise ReadOnlyError('move')
 
   @classmethod
-  def fromValue(cls, file: int, rank: int) -> Move:
+  def fromValue(cls, file: int, rank: int) -> PieceMove:
     """Finds the move matching the given values as integers"""
     for instance in cls:
       if instance.x == file and instance.y == rank:
         return instance
     raise KeyError
 
-  def __invert__(self) -> Move:
+  def __invert__(self) -> PieceMove:
     """Inverts the move"""
     x, y = -self.x, -self.y
     return self.fromValue(x, y)

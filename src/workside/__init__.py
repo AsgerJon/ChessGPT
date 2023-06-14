@@ -1,7 +1,7 @@
 """WorkSide streamlines your use of PySide6 enabling your access to Qt from
 Python!"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 import os
@@ -18,7 +18,7 @@ __all__ = stringList('workside, dialogs, workside.settings, '
                      'workside.styles, workside.widgets, workside.windows')
 
 
-def custom_import(name, globals=None, locals=None, fromlist=(), level=0):
+def customImport(name, gls=None, lcs=None, fromlist=(), level=0):
   if fromlist == ('*',) and name in __all__:
     here = os.path.dirname(os.path.abspath(__file__))
     lyricsPath = os.path.join(here, 'lyrics.txt')
@@ -35,8 +35,8 @@ def custom_import(name, globals=None, locals=None, fromlist=(), level=0):
         print('', end='')
 
     raise n00bError(noob)
-  return original_import(name, globals, locals, fromlist, level)
+  return original_import(name, gls, lcs, fromlist, level)
 
 
-builtins.__import__ = custom_import
+builtins.__import__ = customImport
 ic.configureOutput(includeContext=True)

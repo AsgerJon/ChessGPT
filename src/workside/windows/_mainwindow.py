@@ -27,20 +27,13 @@ class MainWindow(LayoutWindow):
 
   def debugFunc01(self) -> NoReturn:
     """omg"""
-    self._getToggleButton()._getMovingDelayTimer().start()
-    if self._getToggleButton()._getMovingDelayTimer().isActive():
-      print('active')
+    self._getBoardWidget().getBoardState().debug()
 
   def debugFunc02(self) -> NoReturn:
     """omg"""
-    self._getToggleButton().movingActivated.emit()
 
   def debugFunc03(self) -> NoReturn:
     """omg"""
-    print(self._getDebugButton()._getLeftButton(
-    )._getDoubleClickLockoutTimer().remainingTime())
 
   def debugFunc04(self) -> NoReturn:
     """omg"""
-    print(ChessPiece.WHITE_KNIGHT)
-    print(~ChessPiece.WHITE_KNIGHT)

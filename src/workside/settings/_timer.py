@@ -1,6 +1,6 @@
 """The timer function decorates classes with a QTimer"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn
@@ -42,12 +42,16 @@ def timer(timerName: str, interval: int, signal: str = None) -> CallMeMaybe:
 
     def createTimer(self, ) -> NoReturn:
       """Creator function for the timer"""
-      timer = QTimer()
-      timer.setTimerType(Qt.TimerType.PreciseTimer)
-      timer.setInterval(interval)
-      timer.setSingleShot(True)
-      signal = getattr(self, signalName)
-      timer.timeout.connect(signal.emit)
+      _timer = QTimer()
+      _timer.setTimerType(Qt.TimerType.PreciseTimer)
+      _timer.setInterval(interval)
+      _timer.setSingleShot(True)
+      if isinstance(signalName, str):
+        _signal = getattr(self, signalName)
+      else:
+        msg = """Expected signalName to be of type %s, but received %s!"""
+        raise TypeError(msg % (str, type(signalName)))
+      _timer.timeout.connect(_signal.emit)
       setattr(self, _name, timer)
 
     def getTimer(self, ) -> QTimer:

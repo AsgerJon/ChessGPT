@@ -13,7 +13,7 @@ from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
 
-from visualchess import Square, BoardState, Move
+from visualchess import Square, BoardState, PieceMove
 
 ic.configureOutput(includeContext=True)
 
@@ -56,7 +56,7 @@ class BaseMoves:
     """Getter-function for the squares available without any restrictions.
     Subclasses must implement this method."""
 
-  def pathRestrict(self, square: Square, move: Move) -> list[Square]:
+  def pathRestrict(self, square: Square, move: PieceMove) -> list[Square]:
     """Collects all the moves until a non empty square is reached."""
 
   def _noSet(self, *_) -> Never:
