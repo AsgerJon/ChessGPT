@@ -1,6 +1,6 @@
 """AbstractButton implements toggling between two states"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -59,16 +59,16 @@ class AbstractButton(CoreWidget):
     self.stateDeactivated.connect(lambda: self.handleHoverChanged(False))
 
   def handleStateChanged(self, newState: bool) -> NoReturn:
-    """Handles state chagned signals"""
+    """Handles state changed signals"""
     self.stateChanged.emit(newState)
     self._activateState() if newState else self._deactivateState()
 
   def handleMovingChanged(self, newState: bool) -> NoReturn:
-    """Handles moving chagned signals"""
+    """Handles moving changed signals"""
     self.movingChanged.emit(newState)
 
   def handleHoverChanged(self, newState: bool) -> NoReturn:
-    """Handles hover chagned signals"""
+    """Handles hover changed signals"""
     self.hoverChanged.emit(newState)
 
   def enterEvent(self, event: QEnterEvent) -> NoReturn:

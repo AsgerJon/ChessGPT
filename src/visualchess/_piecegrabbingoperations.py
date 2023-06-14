@@ -92,19 +92,6 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     Sound.slide.play()
     self.update()
 
-  def checkTarget(self, ) -> bool:
-    """Checks if the target square is valid"""
-    grabbedPiece = self.getGrabbedPiece()
-    if grabbedPiece in ChessPiece.getQueenRookBishop():
-      lineOfSight = self.getBoardState().lineOfSight(
-        self.getOriginSquare(), self.getHoverSquare())
-      return True if lineOfSight else False
-    if grabbedPiece in [*ChessPiece.getKings(), *ChessPiece.getKnights()]:
-      return True
-    if grabbedPiece in ChessPiece.getPawns():
-      msg = """Pawn moves are not yet implemented!"""
-      raise NotImplementedError(msg)
-
   def cancelGrabbing(self) -> NoReturn:
     """Defines the operation which cancels any ongoing grabbing operation"""
     originSquare, piece = self.getOriginSquare(), self.getGrabbedPiece()
@@ -122,8 +109,6 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
 
   def completeGrabbing(self, *args) -> bool:
     """Completes the grabbing operation"""
-    if not self.checkTarget():
-      return self.cancelGrabbing()
     if args:
       warn('Unexpected positional arguments received!')
     piece = self.getGrabbedPiece()

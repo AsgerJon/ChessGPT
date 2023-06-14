@@ -205,6 +205,9 @@ class Square(Enum):
   @classmethod
   def getKingSquares(cls) -> list[Square]:
     """Getter-function for squares where kings start"""
+    white = Square.fromFileRank(File.E, Rank.rank1)
+    black = Square.fromFileRank(File.E, Rank.rank8)
+    return [white, black]
 
   def _guardSelfComparison(self, other: Square) -> bool:
     """Raises an error if self and other is in fact the same square"""

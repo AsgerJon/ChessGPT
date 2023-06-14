@@ -10,8 +10,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
 
-from workside.styles import darkSquareStyle, labelStyle, \
-  outlineStyle
+from workside.styles import baseButtonStyle, textButtonStyle, \
+  hoverButtonStyle
 from workside.widgets import CoreWidget, AbstractButton
 
 ic.configureOutput(includeContext=True)
@@ -87,10 +87,10 @@ class DebugButton(AbstractButton):
     """Implementation of paint event"""
     painter = QPainter()
     painter.begin(self)
-    style = darkSquareStyle if self.hover else outlineStyle
+    style = baseButtonStyle if self.hover else hoverButtonStyle
     style @ painter
     viewRect = painter.viewport()
     painter.drawRect(viewRect)
-    labelStyle @ painter
+    textButtonStyle @ painter
     painter.drawText(viewRect, Qt.AlignmentFlag.AlignCenter, self._getText())
     painter.end()

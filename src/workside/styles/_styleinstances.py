@@ -1,6 +1,6 @@
 """The backgroundStyle is an instance of BaseStyle"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
@@ -123,6 +123,37 @@ _debugData = dict(
   fontWeight=QFont.Weight.Normal,
   fontSize=12,
 )
+_baseButton = dict(
+  fillColor=QColor(0, 0, 63, 255, ),
+  fillStyle=Qt.BrushStyle.SolidPattern,
+  lineColor=QColor(255, 255, 255, 255),
+  lineStyle=Qt.PenStyle.NoPen,
+  lineWidth=1,
+  fontFamily=Family.courierNew,
+  fontWeight=QFont.Weight.Normal,
+  fontSize=12,
+)
+_hoverButton = dict(
+  fillColor=QColor(0, 0, 127, 255, ),
+  fillStyle=Qt.BrushStyle.SolidPattern,
+  lineColor=QColor(255, 255, 255, 255),
+  lineStyle=Qt.PenStyle.NoPen,
+  lineWidth=2,
+  fontFamily=Family.courierNew,
+  fontWeight=QFont.Weight.Normal,
+  fontSize=12,
+)
+_textButton = dict(
+  fillColor=QColor(0, 0, 127, 255, ),
+  fillStyle=Qt.BrushStyle.NoBrush,
+  lineColor=QColor(255, 255, 0, 255),
+  lineStyle=Qt.PenStyle.SolidLine,
+  lineWidth=1,
+  fontFamily=Family.modern,
+  fontWeight=QFont.Weight.Normal,
+  fontSize=14
+  ,
+)
 backgroundStyle = BaseStyle('Background', _backgroundData)
 bezelStyle = BaseStyle('Bezels', _bezelData)
 darkSquareStyle = BaseStyle('Dark Square', _darkSquareData)
@@ -133,3 +164,6 @@ gridStyle = BaseStyle('Grid', _gridStyleData)
 labelStyle = BaseStyle('Label', _labelData)
 headerStyle = BaseStyle('Label', _headerData)
 debugStyle = BaseStyle('debug', _debugData)
+baseButtonStyle = BaseStyle('Base Button', _baseButton)
+hoverButtonStyle = BaseStyle('Hover Button', _hoverButton)
+textButtonStyle = BaseStyle('Text Button', _textButton)

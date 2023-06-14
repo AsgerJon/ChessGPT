@@ -261,6 +261,10 @@ class BoardState:
       piece = ChessPiece.fromColorPiece(line[1], line[2])
       self[square] = piece
 
+  def resetInitialPosition(self) -> NoReturn:
+    """Resets the board to initial position"""
+    self.updatePositionFromList(initialPosition)
+
   def emptySquares(self, squares: list[Square]) -> bool:
     """Checks that given list of squares are all empty"""
     if isinstance(squares, list):

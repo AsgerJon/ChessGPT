@@ -1,6 +1,6 @@
 """Spacer is a subclass of CoreWidget which pushes other widgets around"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn
@@ -30,7 +30,7 @@ class Spacer(CoreWidget):
       self.setSizePolicy(_policy)
     else:
       raise TypeError
-    debugStyle @ self
+    # debugStyle @ self
 
   def paintEvent(self, event: QPaintEvent) -> NoReturn:
     """Implementation of paint event"""

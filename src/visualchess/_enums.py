@@ -30,7 +30,7 @@ class ChessColor(Enum):
 
 class PieceType(Enum):
   """Types of chess pieces"""
-  EMTPTY = 0
+  EMPTY = 0
   KING = 1
   QUEEN = 2
   ROOK = 3
@@ -42,6 +42,10 @@ class PieceType(Enum):
     """Checks if given chess piece is of this type"""
     otherName = chessPiece.getPiece().lower()
     return True if self.name.lower() == otherName else False
+
+  def __bool__(self) -> bool:
+    """Only the EMPTY instance is False, all other instances are True"""
+    return False if self.name == 'EMPTY' else True
 
 
 class File(IntEnum):

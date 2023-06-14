@@ -1,11 +1,9 @@
 """NEW SCRIPT"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from icecream import ic
-
-ic.configureOutput(includeContext=True)
 
 from ._corewidget import CoreWidget
 from ._mousebutton import MouseButton
@@ -17,3 +15,5 @@ from ._label import Label
 from ._listwidget import ListWidget
 from ._logwidget import LogWidget
 from ._spacer import Spacer, VSpacer, HSpacer, DoubleSpacer
+
+ic.configureOutput(includeContext=True)

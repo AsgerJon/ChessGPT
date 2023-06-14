@@ -79,9 +79,9 @@ class _PieceGrabbingProperties(BoardLayout):
   ################### Accessor Functions for Chess Board ##################
   def _createBoardState(self) -> bool:
     """Creator-function for BoardState instance"""
-    # self._boardState = BoardState.InitialPosition()
+    self._boardState = BoardState.InitialPosition()
     # self._boardState = BoardState.DebugPosition()
-    self._boardState = DebugState.DebugPosition()
+    # self._boardState = DebugState.DebugPosition()
     if isinstance(self._boardState, BoardState):
       return True
     raise TypeError
