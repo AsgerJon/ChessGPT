@@ -6,15 +6,18 @@ from __future__ import annotations
 
 from worktoy.typetools import TypeBag
 
+from ._file import File
+from ._rank import Rank
+from ._chesscolor import ChessColor
+from ._piecetype import PieceType
+from ._piecemove import PieceMove
+from ._square import Square
+from ._chesspiece import ChessPiece
 from ._settings import Settings
 from ._soundeffect import SoundEffect
 from ._soundenum import Sound
 from ._speaker import Speaker
 from ._soundenum import Sound
-from ._enums import File, Rank, ChessColor, PieceType
-from ._square import Square
-from ._move import PieceMove
-from ._chesspiece import ChessPiece
 from ._boardstate import BoardState
 from ._debugstate import DebugState
 from ._boardlayout import BoardLayout

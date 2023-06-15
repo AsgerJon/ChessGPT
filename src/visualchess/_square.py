@@ -4,20 +4,20 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Never, Union, Optional
+from typing import TYPE_CHECKING, Never
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
-from worktoy.core import plenty
-from worktoy.parsing import maybeType, maybeTypes
+from worktoy.parsing import maybeType, extractArg
+from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
-from visualchess import File, Rank
+from moreworktoy import ArgumentError
+from visualchess import File, Rank, PieceMove
 
 if TYPE_CHECKING:
   from visualchess import Widget
-  from visualchess import PieceMove
 
 ic.configureOutput(includeContext=True)
 
@@ -100,6 +100,34 @@ class Square(Enum):
   H7 = (File.H, Rank.rank7)
   H8 = (File.H, Rank.rank8)
 
+  @classmethod
+  def parse(cls, *args, **kwargs) -> Square:
+    """Parses the arguments to appropriate instance of Square"""
+    keys = stringList('square, field, position')
+    square, args, kwargs = extractArg(Square, keys, *args, **kwargs)
+    if square is not None:
+      if isinstance(square, Square):
+        return square
+    fileKeys = stringList('file, column, col, x')
+    rankKeys = stringList('rank, row, y')
+    file, args_, kwargs_ = extractArg(File, fileKeys, *args, **kwargs)
+    if file is not None:
+      rank, args_, kwargs_ = extractArg(Rank, rankKeys, *args_, **kwargs_)
+      if rank is not None:
+        if isinstance(file, File) and isinstance(rank, Rank):
+          return cls.fromFileRank(file, rank)
+    x, args_, kwargs_ = extractArg(int, fileKeys, *args, **kwargs)
+    if x is not None:
+      y, _, __ = extractArg(int, rankKeys, *args_, **kwargs_)
+      if y is not None:
+        if isinstance(x, int) and isinstance(y, int):
+          return cls.fromInts(x, y)
+    z, args_, kwargs_ = extractArg(complex, keys, *args, **kwargs)
+    if z is not None:
+      if isinstance(z, complex):
+        return cls.fromInts(int(z.real), int(z.imag))
+    raise ArgumentError('Unable to parse arguments to a valid instance!')
+
   def getX(self, ) -> int:
     """Getter-function for the file number"""
     return self.value[0].value
@@ -119,11 +147,6 @@ class Square(Enum):
   def _getRank(self) -> Rank:
     """Getter-function for rank"""
     return self.value[1]
-
-  x = property(getX, _noSet, _noSet)
-  y = property(getY, _noSet, _noSet)
-  file = property(_getFile, _noSet, _noSet)
-  rank = property(_getRank, _noSet, _noSet)
 
   def __matmul__(self, other: Rect) -> QRectF:
     """Given a board rectangle, this function returns a QRectF indicating
@@ -219,35 +242,8 @@ class Square(Enum):
       raise UnexpectedStateError(msg)
     return True
 
-  def _addInts(self, otherX: int, otherY: int) -> Optional[Square]:
-    """Adder implementation of integers"""
-    x, y = self.x + otherX, self.y + otherY
-    if -1 < x < 8 and -1 < y < 8:
-      return Square.fromInts(x, y)
-    return None
-
-  def _addMove(self, otherMove: PieceMove) -> Optional[Square]:
-    """Adder implementation for instances of PieceMove"""
-    x, y = self.x + otherMove.x, self.y + otherMove.y
-    return self._addInts(x, y)
-
-  def _addSquare(self, otherSquare: Square) -> Optional[Square]:
-    """Adder implementation for instances of Square"""
-    x, y = self.x + otherSquare.x, self.y + otherSquare.y
-    return self._addInts(x, y)
-
-  def _addTuple(self, otherTuple: tuple[int, int]) -> Optional[Square]:
-    """Adder implementation for instances of tuple"""
-    x, y = self.x + otherTuple[0], self.y + otherTuple[0]
-    return self._addInts(x, y)
-
-  def __add__(self, *other) -> Square:
+  def __add__(self, other: PieceMove | Square) -> Square:
     """Returns the instance of Square that is 'other' away from self"""
-    intArgs = maybeTypes(int, *other, padlen=2, padChar=None)
-    if plenty(intArgs):
-      return self._addInts(*intArgs)
-    otherMove = maybeType(PieceMove, *other)
-
     return Square.fromInts(self.x + other.x, self.y + other.y)
 
   def __radd__(self, other: PieceMove | Square) -> Square:
@@ -289,3 +285,8 @@ class Square(Enum):
     """The subtraction operator - is taken to mean horizontal match"""
     self._guardSelfComparison(other)
     return True if self.rank == other.rank else False
+
+  x = property(getX, _noSet, _noSet)
+  y = property(getY, _noSet, _noSet)
+  file = property(_getFile, _noSet, _noSet)
+  rank = property(_getRank, _noSet, _noSet)

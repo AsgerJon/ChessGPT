@@ -10,15 +10,15 @@ from typing import Never, TYPE_CHECKING
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPixmap, QColor, QCursor
 from icecream import ic
-from worktoy.parsing import extractArg
+from worktoy.core import maybe
+from worktoy.parsing import maybeType, searchKeys
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
-from visualchess import ChessColor, PieceType
 
-from moreworktoy import ArgumentError
+from visualchess import PieceType, ChessColor
 
 if TYPE_CHECKING:
-  from visualchess import Widget, ChessColor
+  from visualchess import Widget
 
 ic.configureOutput(includeContext=True)
 
@@ -103,38 +103,20 @@ class ChessPiece(IntEnum):
   @classmethod
   def fromColorPiece(cls, *args, **kwargs) -> ChessPiece:
     """Finds the piece given the color and piece type"""
-    ic(args, kwargs)
     pieceKeys = stringList('piece, pieceType, chessPiece')
-    for type_ in PieceType:
-      pieceKeys.append(type_)
-    piece, args, kwargs = extractArg(PieceType, pieceKeys, *args, **kwargs)
-    if piece is None:
-      piece, args, kwargs = extractArg(str, pieceKeys, *args, **kwargs)
-      if piece is None:
-        raise ArgumentError('piece')
-    if isinstance(piece, str):
-      piece = PieceType.fromString(piece)
-    if not isinstance(piece, PieceType):
-      msg = """Expected piece to be of type %s, but received type %s!"""
-      raise TypeError(msg % (PieceType, type(piece)))
-
     colorKeys = stringList('color, chessColor, pieceColor')
-    color, args, kwargs = extractArg(ChessColor, colorKeys, *args, **kwargs)
-    if color is None:
-      color, args, kwargs = extractArg(str, colorKeys, *args, **kwargs)
-      if color is None:
-        raise ArgumentError('color')
-    if isinstance(color, str):
-      color = PieceType.fromString(color)
-    if not isinstance(color, ChessColor):
-      msg = """Expected color to be of type %s, but received type %s!"""
-      raise TypeError(msg % (ChessColor, type(color)))
-
-    for chessPiece in ChessPiece:
-      if chessPiece.value:
-        if chessPiece.getPiece() == piece:
-          if chessPiece.getColor() == color:
-            return chessPiece
+    pieceKwarg = searchKeys(*pieceKeys) @ PieceType >> kwargs
+    colorKwarg = searchKeys(*colorKeys) @ PieceType >> kwargs
+    pieceStrArg = PieceType.parseNames(*args)
+    colorStrArg = ChessColor.parseNames(*args)
+    pieceArg = maybeType(PieceType, *args)
+    colorArg = maybeType(ChessColor, *args)
+    piece_ = maybe(pieceKwarg, pieceStrArg, pieceArg, )
+    color_ = maybe(colorKwarg, colorStrArg, colorArg, )
+    for chessPiece in cls:
+      if chessPiece.color == color_ and chessPiece.piece == piece_:
+        return chessPiece
+    return cls.EMPTY
 
   def __bool__(self) -> bool:
     """EMPTY is False, all other instances are True"""

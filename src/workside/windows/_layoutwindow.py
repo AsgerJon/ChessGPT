@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QVBoxLayout, QGridLayout, QHBoxLayout
 from PySide6.QtWidgets import QWidget
 from icecream import ic
 from worktoy.core import maybe
+from worktoy.stringtools import monoSpace
 
 from visualchess import PieceGrabbing
 from workside.widgets import CoreWidget, Spacer, VSpacer, HSpacer, \
@@ -114,13 +115,14 @@ class LayoutWindow(BaseWindow):
       self._createBaseHeaderWidget()
       return self._getBaseHeaderWidget()
     if isinstance(self._baseHeaderWidget, CoreWidget):
-      print(self._baseHeaderWidget.getText())
       return self._baseHeaderWidget
     raise TypeError
 
   def _createDebugButton(self) -> NoReturn:
     """Creator-function for the button"""
     self._debugButton = DebugButton()
+    msg = """Reset (press and hold)"""
+    self._debugButton.text = monoSpace(msg)
 
   def _getDebugButton(self) -> DebugButton:
     """Getter-function for the button"""

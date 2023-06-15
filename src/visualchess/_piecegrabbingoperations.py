@@ -61,6 +61,7 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if square == self.getHoverSquare():
       return self.update()
     self.setHoverSquare(square)
+    self.setLegalSquares(*self.getBoardState().getMoves(square))
     return self.update()
 
   def activateHoverPiece(self, event: QMouseEvent) -> NoReturn:

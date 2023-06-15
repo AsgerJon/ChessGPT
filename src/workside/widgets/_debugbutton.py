@@ -4,11 +4,12 @@ various functionality for use in more specific subclasses"""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import NoReturn
+from typing import NoReturn, Never
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
+from worktoy.waitaminute import ReadOnlyError
 
 from workside.styles import baseButtonStyle, textButtonStyle, \
   hoverButtonStyle
@@ -77,6 +78,14 @@ class DebugButton(AbstractButton):
     msg = """Expected text to be of type %s, but received: %s!"""
     raise TypeError(msg % (str, type(self._text)))
 
+  def _setText(self, text: str) -> NoReturn:
+    """Setter-function for the text"""
+    if isinstance(text, str):
+      self._text = text
+    else:
+      msg = """Expected text to be of type %s, but received: %s!"""
+      raise TypeError(msg % (str, type(text)))
+
   def update(self, ) -> NoReturn:
     """Brings a resize before the parent update"""
     boundingRect = self.getStyle().getBoundingRect(self._getText())
@@ -94,3 +103,9 @@ class DebugButton(AbstractButton):
     textButtonStyle @ painter
     painter.drawText(viewRect, Qt.AlignmentFlag.AlignCenter, self._getText())
     painter.end()
+
+  def _noDel(self) -> Never:
+    """Illegal deleter"""
+    raise ReadOnlyError('text')
+
+  text = property(_getText, _setText, _noDel)

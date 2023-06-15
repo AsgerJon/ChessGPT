@@ -5,13 +5,13 @@ knight and king."""
 from __future__ import annotations
 
 from enum import Enum
-from typing import Never, Optional
+from typing import Never
 
 from icecream import ic
-from worktoy.stringtools import stringList
-from worktoy.waitaminute import ReadOnlyError
+from worktoy.stringtools import stringList, monoSpace
+from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
-from visualchess import Square, PieceType, ChessColor
+from visualchess import PieceType, ChessColor
 
 ic.configureOutput(includeContext=True)
 
@@ -181,12 +181,22 @@ class PieceMove(Enum):
   @classmethod
   def getColorPawnMoves(cls, color: ChessColor) -> list[PieceMove]:
     """Getter-function for the pawn moves matching the given color"""
+    out = None
     if color is ChessColor.WHITE:
-      return cls.getWhitePawnMoves()
+      out = cls.getWhitePawnMoves()
     if color is ChessColor.BLACK:
-      return cls.getBlackPawnMoves()
-    msg = """Given color: %s is not a valid chess piece color!"""
-    raise ValueError(msg % color)
+      out = cls.getBlackPawnMoves()
+    if out is None:
+      msg = """Given color: %s is not a valid chess piece color!"""
+      raise ValueError(msg % color)
+    if isinstance(out, list):
+      if all([isinstance(p, PieceMove) for p in out]):
+        return out
+      msg = """Found unexpected type in list of piece moves"""
+      raise UnexpectedStateError(msg)
+    msg = """Expected list of piece moves to be of type list, 
+    but received: %s"""
+    raise TypeError(monoSpace(msg) % type(out))
 
   @classmethod
   def getTypeMoves(cls, piece: PieceType) -> list[PieceMove]:
@@ -200,27 +210,28 @@ class PieceMove(Enum):
       PieceType.QUEEN : [*cls.getRookMoves(), *cls.getBishopMoves()],
       PieceType.KING  : cls.getKingMoves(), }.get(piece)
 
-  def __add__(self, other: Square) -> Optional[Square]:
-    """Offsets the given square if possible"""
-    x, y = other.x + self.x, other.y + self.y
-    if -1 < x < 8 and -1 < y < 8:
-      return Square.fromInts(x, y)
-    return None
-
-  def __sub__(self, other: Square) -> Optional[Square]:
-    """Offsets the given square if possible"""
-    x, y = other.x - self.x, other.y - self.y
-    if -1 < x < 8 and -1 < y < 8:
-      return Square.fromInts(x, y)
-    return None
-
-  def __radd__(self, other: Square) -> Optional[Square]:
-    """Offsets the given square if possible"""
-    return self + other
-
-  def __rsub__(self, other: Square) -> Optional[Square]:
-    """Offsets the given square if possible"""
-    return self - other
+  #
+  # def __add__(self, other: Square) -> Optional[Square]:
+  #   """Offsets the given square if possible"""
+  #   x, y = other.x + self.x, other.y + self.y
+  #   if -1 < x < 8 and -1 < y < 8:
+  #     return Square.fromInts(x, y)
+  #   return None
+  #
+  # def __sub__(self, other: Square) -> Optional[Square]:
+  #   """Offsets the given square if possible"""
+  #   x, y = other.x - self.x, other.y - self.y
+  #   if -1 < x < 8 and -1 < y < 8:
+  #     return Square.fromInts(x, y)
+  #   return None
+  #
+  # def __radd__(self, other: Square) -> Optional[Square]:
+  #   """Offsets the given square if possible"""
+  #   return self + other
+  #
+  # def __rsub__(self, other: Square) -> Optional[Square]:
+  #   """Offsets the given square if possible"""
+  #   return self - other
 
   def _getX(self) -> int:
     """Getter-function for horizontal move"""

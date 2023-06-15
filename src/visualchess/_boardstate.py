@@ -9,12 +9,14 @@ from warnings import warn
 
 from PySide6.QtCore import QRect, QRectF
 from icecream import ic
+from worktoy.core import plenty
+from worktoy.parsing import maybeTypes
 from worktoy.stringtools import stringList, monoSpace
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import UnexpectedStateError
 
 from visualchess import ChessPiece, Square, PieceMove, File, ChessColor, \
-  PieceType, Rank
+  Rank, PieceType
 from visualchess.chesspieces import initialPosition
 
 ic.configureOutput(includeContext=True)
@@ -137,15 +139,17 @@ class BoardState:
       return self._getBlackEnPassant()[square.file]
     return self._getWhiteEnPassant()[square.file]
 
-  def getAllowEnPassant(self, file: File, color: ChessColor) -> bool:
-    """This method controls whether en passant is available. Please note
-    that the file and color in the argument are the color of the pawn that
-    are able to capture."""
+  def getAllowEnPassant(self, *args, **kwargs) -> bool:
+    """This method controls whether en passant is available. The square
+    indicated by arguments are the square occupied by the piece that
+    might be captured."""
+    square = Square.parse(*args, **kwargs)
+    file, rank = square.file, square.rank
     msg = """The pawn at file %s and color %s asked for permission to en 
     passant capture, but en passant is not yet implemented! During 
     development the enPassantDebugAllowFlag decides if en passant is 
     available."""
-    warn(msg % (file, color))
+    warn(msg % (file, rank))
     return self.getEnPassantDebugAllowFlag()
 
   def getCastlingFlag(self, corner: Square) -> bool:
@@ -199,21 +203,58 @@ class BoardState:
     """Getter-function for pawn moves matching the color at the given
     square. """
     piece, out = self.getPiece(square), []
-    color, square = piece.color, square.file
+    color, square, x, y = piece.color, square.file, square.x, square.y
     if not piece:
       return []
-    moves = PieceMove.getColorPawnMoves(piece.color)
-    for move in moves:
-      targetSquare = square + move
-      if targetSquare is not None:
-        targetPiece = self.getPiece(targetSquare)
-        if move in [PieceMove.UP1, PieceMove.DOWN1]:
-          if not targetPiece:
-            out.append(targetSquare)
-        if move in [PieceMove.LEFT1, PieceMove.RIGHT1]:
-          if targetPiece:
-            if targetPiece.color != piece.color:
-              out.append(targetSquare)
+    if color is ChessColor.BLACK:
+      if 0 < y < 7:
+        oneStepSquare = Square.fromInts(x, y + 1)
+        oneStepTarget = self.getPiece(oneStepSquare)
+        if oneStepTarget is ChessPiece.EMPTY:
+          out.append(oneStepSquare)
+          if y == 1:
+            twoStepSquare = Square.fromInts(x, y + 2)
+            twoStepTarget = self.getPiece(twoStepSquare)
+            if twoStepTarget is ChessPiece.EMPTY:
+              out.append(twoStepSquare)
+        if x < 7:
+          plusSquare = Square.fromInts(x + 1, y + 1)
+          plusEnPassant = self.getAllowEnPassant(x + 1, y)
+          plusCapture = self.getPiece(plusSquare)
+          if plusCapture is not ChessPiece.EMPTY or plusEnPassant:
+            if plusCapture.color is not color:
+              out.append(plusSquare)
+        if 0 < x:
+          minusSquare = Square.fromInts(x - 1, y + 1)
+          minusEnPassant = self.getAllowEnPassant(x - 1, y)
+          minusCapture = self.getPiece(minusSquare)
+          if minusCapture is not ChessPiece.EMPTY or minusEnPassant:
+            if minusCapture.color is not color:
+              out.append(minusSquare)
+    if color is ChessColor.WHITE:
+      if 0 < y < 7:
+        oneStepSquare = Square.fromInts(x, y - 1)
+        oneStepTarget = self.getPiece(oneStepSquare)
+        if oneStepTarget is ChessPiece.EMPTY:
+          out.append(oneStepSquare)
+          if y == 6:
+            twoStepSquare = Square.fromInts(x, y - 2)
+            twoStepTarget = self.getPiece(twoStepSquare)
+            if twoStepTarget is ChessPiece.EMPTY:
+              out.append(twoStepSquare)
+        if x < 7:
+          plusSquare = Square.fromInts(x + 1, y - 1)
+          plusCapture = self.getPiece(plusSquare)
+          if plusCapture is not ChessPiece.EMPTY:
+            if plusCapture.color is not color:
+              out.append(plusSquare)
+        if 0 < x:
+          minusSquare = Square.fromInts(x - 1, y - 1)
+          minusCapture = self.getPiece(minusSquare)
+          if minusCapture is not ChessPiece.EMPTY:
+            if minusCapture.color is not color:
+              out.append(minusSquare)
+    return out
 
   def lineOfSight(self, source: Square, target: Square) -> bool:
     """Checks if there is an uninterrupted path between the pieces."""
@@ -282,7 +323,9 @@ class BoardState:
     piece, out = self.getPiece(square), []
     if not piece:
       return []
-    for move in PieceMove.getTypeMoves(piece):
+    if piece in PieceType.PAWN:
+      return self.getPawnMoves(square)
+    for move in PieceMove.getTypeMoves(piece.piece):
       target = square + move
       if target is not None:
         if self.captureCheck(piece, target):

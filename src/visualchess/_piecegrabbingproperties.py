@@ -8,6 +8,7 @@ from typing import NoReturn
 
 from PySide6.QtCore import QPointF, QTimer
 from icecream import ic
+from worktoy.stringtools import monoSpace
 from worktoy.waitaminute import UnexpectedStateError
 
 from visualchess import ChessPiece, Square, BoardLayout, BoardState, \
@@ -36,6 +37,7 @@ class _PieceGrabbingProperties(BoardLayout):
     self._flagHoldingPiece = None
     self._flagMoving = None
     self._movingTimer = None
+    self._legalSquares = None
     Sound.createAll()
 
   ################### Mouse Position Accessor Functions ###################
@@ -155,6 +157,39 @@ class _PieceGrabbingProperties(BoardLayout):
   def delGrabbedPiece(self) -> NoReturn:
     """Deleter-function for the grabbed piece. Returns the grabbed piece."""
     self.setGrabbedPiece(ChessPiece.EMPTY)
+
+  def createLegalSquares(self) -> NoReturn:
+    """Creator-function for the list of legal squares"""
+    self._legalSquares = []
+
+  def getLegalSquares(self) -> list[Square]:
+    """Getter-function for the squares, where the currently grabbed piece
+    can go."""
+    if self._legalSquares is None:
+      self.createLegalSquares()
+      return self.getLegalSquares()
+    if isinstance(self._legalSquares, list):
+      return self._legalSquares
+    msg = """Expected list of legal squares to be of type %s but received: 
+    %s"""
+    raise TypeError(monoSpace(msg) % (list, type(self._legalSquares)))
+
+  def setLegalSquares(self, *squares: Square) -> NoReturn:
+    """Setter-function for the squares, where the currently grabbed piece
+    can go."""
+    self.delLegalSquares()
+    for square in squares:
+      if isinstance(square, Square):
+        self._legalSquares.append(square)
+
+  def delLegalSquares(self) -> NoReturn:
+    """Deleter-function for the squares, where the currently grabbed piece
+    can go."""
+    if self._legalSquares is None:
+      self.createLegalSquares()
+      return self.delLegalSquares()
+    while self._legalSquares:
+      self._legalSquares.pop()
 
   #########################################################################
   ############## END OF Accessor functions for grabbed piece ##############
