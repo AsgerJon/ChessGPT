@@ -191,6 +191,10 @@ class _PieceGrabbingProperties(BoardLayout):
     while self._legalSquares:
       self._legalSquares.pop()
 
+  def isLegalSquare(self, square: Square) -> bool:
+    """Checks if given square is available"""
+    return True if square in self.getLegalSquares() else False
+
   #########################################################################
   ############## END OF Accessor functions for grabbed piece ##############
   ################## Accessor functions for origin square #################

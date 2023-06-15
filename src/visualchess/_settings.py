@@ -28,6 +28,7 @@ class Settings:
   normalCursor = Qt.CursorShape.ArrowCursor
   hoverCursor = Qt.CursorShape.OpenHandCursor
   grabCursor = Qt.CursorShape.ClosedHandCursor
+  illegalCursor = Qt.CursorShape.ForbiddenCursor
   deviceName = 'Razer'
   movingTimeLimit = 200
 

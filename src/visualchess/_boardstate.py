@@ -15,6 +15,7 @@ from worktoy.stringtools import stringList, monoSpace
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import UnexpectedStateError
 
+from moreworktoy import ArgumentError
 from visualchess import ChessPiece, Square, PieceMove, File, ChessColor, \
   Rank, PieceType
 from visualchess.chesspieces import initialPosition
@@ -139,11 +140,16 @@ class BoardState:
       return self._getBlackEnPassant()[square.file]
     return self._getWhiteEnPassant()[square.file]
 
-  def getAllowEnPassant(self, *args, **kwargs) -> bool:
+  def getAllowEnPassant(self, x: int, y: int) -> bool:
     """This method controls whether en passant is available. The square
     indicated by arguments are the square occupied by the piece that
     might be captured."""
-    square = Square.parse(*args, **kwargs)
+    ic(args, kwargs)
+    try:
+      square = Square.fromInts(*args, **kwargs)
+    except ArgumentError as e:
+      os.abort()
+      raise e
     file, rank = square.file, square.rank
     msg = """The pawn at file %s and color %s asked for permission to en 
     passant capture, but en passant is not yet implemented! During 

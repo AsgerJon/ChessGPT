@@ -61,7 +61,10 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if square == self.getHoverSquare():
       return self.update()
     self.setHoverSquare(square)
-    self.setLegalSquares(*self.getBoardState().getMoves(square))
+    if self.getGrabbedPiece():
+      self.setLegalSquares(*self.getBoardState().getMoves(square))
+      if not self.isLegalSquare(square):
+        self.setIllegalCursor()
     return self.update()
 
   def activateHoverPiece(self, event: QMouseEvent) -> NoReturn:
@@ -113,12 +116,13 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if args:
       warn('Unexpected positional arguments received!')
     piece = self.getGrabbedPiece()
-    if not piece:
-      return False
-    self.delGrabbedPiece()
-    self.getBoardState().setPiece(self.getHoverSquare(), piece)
-    self.setHoverPiece(piece)
-    self.setHoverCursor()
-    self.update()
-    Sound.move.play()
-    return True
+    hoverSquare = self.getHoverSquare()
+    if hoverSquare in self.getLegalSquares() and piece:
+      self.delGrabbedPiece()
+      self.getBoardState().setPiece(hoverSquare, piece)
+      self.setHoverPiece(piece)
+      self.setHoverCursor()
+      self.update()
+      Sound.move.play()
+      return True
+    return False

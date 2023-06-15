@@ -41,6 +41,11 @@ class BoardLayout(CoreWidget):
     than invoking this function."""
     self.setCursor(Settings.grabCursor)
 
+  def setIllegalCursor(self, ) -> NoReturn:
+    """Sets the cursor on the widget to indicate that the square hovered
+    is not available for the grabbed piece to land on."""
+    self.setCursor(Settings.illegalCursor)
+
   def setPieceCursor(self, piece: ChessPiece) -> NoReturn:
     """Sets the cursor on the widget to grab the given piece."""
     self.setCursor(piece.getCursor())
