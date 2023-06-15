@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Never
+import os
+from typing import TYPE_CHECKING, Never, Optional
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
@@ -183,14 +184,15 @@ class Square(Enum):
     for square in Square:
       if square.value[0] == file and square.value[1] == rank:
         return square
-    raise TypeError
 
   @classmethod
-  def fromInts(cls, x: int, y: int) -> Square:
+  def fromInts(cls, x: int, y: int) -> Optional[Square]:
     """Returns the instance of matching ints"""
-    file = File.fromValue(x)
-    rank = Rank.fromValue(y)
-    return cls.fromFileRank(file, rank)
+    if -1 < x < 8 and -1 < y < 8:
+      file = File.fromValue(x)
+      rank = Rank.fromValue(y)
+      out = cls.fromFileRank(file, rank)
+      return out
 
   @classmethod
   def fromStr(cls, code: str) -> Square:
@@ -226,12 +228,12 @@ class Square(Enum):
         out.append(cls.fromFileRank(f, r))
     return out
 
-  @classmethod
-  def getKingSquares(cls) -> list[Square]:
-    """Getter-function for squares where kings start"""
-    white = Square.fromFileRank(File.E, Rank.rank1)
-    black = Square.fromFileRank(File.E, Rank.rank8)
-    return [white, black]
+  # @classmethod
+  # def getKingSquares(cls) -> list[Square]:
+  #   """Getter-function for squares where kings start"""
+  #   white = Square.fromFileRank(File.E, Rank.rank1)
+  #   black = Square.fromFileRank(File.E, Rank.rank8)
+  #   return [white, black]
 
   def _guardSelfComparison(self, other: Square) -> bool:
     """Raises an error if self and other is in fact the same square"""
@@ -242,13 +244,11 @@ class Square(Enum):
       raise UnexpectedStateError(msg)
     return True
 
-  def __add__(self, other: PieceMove | Square) -> Square:
+  def __add__(self, other: PieceMove) -> Square:
     """Returns the instance of Square that is 'other' away from self"""
-    return Square.fromInts(self.x + other.x, self.y + other.y)
-
-  def __radd__(self, other: PieceMove | Square) -> Square:
-    """Allowing adding from the left."""
-    return Square.fromInts(self.x + other.x, self.y + other.y)
+    x = self.getX() + other.x
+    y = self.getY() + other.y
+    return self.fromInts(x, y)
 
   def __or__(self, other: Square) -> bool:
     """The pipe operator | is used to indicate that the squares are on the

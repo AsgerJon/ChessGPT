@@ -25,5 +25,3 @@ class DebugState(BoardState):
   def getMoves(self, square: Square) -> list[Square]:
     """Returns the list of moves available to the piece currently
     occupying the given square."""
-    if self.getPiece(square) in PieceType.KING:
-      return self.getKingSquares(square)

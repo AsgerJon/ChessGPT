@@ -14,7 +14,7 @@ from icecream import ic
 
 from visualchess import ChessPiece, Square, BoardLayout
 from visualchess import _PieceGrabbingOperations
-from workside.styles._styleinstances import hoveredSquareStyle
+from workside.styles import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)
 
@@ -46,6 +46,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
     if event.type() == QEvent.Type.MouseMove:
       if self.getGrabbedPiece():
         self.cancelGrabbing()
+        self.setNormalCursor()
     # <********************** Remove Hover on Leave **********************> #
     # ____________________________________________________________________
     # |  When leaving the board rectangle, no square or piece should

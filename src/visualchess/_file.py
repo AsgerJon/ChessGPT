@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
+import os
 
 from icecream import ic
 from worktoy.parsing import extractArg
@@ -47,6 +48,8 @@ class File(IntEnum):
     for file in File:
       if file.value == x:
         return file
+    ic(x)
+    os.abort()
     raise TypeError
 
   @classmethod

@@ -203,35 +203,13 @@ class PieceMove(Enum):
     """Getter-function for the moves """
     # if isinstance(piece, ChessPiece):
     #   return cls.getTypeMoves(piece.piece)
-    return {
-      PieceType.KNIGHT: cls.getKnightMoves(),
-      PieceType.BISHOP: cls.getBishopMoves(),
-      PieceType.ROOK  : cls.getRookMoves(),
-      PieceType.QUEEN : [*cls.getRookMoves(), *cls.getBishopMoves()],
-      PieceType.KING  : cls.getKingMoves(), }.get(piece)
-
-  #
-  # def __add__(self, other: Square) -> Optional[Square]:
-  #   """Offsets the given square if possible"""
-  #   x, y = other.x + self.x, other.y + self.y
-  #   if -1 < x < 8 and -1 < y < 8:
-  #     return Square.fromInts(x, y)
-  #   return None
-  #
-  # def __sub__(self, other: Square) -> Optional[Square]:
-  #   """Offsets the given square if possible"""
-  #   x, y = other.x - self.x, other.y - self.y
-  #   if -1 < x < 8 and -1 < y < 8:
-  #     return Square.fromInts(x, y)
-  #   return None
-  #
-  # def __radd__(self, other: Square) -> Optional[Square]:
-  #   """Offsets the given square if possible"""
-  #   return self + other
-  #
-  # def __rsub__(self, other: Square) -> Optional[Square]:
-  #   """Offsets the given square if possible"""
-  #   return self - other
+    typeMoves = {
+      PieceType.KNIGHT.value: cls.getKnightMoves(),
+      PieceType.BISHOP.value: cls.getBishopMoves(),
+      PieceType.ROOK.value  : cls.getRookMoves(),
+      PieceType.QUEEN.value : [*cls.getRookMoves(), *cls.getBishopMoves()],
+      PieceType.KING.value  : cls.getKingMoves(), }
+    return typeMoves.get(piece.value, [])
 
   def _getX(self) -> int:
     """Getter-function for horizontal move"""

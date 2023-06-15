@@ -4,19 +4,17 @@ PieceGrabbing widget."""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from os import abort
 from typing import NoReturn
 from warnings import warn
 
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QEnterEvent, QMouseEvent
+from PySide6.QtGui import QMouseEvent
 from icecream import ic
 from worktoy.core import plenty
 from worktoy.waitaminute import ProceduralError
 
-from visualchess import _PieceGrabbingProperties, ChessPiece, Sound, \
-  Square, \
-  Settings
+from visualchess import _PieceGrabbingProperties, ChessPiece, Sound
+from visualchess import Square, Settings
 
 ic.configureOutput(includeContext=True)
 
@@ -33,6 +31,8 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
 
   def leaveBoardRect(self, event: QEvent) -> NoReturn:
     """Defines the operation where the mouse leaves the board rectangle."""
+    if self.getGrabbedPiece():
+      self.cancelGrabbing()
     if not self.getHoverBoardFlag():
       return False
     self.setNormalCursor()
@@ -61,10 +61,6 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if square == self.getHoverSquare():
       return self.update()
     self.setHoverSquare(square)
-    if self.getGrabbedPiece():
-      self.setLegalSquares(*self.getBoardState().getMoves(square))
-      if not self.isLegalSquare(square):
-        self.setIllegalCursor()
     return self.update()
 
   def activateHoverPiece(self, event: QMouseEvent) -> NoReturn:
@@ -117,12 +113,9 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
       warn('Unexpected positional arguments received!')
     piece = self.getGrabbedPiece()
     hoverSquare = self.getHoverSquare()
-    if hoverSquare in self.getLegalSquares() and piece:
-      self.delGrabbedPiece()
-      self.getBoardState().setPiece(hoverSquare, piece)
-      self.setHoverPiece(piece)
-      self.setHoverCursor()
-      self.update()
-      Sound.move.play()
-      return True
-    return False
+    self.delGrabbedPiece()
+    self.getBoardState().setPiece(hoverSquare, piece)
+    self.setHoverPiece(piece)
+    self.setHoverCursor()
+    self.update()
+    Sound.move.play()

@@ -12,10 +12,10 @@ from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
 
 from visualchess import Square, ChessPiece, Settings
-from workside.styles import darkSquareStyle, lightSquareStyle, \
-  outlineStyle, \
-  labelStyle, backgroundStyle
-from workside.styles._styleinstances import gridStyle, bezelStyle
+from workside.styles import darkSquareStyle, lightSquareStyle, gridStyle, \
+  bezelStyle
+from workside.styles import outlineStyle, labelStyle, backgroundStyle
+
 from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
