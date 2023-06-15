@@ -21,7 +21,6 @@ from ._boardlayout import BoardLayout
 from ._piecegrabbingproperties import _PieceGrabbingProperties
 from ._piecegrabbingoperations import _PieceGrabbingOperations
 from ._piecegrabbing import PieceGrabbing
-from ._loadpiece import Piece, ChessColor, loadPiece
 from ._checkbutton import CheckButton
 
 from workside.widgets import CoreWidget

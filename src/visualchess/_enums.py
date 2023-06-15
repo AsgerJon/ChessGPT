@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 from enum import IntEnum, Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Never
 
 from PySide6.QtCore import QRect, QRectF
 from icecream import ic
 from worktoy.stringtools import stringList
-from worktoy.typetools import TypeBag
+from worktoy.typetools import TypeBag, CallMeMaybe
+from worktoy.waitaminute import ReadOnlyError
 
 if TYPE_CHECKING:
   from visualchess import Square, ChessPiece
@@ -24,8 +25,59 @@ _colors = stringList('white, black')
 
 class ChessColor(Enum):
   """ChessColor enum"""
-  WHITE = 0
+  WHITE = -1
+  NULL = 0
   BLACK = 1
+
+  @classmethod
+  def fromString(cls, name: str) -> ChessColor:
+    """Returns the ChessColor matching the given string"""
+    for type_ in cls:
+      if name.lower() == type_.name.lower():
+        return type_
+
+  def __str__(self, ) -> str:
+    """String representation"""
+    return self.name.capitalize()
+
+  def __repr__(self, ) -> str:
+    """Code representation"""
+    return 'ChessColor.%s' % self.name
+
+  def __bool__(self, ) -> bool:
+    """The null or empty color is False, white and black are True"""
+    return True if self.value else False
+
+  def __eq__(self, other: ChessColor) -> bool:
+    """The equality operator implementation. Please note that the empty
+    color is not considered equal to itself."""
+    if self and other:
+      return True if self is other else False
+    return False
+
+  def __mul__(self, type_: PieceType) -> ChessPiece:
+    """Creates an instance of ChessPiece having this color and the type
+    indicated by the argument"""
+    if isinstance(type_, PieceType):
+      return ChessPiece.fromColorPiece(self, type_)
+    return NotImplemented
+
+  def __rmul__(self, type_: PieceType) -> ChessPiece:
+    """By implementing the __rmul__, not multiplication implementation is
+    required on the PieceType class."""
+    if isinstance(type_, PieceType):
+      return self * type_
+    return NotImplemented
+
+  def getEnPassantRank(self) -> Rank:
+    """Getter-function for the rank at which pawns of this color may en
+    passant. Rank.rank5 for white and 4 for black"""
+    if self is ChessColor.WHITE:
+      return Rank.rank5
+    if self is ChessColor.BLACK:
+      return Rank.rank4
+    msg = """The empty color does not support en passant!"""
+    raise AttributeError(msg)
 
 
 class PieceType(Enum):
@@ -40,12 +92,45 @@ class PieceType(Enum):
 
   def __contains__(self, chessPiece: ChessPiece) -> bool:
     """Checks if given chess piece is of this type"""
-    otherName = chessPiece.getPiece().lower()
-    return True if self.name.lower() == otherName else False
+    return True if chessPiece.piece is self else False
 
   def __bool__(self) -> bool:
     """Only the EMPTY instance is False, all other instances are True"""
     return False if self.name == 'EMPTY' else True
+
+  def __eq__(self, other: PieceType) -> bool:
+    """Equality operator compares to other instances of PieceType"""
+    if not isinstance(other, PieceType):
+      return NotImplemented
+    if self is PieceType.EMPTY or other is PieceType.EMPTY:
+      return False
+    return False if self.value - other.value else True
+
+  def _getNameLower(self) -> str:
+    """Getter-function for lower-case version of name"""
+    return self.name.lower()
+
+  @classmethod
+  def fromString(cls, name: str) -> PieceType:
+    """Returns the PieceType matching the given string"""
+    for type_ in cls:
+      if name.lower() == type_.name.lower():
+        return type_
+
+  @classmethod
+  def fromValue(cls, value: int) -> PieceType:
+    """Getter-function for the instance matching the given value. Please
+    note that the absolute value is used."""
+    for type_ in PieceType:
+      if abs(value) == type_.value:
+        return type_
+
+  nameLower = property(_getNameLower, )
+
+  @classmethod
+  def recognizeType(cls, piece: ChessPiece) -> PieceType:
+    """Analyses the piece and returns the proper type"""
+    return piece.piece
 
 
 class File(IntEnum):

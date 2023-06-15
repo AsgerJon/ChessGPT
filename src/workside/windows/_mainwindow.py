@@ -7,6 +7,7 @@ from typing import NoReturn
 
 from PySide6.QtCore import Qt
 from icecream import ic
+from worktoy.core import maybe
 
 from visualchess import ChessPiece
 from workside.windows import LayoutWindow
@@ -41,6 +42,10 @@ class MainWindow(LayoutWindow):
 
   def debugFunc01(self) -> NoReturn:
     """omg"""
+    board = self._getBoardWidget()
+    names = ['__name__', '__class__', '__mro__', '__bases__']
+    for name in names:
+      print(maybe(getattr(board, name, None), '%s not found' % name))
 
   def debugFunc02(self) -> NoReturn:
     """omg"""

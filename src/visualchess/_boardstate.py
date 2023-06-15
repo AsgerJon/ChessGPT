@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 from typing import NoReturn
+from warnings import warn
 
 from PySide6.QtCore import QRect, QRectF
 from icecream import ic
@@ -13,7 +14,7 @@ from worktoy.typetools import TypeBag
 from worktoy.waitaminute import UnexpectedStateError
 
 from visualchess import ChessPiece, Square, PieceMove, File, ChessColor, \
-  PieceType
+  PieceType, Rank
 from visualchess.chesspieces import initialPosition
 
 ic.configureOutput(includeContext=True)
@@ -53,7 +54,16 @@ class BoardState:
     self._activeColor = ChessColor.WHITE
     self._whiteEnPassant = {f: False for f in File}
     self._blackEnPassant = {f: False for f in File}
+    self._enPassantDebugAllowFlag = False
     self._castleFlag = {s: True for s in Square.getCorners()}
+
+  def setEnPassantDebugAllowFlag(self, flag: bool) -> NoReturn:
+    """Setter-function for the en passant override flag"""
+    self._enPassantDebugAllowFlag = True if flag else False
+
+  def getEnPassantDebugAllowFlag(self, ) -> bool:
+    """Getter-function for the en passant override flag"""
+    return self._enPassantDebugAllowFlag
 
   def __getitem__(self, square: Square) -> ChessPiece:
     """Returns the piece at given square"""
@@ -107,106 +117,6 @@ class BoardState:
     self.setPiece(square, ChessPiece.EMPTY)
     return piece
 
-  def pieceGuard(self, piece: PieceType, square: Square) -> bool:
-    """This method checks if the given piece is on the given square.
-    Please note that this method is color agnostic meaning that it returns
-    true regardless of what color the piece is."""
-    placedPiece = self.getPiece(square)
-    if not placedPiece:
-      return False
-    return True if piece in [placedPiece, ~placedPiece] else False
-
-  def pieceGuardStrict(self, piece: PieceType, square: Square) -> bool:
-    """This method raises an error if the piece guard fails"""
-    if self.pieceGuard(piece, square):
-      return True
-    actualPiece = self.getPiece(square)
-    msg = """Expected piece %s on square %s, but found %s!"""
-    raise UnexpectedStateError(msg % (piece, square, actualPiece))
-
-  def getKingSquares(self, square: Square, ) -> list[Square]:
-    """Getter-function for the squares reachable by a king on the given
-    square. This method raises an exception a king is not on the given
-    square.
-
-    Please note that this method will return moves that would put the king
-    in check! Such moves a removed by a separate method which removes all
-    moves which would put the king in check. This method does remove moves
-    that would bring the piece out of bounds."""
-    piece, out = self.getPiece(square), []
-    self.pieceGuardStrict(PieceType.KING, square)
-    for move in PieceMove.getKingMoves():
-      out.append(square + move)
-    return [move for move in out if move is not None]
-
-  def getKnightSquares(self, square: Square, ) -> list[Square]:
-    """Getter-function for the knight moves. See docstring for king moves."""
-    piece, out = self.getPiece(square), []
-    self.pieceGuardStrict(PieceType.KNIGHT, square)
-    for move in PieceMove.getKnightMoves():
-      out.append(square + move)
-    return [move for move in out if move is not None]
-
-  def getRookSquares(self, square: Square, ) -> list[Square]:
-    """Getter-function for the squares reachable by a rook from the given
-    square. """
-    self.pieceGuardStrict(PieceType.ROOK, square)
-    piece, out = self.getPiece(square), []
-    for move in PieceMove.getRookMoves():
-      movingSquare = square + move
-      while not self.getPiece(movingSquare):
-        out.append(movingSquare)
-        movingSquare += move
-      out.append(movingSquare)
-    return out
-
-  def getBishopSquares(self, square: Square) -> list[Square]:
-    """Getter-function for the squares reachable by rook from the g iven
-    square."""
-    self.pieceGuardStrict(PieceType.BISHOP, square)
-    piece, out = self.getPiece(square), []
-    for move in PieceMove.getBishopMoves():
-      movingSquare = square + move
-      while not self.getPiece(movingSquare):
-        out.append(movingSquare)
-        movingSquare += move
-      out.append(movingSquare)
-    return out
-
-  def getQueenSquares(self, square: Square) -> list[Square]:
-    """Getter-function for the squares reachable by rook from the given
-    square."""
-    self.pieceGuardStrict(PieceType.QUEEN, square)
-    rookMoves = self.getRookSquares(square)
-    bishopMoves = self.getBishopSquares(square)
-    return [*rookMoves, *bishopMoves]
-
-  def getPawnSquares(self, square: Square) -> list[Square]:
-    """Getter-function for the squares reachable by a pawn from the given
-    square."""
-    self.pieceGuardStrict(PieceType.QUEEN, square)
-    if not self.getPiece(square):
-      return []
-
-  def getMoves(self, square: Square) -> list[Square]:
-    """Getter-function for the moves available from the given square"""
-    piece = self.getPiece(square)
-    if not piece:
-      return []
-    if piece in ChessPiece.getKings():
-      return self.getKingSquares(square)
-    if piece in ChessPiece.getKnights():
-      return self.getKnightSquares(square)
-    if piece in ChessPiece.getBishops():
-      return self.getBishopSquares(square)
-    if piece in ChessPiece.getQueens():
-      return self.getQueenSquares(square)
-    if piece in ChessPiece.getRooks():
-      return self.getRookSquares(square)
-    if piece in ChessPiece.getPawns():
-      return self.getPawnSquares(square)
-    raise UnexpectedStateError
-
   def _getBlackEnPassant(self) -> dict[File, bool]:
     """Getter-function for dictionary containing en passant status on
     black side, that is for rank 6 which has enum integer 2"""
@@ -226,6 +136,17 @@ class BoardState:
     if square.y == 3:
       return self._getBlackEnPassant()[square.file]
     return self._getWhiteEnPassant()[square.file]
+
+  def getAllowEnPassant(self, file: File, color: ChessColor) -> bool:
+    """This method controls whether en passant is available. Please note
+    that the file and color in the argument are the color of the pawn that
+    are able to capture."""
+    msg = """The pawn at file %s and color %s asked for permission to en 
+    passant capture, but en passant is not yet implemented! During 
+    development the enPassantDebugAllowFlag decides if en passant is 
+    available."""
+    warn(msg % (file, color))
+    return self.getEnPassantDebugAllowFlag()
 
   def getCastlingFlag(self, corner: Square) -> bool:
     """Getter-function for the castling flag on the given square. Please
@@ -273,6 +194,26 @@ class BoardState:
       return True
     msg = """Expected squares to be of type %s, but received %s."""
     raise TypeError(msg % (list, type(squares)))
+
+  def getPawnMoves(self, square: Square) -> list[Square]:
+    """Getter-function for pawn moves matching the color at the given
+    square. """
+    piece, out = self.getPiece(square), []
+    color, square = piece.color, square.file
+    if not piece:
+      return []
+    moves = PieceMove.getColorPawnMoves(piece.color)
+    for move in moves:
+      targetSquare = square + move
+      if targetSquare is not None:
+        targetPiece = self.getPiece(targetSquare)
+        if move in [PieceMove.UP1, PieceMove.DOWN1]:
+          if not targetPiece:
+            out.append(targetSquare)
+        if move in [PieceMove.LEFT1, PieceMove.RIGHT1]:
+          if targetPiece:
+            if targetPiece.color != piece.color:
+              out.append(targetSquare)
 
   def lineOfSight(self, source: Square, target: Square) -> bool:
     """Checks if there is an uninterrupted path between the pieces."""
@@ -334,3 +275,22 @@ class BoardState:
         squares.append(Square.fromInts(file0 + i, rank0))
       return self.emptySquares(squares)
     return False
+
+  def getMoves(self, square) -> list[Square]:
+    """Getter-function for the squares that may be captured by the piece
+    currently at the given square"""
+    piece, out = self.getPiece(square), []
+    if not piece:
+      return []
+    for move in PieceMove.getTypeMoves(piece):
+      target = square + move
+      if target is not None:
+        if self.captureCheck(piece, target):
+          if self.lineOfSight(square, target):
+            out.append(target)
+    return [s for s in out if s is not square]
+
+  def captureCheck(self, chessPiece: ChessPiece, target: Square) -> bool:
+    """Checks if given chess piece can capture the given target square. If
+    the target already holds a piece of the same color, the check fails."""
+    return False if self.getPiece(target).color == chessPiece.color else True

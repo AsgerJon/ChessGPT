@@ -2,6 +2,7 @@
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
+from ._illegalaccessorfunction import noAcc
 from ._enumify import Enumify, EnumifyMeta
 from ._argumenterror import ArgumentError
 from ._categorify import Categorify

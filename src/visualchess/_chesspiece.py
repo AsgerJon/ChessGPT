@@ -10,11 +10,15 @@ from typing import Never, TYPE_CHECKING
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPixmap, QColor, QCursor
 from icecream import ic
+from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
+from visualchess import ChessColor, PieceType
+
+from moreworktoy import ArgumentError
 
 if TYPE_CHECKING:
-  from visualchess import Widget
+  from visualchess import Widget, ChessColor
 
 ic.configureOutput(includeContext=True)
 
@@ -73,35 +77,63 @@ class ChessPiece(IntEnum):
     """Creates an instance of QCursor representing the piece and applies
     it to other widget. """
 
-  def getColor(self) -> str:
+  def getColor(self) -> ChessColor:
     """Getter-function for color"""
     if not self.value:
-      return 'empty'
+      return ChessColor.NULL
     if self.value < 0:
-      return 'white'
-    return 'black'
+      return ChessColor.WHITE
+    return ChessColor.BLACK
 
   def setColor(self, *_) -> Never:
     """Illegal setter function"""
     raise ReadOnlyError('color', 'set')
 
-  def getPiece(self) -> str:
+  def getPiece(self) -> PieceType:
     """Getter-function for piece"""
-    if not self.value:
-      return 'empty'
-    return self.name.split('_')[-1]
+    for type_ in PieceType:
+      if type_.value == abs(self.value):
+        return type_
+    raise ValueError('Could not recognize piece')
 
   def setPiece(self, *_) -> Never:
     """Illegal setter function"""
     raise ReadOnlyError('piece', 'set')
 
   @classmethod
-  def fromColorPiece(cls, color: str, piece: str) -> ChessPiece:
+  def fromColorPiece(cls, *args, **kwargs) -> ChessPiece:
     """Finds the piece given the color and piece type"""
+    ic(args, kwargs)
+    pieceKeys = stringList('piece, pieceType, chessPiece')
+    for type_ in PieceType:
+      pieceKeys.append(type_)
+    piece, args, kwargs = extractArg(PieceType, pieceKeys, *args, **kwargs)
+    if piece is None:
+      piece, args, kwargs = extractArg(str, pieceKeys, *args, **kwargs)
+      if piece is None:
+        raise ArgumentError('piece')
+    if isinstance(piece, str):
+      piece = PieceType.fromString(piece)
+    if not isinstance(piece, PieceType):
+      msg = """Expected piece to be of type %s, but received type %s!"""
+      raise TypeError(msg % (PieceType, type(piece)))
+
+    colorKeys = stringList('color, chessColor, pieceColor')
+    color, args, kwargs = extractArg(ChessColor, colorKeys, *args, **kwargs)
+    if color is None:
+      color, args, kwargs = extractArg(str, colorKeys, *args, **kwargs)
+      if color is None:
+        raise ArgumentError('color')
+    if isinstance(color, str):
+      color = PieceType.fromString(color)
+    if not isinstance(color, ChessColor):
+      msg = """Expected color to be of type %s, but received type %s!"""
+      raise TypeError(msg % (ChessColor, type(color)))
+
     for chessPiece in ChessPiece:
       if chessPiece.value:
-        if chessPiece.getPiece().lower() == piece:
-          if chessPiece.getColor().lower() == color:
+        if chessPiece.getPiece() == piece:
+          if chessPiece.getColor() == color:
             return chessPiece
 
   def __bool__(self) -> bool:

@@ -4,11 +4,12 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import NoReturn, TYPE_CHECKING, Never
+from typing import TYPE_CHECKING, Never, Union, Optional
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
-from worktoy.parsing import maybeType
+from worktoy.core import plenty
+from worktoy.parsing import maybeType, maybeTypes
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
@@ -217,6 +218,41 @@ class Square(Enum):
       is the reason for this being considered an error."""
       raise UnexpectedStateError(msg)
     return True
+
+  def _addInts(self, otherX: int, otherY: int) -> Optional[Square]:
+    """Adder implementation of integers"""
+    x, y = self.x + otherX, self.y + otherY
+    if -1 < x < 8 and -1 < y < 8:
+      return Square.fromInts(x, y)
+    return None
+
+  def _addMove(self, otherMove: PieceMove) -> Optional[Square]:
+    """Adder implementation for instances of PieceMove"""
+    x, y = self.x + otherMove.x, self.y + otherMove.y
+    return self._addInts(x, y)
+
+  def _addSquare(self, otherSquare: Square) -> Optional[Square]:
+    """Adder implementation for instances of Square"""
+    x, y = self.x + otherSquare.x, self.y + otherSquare.y
+    return self._addInts(x, y)
+
+  def _addTuple(self, otherTuple: tuple[int, int]) -> Optional[Square]:
+    """Adder implementation for instances of tuple"""
+    x, y = self.x + otherTuple[0], self.y + otherTuple[0]
+    return self._addInts(x, y)
+
+  def __add__(self, *other) -> Square:
+    """Returns the instance of Square that is 'other' away from self"""
+    intArgs = maybeTypes(int, *other, padlen=2, padChar=None)
+    if plenty(intArgs):
+      return self._addInts(*intArgs)
+    otherMove = maybeType(PieceMove, *other)
+
+    return Square.fromInts(self.x + other.x, self.y + other.y)
+
+  def __radd__(self, other: PieceMove | Square) -> Square:
+    """Allowing adding from the left."""
+    return Square.fromInts(self.x + other.x, self.y + other.y)
 
   def __or__(self, other: Square) -> bool:
     """The pipe operator | is used to indicate that the squares are on the
