@@ -12,7 +12,7 @@ from PySide6.QtGui import QMouseEvent, QPaintEvent, QPainter, QEnterEvent
 from PySide6.QtGui import QKeyEvent
 from icecream import ic
 
-from visualchess import ChessPiece, Square, BoardLayout
+from visualchess import Square, BoardLayout, PieceType
 from visualchess import _PieceGrabbingOperations
 from workside.styles import hoveredSquareStyle
 
@@ -129,7 +129,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
       hoverSquare = self.getHoverSquare()
       if not hoverPiece:
         return
-      if isinstance(hoverPiece, ChessPiece):
+      if isinstance(hoverPiece, PieceType):
         return self.beginGrabbing(hoverPiece, hoverSquare)
       raise TypeError
     # <******************** Cancel Grab (Right-Click) ********************> #
@@ -170,10 +170,10 @@ class PieceGrabbing(_PieceGrabbingOperations):
     if self.getHoverSquare():
       hoveredSquareStyle @ painter
       painter.drawRect(self.getHoverSquare() @ self.getBoardRect())
-    for (square, piece) in self.getBoardState().items():
+    for (square, piece) in self.getGameState().items():
       if isinstance(square, Square):
         target = square @ self.getBoardRect()
-        if isinstance(piece, ChessPiece):
+        if isinstance(piece, PieceType):
           if piece:
             pix = piece.getPixmap()
             source = pix.rect().toRectF()

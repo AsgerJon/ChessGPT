@@ -2,12 +2,12 @@
 functions
 used by subclasses of BaseStyle. These decorators are instances of
 StyleStates subclasses."""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import NoReturn, Any
+from typing import Any
 
 from icecream import ic
 from worktoy.stringtools import monoSpace

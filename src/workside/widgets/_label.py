@@ -1,22 +1,21 @@
 """Label provides an alternative to QLabel"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 import string
-from typing import NoReturn, Never
+from typing import NoReturn
+from random import choices
 
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPaintEvent, QPainter, QFontMetrics, QFont
 from PySide6.QtWidgets import QSizePolicy
 from icecream import ic
 from worktoy.core import maybe
-from worktoy.waitaminute import ReadOnlyError
 
-from workside.styles import labelStyle, BaseStyle, Family, headerStyle
+from workside.styles import BaseStyle, Family, headerStyle
 from workside.widgets import CoreWidget
 from workside.settings import Settings
-from random import choices
 
 ic.configureOutput(includeContext=True)
 

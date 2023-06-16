@@ -11,9 +11,9 @@ from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
 
-from visualchess import Square, ChessPiece, Settings
-from workside.styles import darkSquareStyle, lightSquareStyle, gridStyle, \
-  bezelStyle
+from visualchess import Square, Settings, PieceType
+from workside.styles import darkSquareStyle, lightSquareStyle, gridStyle
+from workside.styles import bezelStyle
 from workside.styles import outlineStyle, labelStyle, backgroundStyle
 
 from workside.widgets import CoreWidget
@@ -46,7 +46,7 @@ class BoardLayout(CoreWidget):
     is not available for the grabbed piece to land on."""
     self.setCursor(Settings.illegalCursor)
 
-  def setPieceCursor(self, piece: ChessPiece) -> NoReturn:
+  def setPieceCursor(self, piece: PieceType) -> NoReturn:
     """Sets the cursor on the widget to grab the given piece."""
     self.setCursor(piece.getCursor())
 
@@ -170,5 +170,4 @@ class BoardLayout(CoreWidget):
     painter.drawRects(lightDark['light'])
     outlineStyle @ painter
     painter.drawRect(self.getInnerSquare())
-
     painter.end()

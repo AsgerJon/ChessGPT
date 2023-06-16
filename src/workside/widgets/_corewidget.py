@@ -103,7 +103,8 @@ class CoreWidget(QWidget):
   def getParent(self) -> CoreWidget:
     """Getter-function for the parent. Using the explicit getter and
     setter for the parent widget requires them to be of type CoreWidget"""
-    return self._parent
+    if isinstance(self._parent, CoreWidget):
+      return self._parent
 
   def _createStyle(self) -> NoReturn:
     """Creator function for the default style"""

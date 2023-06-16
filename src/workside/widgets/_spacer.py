@@ -11,7 +11,6 @@ from icecream import ic
 from worktoy.stringtools import stringList
 
 from workside.settings import Settings
-from workside.styles import debugStyle
 from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)

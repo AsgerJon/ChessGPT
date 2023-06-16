@@ -136,7 +136,7 @@ class OverLoad:
       return self >> TypeKey(*other)
 
   def __call__(self, *args, **kwargs) -> OverLoad:
-    """If private variable '_func_ is None, then assumes that a single
+    """If private variable '_func' is None, then assumes that a single
     positional argument containing a function to be decorated. Otherwise,
     assumes a function call to wrapped function."""
     if self._func is None:

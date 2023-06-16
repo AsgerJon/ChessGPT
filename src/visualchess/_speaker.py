@@ -3,16 +3,12 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-import os
 from typing import NoReturn
 
 from icecream import ic
-
-from PySide6.QtWidgets import QWidget
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput, QAudioDevice, \
   QMediaDevices
 from worktoy.core import maybe
-from worktoy.stringtools import stringList
 
 from visualchess import Settings
 from workside.widgets import CoreWidget

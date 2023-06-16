@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 from enum import Enum
-import os
 from typing import TYPE_CHECKING, Never, Optional
 
 from PySide6.QtCore import QRect, QRectF, QPointF
@@ -15,7 +14,7 @@ from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
 from moreworktoy import ArgumentError
-from visualchess import File, Rank, PieceMove
+from visualchess import File, Rank
 
 if TYPE_CHECKING:
   from visualchess import Widget
@@ -102,6 +101,10 @@ class Square(Enum):
   H8 = (File.H, Rank.rank8)
 
   @classmethod
+  def fromComplex(cls, complexArg=complex):
+    """Returns the instance that matches the given complex number"""
+
+  @classmethod
   def parse(cls, *args, **kwargs) -> Square:
     """Parses the arguments to appropriate instance of Square"""
     keys = stringList('square, field, position')
@@ -128,6 +131,10 @@ class Square(Enum):
       if isinstance(z, complex):
         return cls.fromInts(int(z.real), int(z.imag))
     raise ArgumentError('Unable to parse arguments to a valid instance!')
+
+  def getComplex(self) -> complex:
+    """Getter-function for complex number representation of this Square."""
+    return self.x + self.y * 1j
 
   def getX(self, ) -> int:
     """Getter-function for the file number"""
@@ -243,12 +250,6 @@ class Square(Enum):
       is the reason for this being considered an error."""
       raise UnexpectedStateError(msg)
     return True
-
-  def __add__(self, other: PieceMove) -> Square:
-    """Returns the instance of Square that is 'other' away from self"""
-    x = self.getX() + other.x
-    y = self.getY() + other.y
-    return self.fromInts(x, y)
 
   def __or__(self, other: Square) -> bool:
     """The pipe operator | is used to indicate that the squares are on the

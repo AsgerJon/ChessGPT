@@ -9,17 +9,13 @@ from worktoy.typetools import TypeBag
 from ._file import File
 from ._rank import Rank
 from ._chesscolor import ChessColor
-from ._piecetype import PieceType
-from ._piecemove import PieceMove
 from ._square import Square
-from ._chesspiece import ChessPiece
+from ._piecetype import PieceType, OctRose, GameState
 from ._settings import Settings
 from ._soundeffect import SoundEffect
 from ._soundenum import Sound
 from ._speaker import Speaker
 from ._soundenum import Sound
-from ._boardstate import BoardState
-from ._debugstate import DebugState
 from ._boardlayout import BoardLayout
 from ._piecegrabbingproperties import _PieceGrabbingProperties
 from ._piecegrabbingoperations import _PieceGrabbingOperations

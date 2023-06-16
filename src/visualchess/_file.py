@@ -48,7 +48,6 @@ class File(IntEnum):
     for file in File:
       if file.value == x:
         return file
-    ic(x)
     os.abort()
     raise TypeError
 

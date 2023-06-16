@@ -1,19 +1,19 @@
 """MouseButton instances allow each button on a mouse to operate entirely
 independently."""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn, Any
 
-from PySide6.QtCore import Signal, QTimer, Qt
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QMouseEvent
 from icecream import ic
 from worktoy.core import maybe
 from worktoy.parsing import extractArg
 from worktoy.stringtools import stringList
 
-from workside.settings import flag, Settings, timer
+from workside.settings import Settings, timer
 from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)

@@ -4,15 +4,12 @@ logic and triggers relevant functions"""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import NoReturn
-from warnings import warn
-
 from icecream import ic
 from worktoy.core import plenty
 from worktoy.parsing import maybeTypes, maybeType
 
 from moreworktoy import ArgumentError
-from visualchess import Square, DebugState, BoardState, PieceType, ChessColor
+from visualchess import Square, PieceType, ChessColor
 
 ic.configureOutput(includeContext=True)
 

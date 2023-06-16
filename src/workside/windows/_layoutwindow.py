@@ -3,19 +3,17 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import NoReturn
 
 from PySide6.QtGui import QKeyEvent, QTextCursor
 from PySide6.QtWidgets import QVBoxLayout, QGridLayout, QHBoxLayout
 from PySide6.QtWidgets import QWidget
 from icecream import ic
-from worktoy.core import maybe
 from worktoy.stringtools import monoSpace
 
 from visualchess import PieceGrabbing
-from workside.widgets import CoreWidget, Spacer, VSpacer, HSpacer, \
-  DoubleSpacer, DebugButton
+from workside.widgets import CoreWidget, VSpacer, HSpacer
+from workside.widgets import DoubleSpacer, DebugButton
 from workside.widgets import Label
 from workside.windows import BaseWindow
 from workside.styles import headerStyle

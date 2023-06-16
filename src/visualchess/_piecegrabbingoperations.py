@@ -13,7 +13,7 @@ from icecream import ic
 from worktoy.core import plenty
 from worktoy.waitaminute import ProceduralError
 
-from visualchess import _PieceGrabbingProperties, ChessPiece, Sound
+from visualchess import _PieceGrabbingProperties, Sound, PieceType
 from visualchess import Square, Settings
 
 ic.configureOutput(includeContext=True)
@@ -70,8 +70,8 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     point = event.position()
     boardRect = self.getBoardRect()
     square = Square.fromPointRect(point, boardRect)
-    piece = self.getBoardState().getPiece(square)
-    if isinstance(piece, ChessPiece):
+    piece = self.getGameState()[square.getComplex()]
+    if isinstance(piece, PieceType):
       if piece != self.getHoverPiece():
         self.setHoverPiece(piece)
         if self.getHoverPiece():
@@ -80,14 +80,14 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
           self.setNormalCursor()
       return self.update()
 
-  def beginGrabbing(self, piece: ChessPiece, origin: Square) -> NoReturn:
+  def beginGrabbing(self, piece: PieceType, origin: Square) -> NoReturn:
     """Operation responsible for starting a grabbing operation."""
-    if not isinstance(piece, ChessPiece):
+    if not isinstance(piece, PieceType):
       raise TypeError
     self.setGrabbedPiece(piece)
     self.setPieceCursor(piece)
     self.setOriginSquare(origin)
-    self.getBoardState().setPiece(origin, ChessPiece.EMPTY)
+    self.getGameState()[origin.getComplex()] = PieceType.EMPTY
     self.delHoverPiece()
     Sound.slide.play()
     self.update()
@@ -97,24 +97,24 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     originSquare, piece = self.getOriginSquare(), self.getGrabbedPiece()
     if not plenty(originSquare, piece):
       raise ProceduralError('Cancel grabbing')
-    self.getBoardState().setPiece(originSquare, piece)
-    self.setGrabbedPiece(ChessPiece.EMPTY)
+    self.getGameState()[originSquare.x + originSquare.y * 1j] = piece
+    self.setGrabbedPiece(PieceType.EMPTY)
     hoverSquare = self.getHoverSquare()
-    hoverPiece = self.getBoardState().getPiece(hoverSquare)
+    hoverPiece = self.getGameState()[hoverSquare.x + hoverSquare.y * 1j]
     self.setHoverCursor()
-    if isinstance(hoverPiece, ChessPiece):
+    if isinstance(hoverPiece, PieceType):
       self.setHoverPiece(hoverPiece)
     Sound.whoosh.play()
     self.update()
 
-  def completeGrabbing(self, *args) -> bool:
+  def completeGrabbing(self, *args) -> NoReturn:
     """Completes the grabbing operation"""
     if args:
       warn('Unexpected positional arguments received!')
     piece = self.getGrabbedPiece()
     hoverSquare = self.getHoverSquare()
     self.delGrabbedPiece()
-    self.getBoardState().setPiece(hoverSquare, piece)
+    self.getGameState()[hoverSquare.getComplex()] = piece
     self.setHoverPiece(piece)
     self.setHoverCursor()
     self.update()

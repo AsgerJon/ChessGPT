@@ -1,11 +1,11 @@
 """The button decorates the CoreWidget with a mouse button"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import Qt, Signal, QCoreApplication
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QMouseEvent
 from icecream import ic
 from worktoy.typetools import CallMeMaybe

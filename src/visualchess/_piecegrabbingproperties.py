@@ -8,11 +8,9 @@ from typing import NoReturn
 
 from PySide6.QtCore import QPointF, QTimer
 from icecream import ic
-from worktoy.stringtools import monoSpace
 from worktoy.waitaminute import UnexpectedStateError
 
-from visualchess import ChessPiece, Square, BoardLayout, BoardState, \
-  DebugState
+from visualchess import Square, BoardLayout, GameState, PieceType
 from visualchess import Settings, Sound
 
 ic.configureOutput(includeContext=True)
@@ -37,6 +35,7 @@ class _PieceGrabbingProperties(BoardLayout):
     self._flagHoldingPiece = None
     self._flagMoving = None
     self._movingTimer = None
+    self._gameState = None
     self._legalSquares = []
     Sound.createAll()
 
@@ -78,26 +77,22 @@ class _PieceGrabbingProperties(BoardLayout):
   ####################### End OF Mouse y-coordinate #######################
   ################ END OF Mouse Position Accessor Functions ###############
   # --------------------------------------------------------------------- #
-  ################### Accessor Functions for Chess Board ##################
-  def _createBoardState(self) -> bool:
-    """Creator-function for BoardState instance"""
-    # self._boardState = BoardState.InitialPosition()
-    self._boardState = BoardState.DebugPosition()
-    # self._boardState = DebugState.DebugPosition()
-    if isinstance(self._boardState, BoardState):
-      return True
-    raise TypeError
+  ################# Accessor Functions for Chess GameState ################
 
-  def getBoardState(self) -> BoardState:
-    """Getter-function for board state"""
-    if self._boardState is None:
-      if self._createBoardState():
-        return self.getBoardState()
-    if isinstance(self._boardState, BoardState):
-      return self._boardState
-    raise TypeError
+  def _createGameState(self) -> NoReturn:
+    """Creator-function for the game state"""
+    self._gameState = GameState()
 
-  ############### END OF Accessor Functions for Chess Board ###############
+  def getGameState(self) -> GameState:
+    """Getter-function for the game state"""
+    if self._gameState is None:
+      self._createGameState()
+      return self.getGameState()
+    if isinstance(self._gameState, GameState):
+      return self._gameState
+    raise TypeError('gameState')
+
+  ############ END OF Accessor Functions for Chess GameState ##############
   # --------------------------------------------------------------------- #
   ######################### Hover square accessors ########################
   def getHoverSquare(self) -> Square:
@@ -122,7 +117,7 @@ class _PieceGrabbingProperties(BoardLayout):
     """Getter-function for hover piece"""
     return self._hoverPiece
 
-  def setHoverPiece(self, hoverPiece: ChessPiece) -> NoReturn:
+  def setHoverPiece(self, hoverPiece: PieceType) -> NoReturn:
     """Setter-function for hover piece"""
     if hoverPiece == self._hoverPiece:
       return
@@ -136,27 +131,27 @@ class _PieceGrabbingProperties(BoardLayout):
   ###################### END of Hover piece accessors #####################
   ################## Accessor functions for grabbed piece #################
   #########################################################################
-  def getGrabbedPiece(self) -> ChessPiece:
+  def getGrabbedPiece(self) -> PieceType:
     """Getter-function for the currently grabbed piece."""
     if not self._grabbedPiece:
-      return ChessPiece.EMPTY
-    if isinstance(self._grabbedPiece, ChessPiece):
+      return PieceType.EMPTY
+    if isinstance(self._grabbedPiece, PieceType):
       return self._grabbedPiece
     raise TypeError
 
-  def setGrabbedPiece(self, piece: ChessPiece) -> NoReturn:
+  def setGrabbedPiece(self, piece: PieceType) -> NoReturn:
     """Getter-function for the currently grabbed piece."""
     if piece is None:
-      self._grabbedPiece = ChessPiece.EMPTY
+      self._grabbedPiece = PieceType.EMPTY
       return
-    if isinstance(piece, ChessPiece):
+    if isinstance(piece, PieceType):
       self._grabbedPiece = piece
       return
     raise TypeError
 
   def delGrabbedPiece(self) -> NoReturn:
     """Deleter-function for the grabbed piece. Returns the grabbed piece."""
-    self.setGrabbedPiece(ChessPiece.EMPTY)
+    self.setGrabbedPiece(PieceType.EMPTY)
 
   #########################################################################
   ############## END OF Accessor functions for grabbed piece ##############

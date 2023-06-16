@@ -1,13 +1,13 @@
 """BaseStyle"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn, TYPE_CHECKING
 
 from PySide6.QtCore import Qt, QRect, QRectF
 from PySide6.QtGui import QBrush, QFont, QPen, QColor, QPainter, \
-  QFontMetrics, QFontMetricsF
+  QFontMetricsF
 from icecream import ic
 from worktoy.core import maybe
 from worktoy.typetools import TypeBag
@@ -82,7 +82,7 @@ class BaseStyle:
     """Getter-function for font metrics"""
     if self._fontMetrics is None:
       self._createFontMetrics()
-      return self._fontMetrics
+      return self.getFontMetrics()
     if isinstance(self._fontMetrics, QFontMetricsF):
       return self._fontMetrics
     msg = """Expected front metrics to be of type %s, but received: %s!"""
