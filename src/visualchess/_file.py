@@ -7,7 +7,7 @@ from enum import IntEnum
 
 from icecream import ic
 from worktoy.parsing import extractArg
-from worktoy.stringtools import stringList
+from worktoy.stringtools import stringList, monoSpace
 
 ic.configureOutput(includeContext=True)
 
@@ -64,3 +64,19 @@ class File(IntEnum):
   def __repr__(self, ) -> str:
     """Code Representation"""
     return """File.%s""" % self.name
+
+  def __add__(self, x: int) -> File:
+    """Adds other to self"""
+    if isinstance(x, int):
+      if -1 < x < 8:
+        out = self.value + x
+      else:
+        msg = """The file must be in the range from 0 to 7 inclusive, 
+        but received: %d""" % x
+        raise OverflowError(monoSpace(msg))
+      return File.fromValue(out)
+    raise TypeError
+
+  def __sub__(self, x: int) -> File:
+    """Subtracts given value from self"""
+    return self.__add__(-x)

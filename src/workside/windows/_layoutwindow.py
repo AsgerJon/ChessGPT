@@ -3,22 +3,20 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import NoReturn
 
 from PySide6.QtGui import QKeyEvent, QTextCursor
 from PySide6.QtWidgets import QVBoxLayout, QGridLayout, QHBoxLayout
 from PySide6.QtWidgets import QWidget
 from icecream import ic
-from worktoy.core import maybe
 from worktoy.stringtools import monoSpace
 
 from visualchess import PieceGrabbing
-from workside.widgets import CoreWidget, Spacer, VSpacer, HSpacer, \
+from workside.styles import headerStyle
+from workside.widgets import CoreWidget, VSpacer, HSpacer, \
   DoubleSpacer, DebugButton
 from workside.widgets import Label
 from workside.windows import BaseWindow
-from workside.styles import headerStyle
 
 wordStart = QTextCursor.MoveOperation.StartOfWord
 wordEnd = QTextCursor.MoveOperation.EndOfWord
@@ -123,6 +121,7 @@ class LayoutWindow(BaseWindow):
     self._debugButton = DebugButton()
     msg = """Reset (press and hold)"""
     self._debugButton.text = monoSpace(msg)
+    self._debugButton.update()
 
   def _getDebugButton(self) -> DebugButton:
     """Getter-function for the button"""

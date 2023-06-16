@@ -4,12 +4,11 @@ PieceGrabbing widget."""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from os import abort
 from typing import NoReturn
 from warnings import warn
 
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QEnterEvent, QMouseEvent
+from PySide6.QtGui import QMouseEvent
 from icecream import ic
 from worktoy.core import plenty
 from worktoy.waitaminute import ProceduralError
@@ -61,7 +60,6 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if square == self.getHoverSquare():
       return self.update()
     self.setHoverSquare(square)
-    self.setLegalSquares(*self.getBoardState().getMoves(square))
     return self.update()
 
   def activateHoverPiece(self, event: QMouseEvent) -> NoReturn:

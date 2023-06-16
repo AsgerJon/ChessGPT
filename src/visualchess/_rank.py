@@ -7,7 +7,7 @@ from enum import IntEnum
 
 from icecream import ic
 from worktoy.parsing import extractArg
-from worktoy.stringtools import stringList
+from worktoy.stringtools import stringList, monoSpace
 
 ic.configureOutput(includeContext=True)
 
@@ -64,3 +64,19 @@ class Rank(IntEnum):
   def __repr__(self, ) -> str:
     """Code Representation"""
     return """Rank.%s""" % self.name
+
+  def __add__(self, y: int) -> Rank:
+    """Adds other to self"""
+    if isinstance(y, int):
+      if -1 < y < 8:
+        out = self.value + y
+      else:
+        msg = """The rank must be in the range from 0 to 7 inclusive, 
+        but received: %d""" % y
+        raise OverflowError(monoSpace(msg))
+      return self.fromValue(out)
+    raise TypeError
+
+  def __sub__(self, y: int) -> Rank:
+    """Subtracts given value from self"""
+    return self.__add__(-y)

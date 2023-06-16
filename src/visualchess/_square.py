@@ -3,6 +3,7 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+import os
 from enum import Enum
 from typing import TYPE_CHECKING, Never
 
@@ -103,6 +104,8 @@ class Square(Enum):
   @classmethod
   def parse(cls, *args, **kwargs) -> Square:
     """Parses the arguments to appropriate instance of Square"""
+    print(args, kwargs)
+    os.abort()
     keys = stringList('square, field, position')
     square, args, kwargs = extractArg(Square, keys, *args, **kwargs)
     if square is not None:
