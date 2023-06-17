@@ -15,7 +15,7 @@ from workside.widgets import CoreWidget, buttonFactory
 
 ic.configureOutput(includeContext=True)
 
- 
+
 @buttonFactory('left')
 @buttonFactory('right')
 @buttonFactory('middle')

@@ -8,14 +8,11 @@ from typing import NoReturn, Never
 
 from PySide6.QtCore import QRect, QRectF
 from icecream import ic
-from worktoy.core import maybe
-from worktoy.parsing import maybeType, searchKeys
-from worktoy.stringtools import stringList, monoSpace
+from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import UnexpectedStateError, ReadOnlyError
 
-from moreworktoy import ArgumentError
-from visualchess import ChessPiece, Square, ChessColor, Rank, PieceType
+from visualchess import ChessPiece, Square, ChessColor, Sound
 from visualchess.chesspieces import initialPosition
 
 ic.configureOutput(includeContext=True)
@@ -48,11 +45,14 @@ class BoardState:
   @classmethod
   def DebugPosition(cls) -> BoardState:
     """Creates an instance with the debug position"""
-    return cls.readList(debugPosition)
+    return cls.readList([
+      stringList('E1, white, king'),
+      stringList('E8, black, king'),
+    ])
 
   def __init__(self, *args, **kwargs) -> None:
     self._contents = {s: ChessPiece.EMPTY for s in Square}
-    self._activeColor = ChessColor.WHITE
+    self._colorTurn = ChessColor.WHITE
     self._enPassant = Square.NULL
     self._grabbedPiece = ChessPiece.EMPTY
     self._grabbedSquare = Square.NULL
@@ -116,9 +116,32 @@ class BoardState:
     """Setter-function for the hovered square"""
     self._hoverPiece = chessPiece
 
-  def getPiece(self, *args, **kwargs) -> ChessPiece:
+  def _getTurn(self) -> ChessColor:
+    """Getter-function for the color whose turn it is."""
+    return self._colorTurn
+
+  def _setTurn(self, chessColor: ChessColor) -> NoReturn:
+    """Setter-function for the color whose turn it is."""
+    self._colorTurn = chessColor
+
+  def toggleTurn(self) -> NoReturn:
+    """Toggle-function switching the turn"""
+    if self._colorTurn is ChessColor.BLACK:
+      self._colorTurn = ChessColor.WHITE
+    else:
+      self._colorTurn = ChessColor.BLACK
+
+  def _getHoverTurn(self, ) -> bool:
+    """Getter-function for hover turn flag. True indicates that the piece
+    currently hovered is of the color whose turn it is."""
+    if not self.hoverPiece:
+      return False
+    if self.hoverPiece.color == self.colorTurn:
+      return True
+    return False
+
+  def getPiece(self, square: Square) -> ChessPiece:
     """Getter-function for the piece on the given square"""
-    square = Square.parse(*args, **kwargs)
     if not square:
       return ChessPiece.EMPTY
     piece = self._contents.get(square, None)
@@ -162,202 +185,156 @@ class BoardState:
 
   def resetInitialPosition(self) -> NoReturn:
     """Resets the board to initial position"""
+    self.colorTurn = ChessColor.WHITE
     self.updatePositionFromList(initialPosition)
-
-  def _getEnPassantSquare(self) -> Square:
-    """Getter-function for the square, if any, where en passant capture is
-    currently possible."""
-    if isinstance(self._enPassant, Square):
-      return self._enPassant
-    msg = """Expected the en-passant square to be of type %s, 
-    but received: %s!"""
-    raise TypeError(msg % (Square, type(self._enPassant)))
-
-  def _setEnPassantSquare(self, square: Square) -> NoReturn:
-    """Setter-function for the en passant square. Please note that this
-    setter checks if this square has a pawn on it of the appropriate
-    color. If not, it will raise an UnexpectedStateError. To avoid this,
-    ensure that the pawn move after which the pawn may be captured with en
-    passant is applied to the board state, before the setter function is
-    invoked. """
-    if not isinstance(square, Square):
-      msg = """Expected the en-passant square to be of type %s, 
-      but received: %s!"""
-      raise TypeError(msg % (Square, type(self._enPassant)))
-    if not square:
-      self._enPassant = Square.NULL
-      return
-    piece = self.getPiece(square)
-    if piece.piece is not PieceType.PAWN:
-      msg = """Expected a piece of type %s at %s, but found %s!"""
-      raise TypeError(msg % (PieceType.PAWN, square, piece.piece))
-    if piece.color is ChessColor.WHITE and square.rank == 4:
-      self._enPassant = square
-    elif piece.color is ChessColor.BLACK and square.rank == 3:
-      self._enPassant = square
-    else:
-      msg = """Expected rank of en-passant square to be on %s or %s!"""
-      raise ValueError(msg % (Rank.rank4, Rank.rank5, square.rank))
-
-  def parsePos(self, *args) -> tuple[Square, ChessColor, PieceType]:
-    """Parses arguments to square and chess piece"""
-    square = maybeType(Square, *args)
-    chessPieceArg = maybeType(ChessPiece, *args)
-    defaultType, defaultColor = None, None
-    if chessPieceArg:
-      if isinstance(chessPieceArg, ChessPiece):
-        defaultType, defaultColor = chessPieceArg.piece, chessPieceArg.color
-    pieceTypeArg = maybeType(PieceType, *args)
-    colorArg = maybeType(ChessColor, *args)
-    pieceType = maybe(pieceTypeArg, defaultType, PieceType.EMPTY)
-    color = maybe(colorArg, defaultColor, ChessColor.NULL)
-    if isinstance(square, Square):
-      if isinstance(color, ChessColor):
-        if isinstance(pieceType, PieceType):
-          return (square, color, pieceType)
-
-  def parseKey(self, **kwargs) -> tuple[Square, ChessColor, PieceType]:
-    """Parses keyword arguments to square and chess piece"""
-    squareKeys = stringList('square, position, coordinates, field')
-    chessPieceKeys = stringList('chessPiece, piece, pieceType, type, type_')
-    colorKeys = stringList('color, colour, chessColor, side')
-    squareKwarg = searchKeys(*squareKeys) @ Square >> kwargs
-    chessPieceKwarg = searchKeys(*chessPieceKeys) @ ChessPiece >> kwargs
-    pieceTypeKwarg = searchKeys(*chessPieceKeys) @ PieceType >> kwargs
-    colorKwarg = searchKeys(*colorKeys) @ ChessColor >> kwargs
-    square = maybe(squareKwarg, Square.NULL)
-    chessPiece = maybe(chessPieceKwarg, ChessPiece.EMPTY)
-    defaultType, defaultColor = None, None
-    if chessPiece:
-      if isinstance(chessPiece, ChessPiece):
-        defaultType, defaultColor = chessPiece.piece, chessPiece.color
-    pieceType = maybe(pieceTypeKwarg, defaultType, PieceType.EMPTY)
-    color = maybe(colorKwarg, defaultColor, ChessColor.NULL)
-    if isinstance(square, Square):
-      if isinstance(color, ChessColor):
-        if isinstance(pieceType, PieceType):
-          return (square, color, pieceType)
-
-  def parse(self, *args, **kwargs) -> tuple[Square, ChessColor, PieceType]:
-    """Parses arguments to square and piece"""
-    posArgs = self.parsePos(*args)
-    keyArgs = self.parseKey(**kwargs)
-    square = maybe(keyArgs[0], posArgs[0], None)
-    color = maybe(keyArgs[1], posArgs[1], None)
-    pieceType = maybe(keyArgs[2], posArgs[2], None)
-    if isinstance(square, Square):
-      if isinstance(color, ChessColor):
-        if isinstance(pieceType, PieceType):
-          return (square, color, pieceType)
-
-  def squareTargets(self, *args) -> list[Square]:
-    """Returns the squares that the piece on the given squares is able to
-    move to."""
-    square = maybeType(Square, *args)
-    chessPiece = maybeType(ChessPiece, *args)
-    if not isinstance(chessPiece, ChessPiece):
-      raise TypeError
-    pieceType = chessPiece.piece
-    if pieceType is PieceType.PAWN:
-      return self.pawnTargets(square, chessPiece)
-    return [square for square in Square]
-
-  def pawnTargets(self, *args) -> list[Square]:
-    """Returns the squares reachable by a white pawn from the given square"""
-    out = []
-    black, white = ChessColor.BLACK, ChessColor.WHITE
-    square = maybeType(Square, *args)
-    chessPiece = maybeType(ChessPiece, *args)
-    if isinstance(chessPiece, ChessPiece):
-      color, pieceType = chessPiece.color, chessPiece.piece
-    else:
-      raise TypeError
-    if not isinstance(square, Square):
-      raise TypeError
-    if not isinstance(chessPiece, ChessPiece):
-      raise TypeError
-    step = 1 if color is black else -1
-    oneStep = square + step * 1j
-    if oneStep:
-      if not self.getPiece(oneStep):
-        out.append(oneStep)
-    initialRank = Rank.rank7 if color is black else Rank.rank2
-    if square.rank == initialRank:
-      twoStep = square + 2j if color is ChessColor.BLACK else square - 2j
-      if not (self.getPiece(twoStep) and self.getPiece(oneStep)):
-        out.append(twoStep)
-    dr = 1j if color is ChessColor.BLACK else -1j
-    for step in [-1 + dr, 1 + dr]:
-      if square + step:
-        colorTest = self.getPiece(square + step).color == ~color
-        enPassantTest = square + int(step.real) == self.enPassantSquare
-        if colorTest or enPassantTest:
-          out.append(square + step)
-    return out
-
-  def validateMove(self, ) -> bool:
-    """This method should be invoked to apply a move to the board"""
-    if not self.grabbedPiece:
-      return False
-    color = self.grabbedPiece.color
-    black, white = ChessColor.BLACK, ChessColor.WHITE
-    if self.grabbedPiece.isPawn:
-      initialRank = Rank.rank7 if color is black else Rank.rank2
-      direction = 1 if color is black else -1
-      file0, rank0 = self.grabbedSquare.file, self.grabbedSquare.rank
-      file1, rank1 = self.hoverSquare.file, self.hoverSquare.rank
-      if direction * (rank1.value - rank0.value) < 0:
-        print('Would move pawn backwards')
-        return False  # Would move pawn backwards
-      if rank1.value - rank0.value == 2 * direction:
-        if rank0.value - initialRank.value:
-          print('Two steps available only from initial rank')
-          return False  # Two steps available only from initial rank
-        if file0.value - file1.value:
-          print('Two steps must occur on one file')
-          return False  # Two steps must occur on one file
-        if self.getPiece(Square.fromFileRank(file0, rank0 + direction)):
-          print('Two steps obstructed')
-          return False  # Two steps obstructed!
-        if self.getPiece(Square.fromFileRank(file0, rank0 + 2 * direction)):
-          print('Two steps obstructed')
-          return False  # Two steps obstructed!
-        self._enPassant = self.hoverSquare
-        return True
-      if rank1.value - rank0.value == direction:
-        if file0.value == file1.value:
-          if self.getPiece(Square.fromFileRank(file0, rank0 + direction)):
-            print('One step obstructed!')
-            return False  # One step obstructed!
-          return True
-        else:
-          if max(file0, file1) - min(file0, file1) != 1:
-            return False
-          if self.hoverPiece.color == color:
-            return False
-          return True
-      dx = self.enPassantSquare.file.value - self.hoverSquare.file.value
-      if dx in [-1, 1]:
-        return True
-
-  def applyMove(self) -> bool:
-    """Applies the current move subject to validation"""
-    if self.validateMove():
-      self.setPiece(self.hoverSquare, self.grabbedPiece)
-      self.grabbedPiece = ChessPiece.EMPTY
-      self.grabbedSquare = Square.NULL
-      self.hoverPiece = ChessPiece.EMPTY
-      self.hoverSquare = Square.NULL
-      return True
-    return False
 
   def _noAcc(self, *_) -> Never:
     """Illegal Accessor Function"""
     raise ReadOnlyError('General illegal accessor')
 
-  enPassantSquare = property(
-    _getEnPassantSquare, _setEnPassantSquare, _noAcc)
+  def leaveBoard(self, ) -> NoReturn:
+    """Resets move properties"""
+    self.hoverPiece = ChessPiece.EMPTY
+    self.hoverSquare = Square.NULL
+    self.cancelMove()
+
+  def hover(self, square: Square) -> NoReturn:
+    """Sets hoverSquare to square"""
+    piece = self.getPiece(square)
+    if self.hoverSquare != square:
+      self.hoverSquare = square
+    if self.hoverPiece != self.getPiece(square):
+      self.hoverPiece = piece
+
+  def grabPiece(self, ) -> NoReturn:
+    """Grabs the hovered piece"""
+    if self.hoverPiece.color == self.colorTurn:
+      if self.hoverPiece and self.hoverSquare:
+        self.grabbedPiece = self.hoverPiece
+        self.grabbedSquare = self.hoverSquare
+        self.delPiece(self.grabbedSquare)
+        return True
+    return False
+
+  def cancelMove(self, ) -> NoReturn:
+    """This method instead moves the grabbed piece back to grabbed square"""
+    if self.grabbedPiece and self.grabbedSquare:
+      self.setPiece(self.grabbedSquare, self.grabbedPiece)
+      Sound.whoosh.play()
+    self.grabbedSquare, self.grabbedPiece = Square.NULL, ChessPiece.EMPTY
+
+  def validateBase(self) -> tuple[int, int]:
+    """Base validation"""
+    if self.hoverPiece:
+      if self.hoverPiece.color == self.grabbedPiece.color:
+        Sound.meme_nope.play()
+        return (0, 0)
+    if self.hoverSquare == self.grabbedSquare:
+      return (0, 0)
+    if not self.grabbedPiece:
+      return (0, 0)
+    supremum = self.grabbedSquare - self.hoverSquare
+    infimum = self.grabbedSquare * self.hoverSquare
+    if isinstance(supremum, int) and isinstance(infimum, int):
+      return (supremum, infimum)
+
+  def validateKingMove(self) -> bool:
+    """Validates a king move"""
+    supremum, infimum = self.validateBase()
+    if not supremum * infimum:
+      return False
+    if self.grabbedPiece.isKing:
+      if supremum < 2:
+        return True
+      return False
+    msg = """validator expected King, but received grabbed piece: %s!"""
+    raise ValueError(msg % self.grabbedPiece.piece)
+
+  def validateKnightMove(self) -> bool:
+    """Validates a knight move"""
+    supremum, infimum = self.validateBase()
+    if not supremum * infimum:
+      return False
+    if self.grabbedPiece.isKnight:
+      if supremum == 2 and infimum == 1:
+        return True
+      return False
+
+  def validateBishopMove(self) -> bool:
+    """Validates a bishop move"""
+    supremum, infimum = self.validateBase()
+    if self.grabbedPiece.isBishop:
+      if abs(supremum) == abs(infimum):
+        if abs(supremum) == 1:
+          return True
+        x0, y0 = self.grabbedSquare.file.value, self.grabbedSquare.rank.value
+        x1, y1 = self.hoverSquare.file.value, self.hoverSquare.rank.value
+        distX, distY = x1 - x0, y1 - y0
+        dx = int(distX / max(abs(distX), 1))
+        dy = int(distY / max(abs(distY), 1))
+        for i in range(1, abs(supremum)):
+          pathSquare = Square.fromInts(x0 + i * dx, y0 + i * dy)
+          if self.getPiece(pathSquare):
+            return False
+      elif abs(supremum) - abs(infimum):
+        return False
+
+  def validateRookMove(self) -> bool:
+    """Validates a rook move"""
+    supremum, infimum = self.validateBase()
+    if self.grabbedPiece.isQueen:
+      return True
+
+  def validateQueenMove(self) -> bool:
+    """Validates a queen move"""
+    return self.validateBishopMove() or self.validateRookMove()
+
+  def validatePawnMove(self) -> bool:
+    """Validates a pawn move"""
+    supremum, infimum = self.validateBase()
+    if self.grabbedPiece.isPawn:
+      return True
+
+  def validateMove(self) -> bool:
+    """This method checks if moving grabbed Piece to hoverSquare is
+    allowable."""
+    supremum, infimum = self.validateBase()
+    if not supremum * infimum:
+      return False
+    if self.grabbedPiece.isKing:
+      return self.validateKingMove()
+    if self.grabbedPiece.isKnight:
+      return self.validateKnightMove()
+    if self.grabbedPiece.isBishop:
+      return self.validateBishopMove()
+    if self.grabbedPiece.isRook:
+      return self.validateRookMove()
+    if self.grabbedPiece.isQueen:
+      return self.validateQueenMove()
+    if self.grabbedPiece.isPawn:
+      return self.validatePawnMove()
+    return True
+
+  def applyMove(self, ) -> NoReturn:
+    """Moves grabbed piece to the hovered square if validated."""
+    if self.validateMove():
+      if self.hoverPiece:
+        Sound.gotcha.play()
+      self.setPiece(self.hoverSquare, self.grabbedPiece)
+      self.grabbedPiece = ChessPiece.EMPTY
+      self.grabbedSquare = Square.NULL
+      self.toggleTurn()
+      Sound.move.play()
+      return True
+    self.cancelMove()
+    return False
+
+  def _getMoves(self) -> list:
+    """Getter-function for all available moves. """
+
   grabbedPiece = property(_getGrabbedPiece, _setGrabbedPiece, _noAcc)
   grabbedSquare = property(_getGrabbedSquare, _setGrabbedSquare, _noAcc)
   hoverSquare = property(_getHoverSquare, _setHoverSquare, _noAcc)
   hoverPiece = property(_getHoverPiece, _setHoverPiece, _noAcc)
+  colorTurn = property(_getTurn, _setTurn, _noAcc)
+  hoverTurn = property(_getHoverTurn, _noAcc, _noAcc)

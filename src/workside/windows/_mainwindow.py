@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt
 from icecream import ic
 from worktoy.core import maybe
 
-from visualchess import ChessPiece
+from visualchess import ChessPiece, Sound
 from workside.windows import LayoutWindow
 
 ic.configureOutput(includeContext=True)
@@ -34,21 +34,27 @@ class MainWindow(LayoutWindow):
   def setupActions(self) -> NoReturn:
     """Sets up the actions"""
     self._getDebugButton().leftPressHold.connect(self.handleLeftPressHold)
+    self._getDebugButton2().leftPressHold.connect(self.handleLeftPressHold2)
 
   def handleLeftPressHold(self) -> NoReturn:
     """Handles the left press hold signal"""
     self._getBoardWidget().getBoardState().resetInitialPosition()
     self._getBoardWidget().update()
 
+  def handleLeftPressHold2(self) -> NoReturn:
+    """Handles the left press hold signal"""
+    Sound.right2jail_rightaway.play()
+
   def debugFunc01(self) -> NoReturn:
     """omg"""
-    board = self._getBoardWidget()
-    names = ['__name__', '__class__', '__mro__', '__bases__']
-    for name in names:
-      print(maybe(getattr(board, name, None), '%s not found' % name))
+    print(self._getDebugButton().__name__)
+    print(self._getDebugButton2().__name__)
 
   def debugFunc02(self) -> NoReturn:
     """omg"""
+    self.setupActions()
+    self.update()
+    print('debug2')
 
   def debugFunc03(self) -> NoReturn:
     """omg"""

@@ -8,13 +8,10 @@ from typing import TYPE_CHECKING, Never
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
-from worktoy.core import plenty
-from worktoy.parsing import maybeType, maybeTypes, searchKeys
-from worktoy.stringtools import stringList
+from worktoy.parsing import maybeType
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
-from moreworktoy import ArgumentError
 from visualchess import File, Rank, PieceMove
 
 if TYPE_CHECKING:
@@ -102,38 +99,6 @@ class Square(Enum):
   H7 = (File.H, Rank.rank7)
   H8 = (File.H, Rank.rank8)
 
-  @classmethod
-  def parse(cls, *args, **kwargs) -> Square:
-    """Parses positional arguments to instance of Square"""
-    square = maybeType(Square, *args)
-    if isinstance(square, Square):
-      return square
-    fileKeys = stringList('file, x, column, col')
-    rankKeys = stringList('rank, y, row')
-    fileKwarg = searchKeys(*fileKeys) >> kwargs
-    rankKwarg = searchKeys(*rankKeys) >> kwargs
-    if plenty(fileKwarg, rankKwarg):
-      return cls.parse(fileKwarg, rankKwarg)
-    squareKeys = stringList('square, field, position')
-    squareKwarg = searchKeys(*squareKeys) >> kwargs
-    if isinstance(squareKwarg, Square):
-      return squareKwarg
-    complexArg = maybeType(complex, *args)
-    if isinstance(complexArg, complex):
-      return cls.fromComplex(complexArg)
-    intArgs = maybeTypes(int, *args, padLen=2, padChar=None)
-    if plenty(intArgs):
-      return cls.fromInts(*intArgs)
-    fileArg, rankArg = maybeType(File, *args), maybeType(Rank, *args)
-    if plenty(fileArg, rankArg):
-      if isinstance(fileArg, File) and isinstance(rankArg, Rank):
-        return cls.fromFileRank(fileArg, rankArg)
-    strArgs = maybeTypes(str, *args, padLen=1, padChar=None)
-    longName = ''.join(*strArgs)
-    if len(longName) == 2:
-      return cls.fromStr(longName)
-    raise ArgumentError('Square')
-
   def getX(self, ) -> int:
     """Getter-function for the file number"""
     return self.value[0].value
@@ -153,6 +118,19 @@ class Square(Enum):
   def _getRank(self) -> Rank:
     """Getter-function for rank"""
     return self.value[1]
+
+  def __bool__(self, ) -> bool:
+    """The null square is False, other squares are True"""
+    return False if self is Square.NULL else True
+
+  def __eq__(self, other: Square) -> bool:
+    """The null square is not equal to itself. Otherwise returns True when
+    self and other are the same Square"""
+    return True if self and other and self is other else False
+
+  def __hash__(self) -> int:
+    """Returns 8 times file plus rank"""
+    return 8 * self.file.value + self.rank.value if self else -1
 
   def __matmul__(self, other: Rect) -> QRectF:
     """Given a board rectangle, this function returns a QRectF indicating
@@ -268,20 +246,60 @@ class Square(Enum):
     """Allowing adding from the left."""
     return self + other
 
-  def __sub__(self, other: PieceMove | Square | complex | int):
-    """Implementation is the same as for addition with sign applied"""
-    if isinstance(other, complex):
-      x, y = self.x - int(other.real), self.y - int(other.imag)
-      return Square.fromInts(x, y)
-    if isinstance(other, int):
-      return Square.fromInts(self.x - other, self.y)
-    return Square.fromInts(self.x - other.x, self.y - other.y)
+  #
+  # def __sub__(self, other: PieceMove | Square | complex | int):
+  #   """Implementation is the same as for addition with sign applied"""
+  #   if isinstance(other, complex):
+  #     x, y = self.x - int(other.real), self.y - int(other.imag)
+  #     return Square.fromInts(x, y)
+  #   if isinstance(other, int):
+  #     return Square.fromInts(self.x - other, self.y)
+  #   return Square.fromInts(self.x - other.x, self.y - other.y)
+  #
+  # def __rsub__(self, other: PieceMove | Square | complex | int) -> Square:
+  #   """Allowing adding from the left."""
+  #   if isinstance(other, Square):
+  #     return other - self
+  #   raise TypeError('Squares support only other squares for rsub')
 
-  def __rsub__(self, other: PieceMove | Square | complex | int) -> Square:
-    """Allowing adding from the left."""
-    if isinstance(other, Square):
-      return other - self
-    raise TypeError('Squares support only other squares for rsub')
+  def __sub__(self, other: Square) -> int:
+    """The differences between the squares is taken as the supremum length
+    between them."""
+    df = abs(self.file.value - other.file.value)
+    dr = abs(self.rank.value - other.rank.value)
+    return max(dr, df)
+
+  def __mul__(self, other: Square) -> int:
+    """The multiplication between the squares is taken as the supremum
+    length between them"""
+    df = abs(self.file.value - other.file.value)
+    dr = abs(self.rank.value - other.rank.value)
+    return min(dr, df)
+
+  def __rshift__(self, other: Square) -> Square:
+    """Returns the square that is one step nearer to other"""
+    df = self.file.value - other.file.value
+    dr = self.rank.value - other.rank.value
+    if df and dr and abs(df) - abs(dr) or self is other:
+      return Square.NULL  # Incompatible
+    if df and not dr:
+      step = int(df / abs(df))
+      return Square.fromInts(self.file.value + step, self.rank.value)
+    if not df and dr:
+      step = int(dr / abs(dr))
+      return Square.fromInts(self.file.value, self.rank.value + step)
+    if abs(df) == abs(dr):
+      stepX, stepY = int(df / abs(df)), int(dr / abs(dr))
+      return Square.fromInts(self.file.value + stepX,
+                             self.rank.value + stepY)
+
+  def __pow__(self, other: Square) -> tuple[int, int]:
+    """Returns the steps between self and other"""
+    df = self.file.value - other.file.value
+    dr = self.rank.value - other.rank.value
+    if df and dr and abs(df) - abs(dr) or self is other:
+      return (0, 0)  # Incompatible
+    return (int(df / abs(df)), int(dr / abs(dr)))
 
   def _getRight(self) -> Square:
     """Getter-function for the square to the right of this square as seen

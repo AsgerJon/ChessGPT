@@ -12,10 +12,10 @@ from PySide6.QtGui import QPaintEvent, QPainter
 from icecream import ic
 
 from visualchess import Square, ChessPiece, Settings
-from workside.styles import darkSquareStyle, lightSquareStyle, \
-  outlineStyle, \
-  labelStyle, backgroundStyle
-from workside.styles._styleinstances import gridStyle, bezelStyle
+from workside.styles import darkSquareStyle, lightSquareStyle, gridStyle
+from workside.styles import outlineStyle, labelStyle, backgroundStyle
+from workside.styles import bezelStyle
+
 from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
@@ -40,6 +40,11 @@ class BoardLayout(CoreWidget):
     indicated on top of the chess piece being grabbed if possible rather
     than invoking this function."""
     self.setCursor(Settings.grabCursor)
+
+  def setForbiddenCursor(self, ) -> NoReturn:
+    """Sets the cursor on the widget to indicate that an action is
+    forbidden."""
+    self.setCursor(Settings.forbiddenCursor)
 
   def setPieceCursor(self, piece: ChessPiece) -> NoReturn:
     """Sets the cursor on the widget to grab the given piece."""

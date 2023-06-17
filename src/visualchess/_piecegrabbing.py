@@ -12,9 +12,9 @@ from PySide6.QtGui import QMouseEvent, QPaintEvent, QPainter, QEnterEvent
 from PySide6.QtGui import QKeyEvent
 from icecream import ic
 
-from visualchess import ChessPiece, Square, BoardLayout
+from visualchess import ChessPiece, Square, BoardLayout, Sound
 from visualchess import _PieceGrabbingOperations
-from workside.styles._styleinstances import hoveredSquareStyle
+from workside.styles import hoveredSquareStyle
 
 ic.configureOutput(includeContext=True)
 
@@ -45,7 +45,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.type() == QEvent.Type.MouseMove:
       if self.getGrabbedPiece():
-        self.cancelGrabbing()
+        self.getBoardState().cancelMove()
     # <********************** Remove Hover on Leave **********************> #
     # ____________________________________________________________________
     # |  When leaving the board rectangle, no square or piece should
@@ -82,7 +82,8 @@ class PieceGrabbing(_PieceGrabbingOperations):
     boardRect = self.getBoardRect()
     point = event.position()
     if not boardRect.contains(point):
-      return self.leaveBoardRect(event)
+      self.getBoardState().leaveBoard()
+      return self.update()
     # <************************ Setting Hover True ***********************> #
     # ____________________________________________________________________
     # |  This is the case where the mouse enters the board. It is
@@ -93,7 +94,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # |   - The board hover flag is set to True  - The event is
     # |  converted to an enter event
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    self.enterBoardRect(event)
+
     # <*************************** Hover Square **************************> #
     # ____________________________________________________________________
     # |  Ensures that the hovered square on the board rect matches the
@@ -109,8 +110,6 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # |  step is not reached during grabbing operations.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
 
-    self.activateHoverPiece(event)
-
   def mousePressEvent(self, event: QMouseEvent) -> NoReturn:
     """Implementation of mouse press event grabs the piece on the hovered
     square if available."""
@@ -124,12 +123,13 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # |  release event, or in case a cancelling right click is received.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.button() == Qt.MouseButton.LeftButton:
-      hoverPiece = self.getHoverPiece()
-      hoverSquare = self.getHoverSquare()
+      hoverPiece = self.getBoardState().hoverPiece
+      if not self.getBoardState().hoverTurn:
+        Sound.forbidden.play()
       if not hoverPiece:
         return
       if isinstance(hoverPiece, ChessPiece):
-        return self.beginGrabbing(hoverPiece, hoverSquare)
+        return self.beginGrabbing(hoverPiece, )
       raise TypeError
     # <******************** Cancel Grab (Right-Click) ********************> #
     # ____________________________________________________________________
@@ -138,7 +138,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # |  but before it has been completed in the release method.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.button() == Qt.MouseButton.RightButton:
-      self.cancelGrabbing()
+      self.getBoardState().cancelMove()
 
   def mouseReleaseEvent(self, event: QMouseEvent) -> NoReturn:
     """Implementation of mouse release event which releases the item
@@ -166,9 +166,12 @@ class PieceGrabbing(_PieceGrabbingOperations):
     BoardLayout.paintEvent(self, event)
     painter = QPainter()
     painter.begin(self)
-    if self.getHoverSquare():
-      hoveredSquareStyle @ painter
-      painter.drawRect(self.getHoverSquare() @ self.getBoardRect())
+    hoverSquare = self.getBoardState().hoverSquare
+
+    if isinstance(hoverSquare, Square):
+      if hoverSquare:
+        hoveredSquareStyle @ painter
+        painter.drawRect(hoverSquare @ self.getBoardRect())
     for (square, piece) in self.getBoardState().items():
       if isinstance(square, Square):
         target = square @ self.getBoardRect()

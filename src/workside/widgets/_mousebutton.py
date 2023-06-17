@@ -1,7 +1,7 @@
 """MouseButton instances allow each button on a mouse to operate entirely
 independently."""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn, Any

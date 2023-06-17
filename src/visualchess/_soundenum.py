@@ -118,9 +118,13 @@ class _SoundProperties(Iterify):
 class Sound(_SoundProperties):
   """Each sound effect is defined here as Sound enum"""
 
-  whoosh = None
-  move = None
-  slide = None
+  # whoosh = None
+  # move = None
+  # slide = None
+  # forbidden = None
+  # meme_nope = None
+  # error = None
+  # gotcha = None
 
   @classmethod
   def createAll(cls, *args) -> NoReturn:

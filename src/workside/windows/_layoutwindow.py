@@ -39,6 +39,7 @@ class LayoutWindow(BaseWindow):
     BaseWindow.__init__(self, parent)
     self._baseHeaderWidget = None
     self._debugButton = None
+    self._debugButton2 = None
     self._baseWidget = None
     self._boardWidget = None
     self._fileLabel = None
@@ -132,6 +133,22 @@ class LayoutWindow(BaseWindow):
       return self._debugButton
     raise TypeError
 
+  def _createDebugButton2(self) -> NoReturn:
+    """Creator-function for the button"""
+    self._debugButton2 = DebugButton()
+    msg = """omg lol"""
+    self._debugButton2.text = monoSpace(msg)
+    self._debugButton2.update()
+
+  def _getDebugButton2(self) -> DebugButton:
+    """Getter-function for the button"""
+    if self._debugButton2 is None:
+      self._createDebugButton2()
+      return self._getDebugButton2()
+    if isinstance(self._debugButton2, DebugButton):
+      return self._debugButton2
+    raise TypeError
+
   def _createBaseWidget(self) -> NoReturn:
     """Creator-function for the base widget"""
     self._baseWidget = CoreWidget()
@@ -179,7 +196,7 @@ class LayoutWindow(BaseWindow):
     self._getBaseLayout().addWidget(self._getBaseHeaderWidget(), 0, 0, 1, 2)
     self._getBaseLayout().addWidget(self._getBoardWidget(), 1, 0, 1, 2)
     self._getBaseLayout().addWidget(self._getDebugButton(), 2, 1, )
-    self._getBaseLayout().addWidget(self._getHSpacer(), 2, 0, )
+    self._getBaseLayout().addWidget(self._getDebugButton2(), 2, 0, )
     self._getBaseWidget().setLayout(self._getBaseLayout())
     self.setCentralWidget(self._getBaseWidget())
 

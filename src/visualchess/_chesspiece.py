@@ -18,7 +18,7 @@ from worktoy.waitaminute import ReadOnlyError
 from visualchess import PieceType, ChessColor
 
 if TYPE_CHECKING:
-  from visualchess import Widget
+  pass
 
 ic.configureOutput(includeContext=True)
 

@@ -78,8 +78,8 @@ class _PieceGrabbingProperties(BoardLayout):
   ################### Accessor Functions for Chess Board ##################
   def _createBoardState(self) -> bool:
     """Creator-function for BoardState instance"""
-    self._boardState = BoardState.InitialPosition()
-    # self._boardState = BoardState.DebugPosition()
+    # self._boardState = BoardState.InitialPosition()
+    self._boardState = BoardState.DebugPosition()
     # self._boardState = DebugState.DebugPosition()
     if isinstance(self._boardState, BoardState):
       return True
@@ -154,7 +154,6 @@ class _PieceGrabbingProperties(BoardLayout):
   def delGrabbedPiece(self) -> NoReturn:
     """Deleter-function for the grabbed piece. Returns the grabbed piece."""
     self.setGrabbedPiece(ChessPiece.EMPTY)
-
 
   #########################################################################
   ############## END OF Accessor functions for grabbed piece ##############
