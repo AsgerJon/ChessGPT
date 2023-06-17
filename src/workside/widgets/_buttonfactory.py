@@ -3,10 +3,9 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from random import randint
 from typing import NoReturn
 
-from PySide6.QtCore import Qt, Signal, QCoreApplication
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QMouseEvent
 from icecream import ic
 from worktoy.typetools import CallMeMaybe

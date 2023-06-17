@@ -260,57 +260,41 @@ class BoardState:
         return True
       return False
 
-  def validateBishopMove(self) -> bool:
+  def validateRanged(self) -> bool:
     """Validates a bishop move"""
-    supremum, infimum = self.validateBase()
-    if self.grabbedPiece.isBishop:
-      if abs(supremum) == abs(infimum):
-        if abs(supremum) == 1:
+    x0, x1 = self.grabbedSquare.file.value, self.hoverSquare.file.value
+    y0, y1 = self.grabbedSquare.rank.value, self.hoverSquare.rank.value
+    dx, dy = x1 - x0, y1 - y0
+    c = 1
+    while c < 7:
+      x, y = x0 + c * dx, y0 + c * dy
+      if self.hoverSquare.file.value == x:
+        if self.hoverSquare.rank.value == y:
           return True
-        x0, y0 = self.grabbedSquare.file.value, self.grabbedSquare.rank.value
-        x1, y1 = self.hoverSquare.file.value, self.hoverSquare.rank.value
-        distX, distY = x1 - x0, y1 - y0
-        dx = int(distX / max(abs(distX), 1))
-        dy = int(distY / max(abs(distY), 1))
-        for i in range(1, abs(supremum)):
-          pathSquare = Square.fromInts(x0 + i * dx, y0 + i * dy)
-          if self.getPiece(pathSquare):
-            return False
-      elif abs(supremum) - abs(infimum):
+      square = Square.fromInts(x, y)
+      if self.getPiece(square):
         return False
-
-  def validateRookMove(self) -> bool:
-    """Validates a rook move"""
-    supremum, infimum = self.validateBase()
-    if self.grabbedPiece.isQueen:
-      return True
-
-  def validateQueenMove(self) -> bool:
-    """Validates a queen move"""
-    return self.validateBishopMove() or self.validateRookMove()
+      c += 1
 
   def validatePawnMove(self) -> bool:
     """Validates a pawn move"""
-    supremum, infimum = self.validateBase()
-    if self.grabbedPiece.isPawn:
-      return True
 
   def validateMove(self) -> bool:
     """This method checks if moving grabbed Piece to hoverSquare is
     allowable."""
     supremum, infimum = self.validateBase()
-    if not supremum * infimum:
+    if not supremum + infimum:
       return False
     if self.grabbedPiece.isKing:
       return self.validateKingMove()
     if self.grabbedPiece.isKnight:
       return self.validateKnightMove()
     if self.grabbedPiece.isBishop:
-      return self.validateBishopMove()
+      return self.validateRanged()
     if self.grabbedPiece.isRook:
-      return self.validateRookMove()
+      return self.validateRanged()
     if self.grabbedPiece.isQueen:
-      return self.validateQueenMove()
+      return self.validateRanged()
     if self.grabbedPiece.isPawn:
       return self.validatePawnMove()
     return True
