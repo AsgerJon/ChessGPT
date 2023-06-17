@@ -1,4 +1,4 @@
-"""NEW SCRIPT"""
+"""ChessPiece enumerates each chess piece in both black and white color."""
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
@@ -73,10 +73,6 @@ class ChessPiece(IntEnum):
       x, y = point.x(), point.y()
     return QCursor(pix, hotX=x, hotY=y)
 
-  def __rshift__(self, other: Widget) -> Widget:
-    """Creates an instance of QCursor representing the piece and applies
-    it to other widget. """
-
   def getColor(self) -> ChessColor:
     """Getter-function for color"""
     if not self.value:
@@ -99,6 +95,34 @@ class ChessPiece(IntEnum):
   def setPiece(self, *_) -> Never:
     """Illegal setter function"""
     raise ReadOnlyError('piece', 'set')
+
+  def _noAcc(self, *_) -> Never:
+    """Illegal Accessor Function"""
+    raise ReadOnlyError('General illegal accessor')
+
+  def getPawnFlag(self, ) -> bool:
+    """Getter-function for pawn flag indicating if piece is a pawn"""
+    return True if self in self.getPawns() else False
+
+  def getKnightFlag(self, ) -> bool:
+    """Getter-function for knight flag indicating if piece is a knight"""
+    return True if self in self.getKnights() else False
+
+  def getBishopFlag(self, ) -> bool:
+    """Getter-function for bishop flag indicating if piece is a bishop"""
+    return True if self in self.getBishops() else False
+
+  def getRookFlag(self, ) -> bool:
+    """Getter-function for rook flag indicating if piece is a rook"""
+    return True if self in self.getRooks() else False
+
+  def getQueenFlag(self, ) -> bool:
+    """Getter-function for queen flag indicating if piece is a queen"""
+    return True if self in self.getQueens() else False
+
+  def getKingFlag(self, ) -> bool:
+    """Getter-function for king flag indicating if piece is a king"""
+    return True if self in self.getKings() else False
 
   @classmethod
   def fromColorPiece(cls, *args, **kwargs) -> ChessPiece:
@@ -137,7 +161,19 @@ class ChessPiece(IntEnum):
     """Returns the piece of the opposite color"""
     if not self:
       return self
-    return ChessPiece.fromInt(-self.value)
+    return self.fromColorPiece(self.piece, ~self.color)
+
+  def promote(self, newType: PieceType) -> ChessPiece:
+    """Promotes the pawn"""
+    if self.piece is not PieceType.PAWN:
+      raise NotImplementedError
+    if newType in [PieceType.PAWN, PieceType.KING]:
+      raise NotImplementedError
+    return self.fromColorPiece(self.color, newType)
+
+  def __rshift__(self, newType: PieceType) -> ChessPiece:
+    """Alias for promotion"""
+    return self.promote(newType)
 
   @classmethod
   def getKings(cls) -> list[ChessPiece]:
@@ -176,3 +212,9 @@ class ChessPiece(IntEnum):
 
   color = property(getColor, setColor, setColor)
   piece = property(getPiece, setPiece, setPiece)
+  isPawn = property(getPawnFlag, _noAcc, _noAcc)
+  isKnight = property(getKnightFlag, _noAcc, _noAcc)
+  isBishop = property(getBishopFlag, _noAcc, _noAcc)
+  isRook = property(getRookFlag, _noAcc, _noAcc)
+  isQueen = property(getQueenFlag, _noAcc, _noAcc)
+  isKing = property(getKingFlag, _noAcc, _noAcc)

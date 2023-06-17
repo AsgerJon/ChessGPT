@@ -5,7 +5,6 @@ PieceGrabbing widget."""
 from __future__ import annotations
 
 from typing import NoReturn
-from warnings import warn
 
 from PySide6.QtCore import QEvent
 from PySide6.QtGui import QMouseEvent
@@ -13,9 +12,8 @@ from icecream import ic
 from worktoy.core import plenty
 from worktoy.waitaminute import ProceduralError
 
-from visualchess import _PieceGrabbingProperties, ChessPiece, Sound, \
-  Square, \
-  Settings
+from visualchess import _PieceGrabbingProperties, ChessPiece, Sound
+from visualchess import Square, Settings
 
 ic.configureOutput(includeContext=True)
 
@@ -60,6 +58,7 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if square == self.getHoverSquare():
       return self.update()
     self.setHoverSquare(square)
+    self.getBoardState().hoverSquare = square
     return self.update()
 
   def activateHoverPiece(self, event: QMouseEvent) -> NoReturn:
@@ -86,6 +85,8 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     self.setGrabbedPiece(piece)
     self.setPieceCursor(piece)
     self.setOriginSquare(origin)
+    self.getBoardState().grabbedPiece = piece
+    self.getBoardState().grabbedSquare = origin
     self.getBoardState().setPiece(origin, ChessPiece.EMPTY)
     self.delHoverPiece()
     Sound.slide.play()
@@ -106,17 +107,23 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     Sound.whoosh.play()
     self.update()
 
-  def completeGrabbing(self, *args) -> bool:
+  def completeGrabbing(self) -> NoReturn:
     """Completes the grabbing operation"""
-    if args:
-      warn('Unexpected positional arguments received!')
-    piece = self.getGrabbedPiece()
-    if not piece:
-      return False
-    self.delGrabbedPiece()
-    self.getBoardState().setPiece(self.getHoverSquare(), piece)
-    self.setHoverPiece(piece)
-    self.setHoverCursor()
-    self.update()
-    Sound.move.play()
-    return True
+    if self.getBoardState().applyMove():
+      self.setHoverPiece(self.getGrabbedPiece())
+      self.setHoverCursor()
+      return self.update()
+    return self.cancelGrabbing()
+    # piece = self.getGrabbedPiece()
+    # if not piece:
+    #   return False
+    # if self.getOriginSquare():
+    #   if self.validateMove():
+    #     self.delGrabbedPiece()
+    #     self.getBoardState().setPiece(self.getHoverSquare(), piece)
+    #     self.setHoverPiece(piece)
+    #     self.setHoverCursor()
+    #     self.update()
+    #     Sound.move.play()
+    #     return True
+    #   return self.cancelGrabbing()

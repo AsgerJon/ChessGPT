@@ -109,4 +109,10 @@ class ChessColor(Enum):
           if name.lower() == instance.nameLower:
             return instance
 
+  def __invert__(self) -> ChessColor:
+    """NULL inverted is NULL. Otherwise ~BLACK==WHITE"""
+    if self is ChessColor.NULL:
+      return ChessColor.NULL
+    return ChessColor.WHITE if self is ChessColor.BLACK else ChessColor.BLACK
+
   nameLower = property(_getNameLower, _noAcc, _noAcc, )

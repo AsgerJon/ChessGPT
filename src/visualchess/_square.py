@@ -3,13 +3,13 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-import os
 from enum import Enum
 from typing import TYPE_CHECKING, Never
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
-from worktoy.parsing import maybeType, extractArg
+from worktoy.core import plenty
+from worktoy.parsing import maybeType, maybeTypes, searchKeys
 from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
@@ -36,6 +36,7 @@ def guardRect(boardRect: Rect) -> QRectF:
 
 class Square(Enum):
   """Enum for the chess board squares"""
+  NULL = (File.NULL, Rank.NULL)
   A1 = (File.A, Rank.rank1)
   A2 = (File.A, Rank.rank2)
   A3 = (File.A, Rank.rank3)
@@ -103,33 +104,35 @@ class Square(Enum):
 
   @classmethod
   def parse(cls, *args, **kwargs) -> Square:
-    """Parses the arguments to appropriate instance of Square"""
-    print(args, kwargs)
-    os.abort()
-    keys = stringList('square, field, position')
-    square, args, kwargs = extractArg(Square, keys, *args, **kwargs)
-    if square is not None:
-      if isinstance(square, Square):
-        return square
-    fileKeys = stringList('file, column, col, x')
-    rankKeys = stringList('rank, row, y')
-    file, args_, kwargs_ = extractArg(File, fileKeys, *args, **kwargs)
-    if file is not None:
-      rank, args_, kwargs_ = extractArg(Rank, rankKeys, *args_, **kwargs_)
-      if rank is not None:
-        if isinstance(file, File) and isinstance(rank, Rank):
-          return cls.fromFileRank(file, rank)
-    x, args_, kwargs_ = extractArg(int, fileKeys, *args, **kwargs)
-    if x is not None:
-      y, _, __ = extractArg(int, rankKeys, *args_, **kwargs_)
-      if y is not None:
-        if isinstance(x, int) and isinstance(y, int):
-          return cls.fromInts(x, y)
-    z, args_, kwargs_ = extractArg(complex, keys, *args, **kwargs)
-    if z is not None:
-      if isinstance(z, complex):
-        return cls.fromInts(int(z.real), int(z.imag))
-    raise ArgumentError('Unable to parse arguments to a valid instance!')
+    """Parses positional arguments to instance of Square"""
+    square = maybeType(Square, *args)
+    if isinstance(square, Square):
+      return square
+    fileKeys = stringList('file, x, column, col')
+    rankKeys = stringList('rank, y, row')
+    fileKwarg = searchKeys(*fileKeys) >> kwargs
+    rankKwarg = searchKeys(*rankKeys) >> kwargs
+    if plenty(fileKwarg, rankKwarg):
+      return cls.parse(fileKwarg, rankKwarg)
+    squareKeys = stringList('square, field, position')
+    squareKwarg = searchKeys(*squareKeys) >> kwargs
+    if isinstance(squareKwarg, Square):
+      return squareKwarg
+    complexArg = maybeType(complex, *args)
+    if isinstance(complexArg, complex):
+      return cls.fromComplex(complexArg)
+    intArgs = maybeTypes(int, *args, padLen=2, padChar=None)
+    if plenty(intArgs):
+      return cls.fromInts(*intArgs)
+    fileArg, rankArg = maybeType(File, *args), maybeType(Rank, *args)
+    if plenty(fileArg, rankArg):
+      if isinstance(fileArg, File) and isinstance(rankArg, Rank):
+        return cls.fromFileRank(fileArg, rankArg)
+    strArgs = maybeTypes(str, *args, padLen=1, padChar=None)
+    longName = ''.join(*strArgs)
+    if len(longName) == 2:
+      return cls.fromStr(longName)
+    raise ArgumentError('Square')
 
   def getX(self, ) -> int:
     """Getter-function for the file number"""
@@ -139,7 +142,7 @@ class Square(Enum):
     """Getter-function for the rank number"""
     return self.value[1].value
 
-  def _noSet(self, *_) -> Never:
+  def _noAcc(self, *_) -> Never:
     """Illegal accessor function"""
     raise ReadOnlyError()
 
@@ -183,6 +186,8 @@ class Square(Enum):
   @classmethod
   def fromFileRank(cls, file: File, rank: Rank) -> Square:
     """Returns the instance of matching file and rank"""
+    if not (file and rank):
+      return Square.NULL
     for square in Square:
       if square.value[0] == file and square.value[1] == rank:
         return square
@@ -245,51 +250,61 @@ class Square(Enum):
       raise UnexpectedStateError(msg)
     return True
 
-  def __add__(self, other: PieceMove | Square) -> Square:
-    """Returns the instance of Square that is 'other' away from self"""
+  @classmethod
+  def fromComplex(cls, complexArg: complex) -> Square:
+    """Creates an instance of Square from complex"""
+    return cls.fromInts(int(complexArg.real), int(complexArg.imag))
+
+  def __add__(self, other: PieceMove | Square | complex | int) -> Square:
+    """Finds the square that is 'other' from self."""
+    if isinstance(other, complex):
+      x, y = self.x + int(other.real), self.y + int(other.imag)
+      return Square.fromInts(x, y)
+    if isinstance(other, int):
+      return Square.fromInts(self.x + other, self.y)
     return Square.fromInts(self.x + other.x, self.y + other.y)
 
-  def __radd__(self, other: PieceMove | Square) -> Square:
+  def __radd__(self, other: PieceMove | Square | complex | int) -> Square:
     """Allowing adding from the left."""
-    return Square.fromInts(self.x + other.x, self.y + other.y)
+    return self + other
 
-  def __or__(self, other: Square) -> bool:
-    """The pipe operator | is used to indicate that the squares are on the
-    same file"""
-    self._guardSelfComparison(other)
-    return True if self.file == other.file else False
+  def __sub__(self, other: PieceMove | Square | complex | int):
+    """Implementation is the same as for addition with sign applied"""
+    if isinstance(other, complex):
+      x, y = self.x - int(other.real), self.y - int(other.imag)
+      return Square.fromInts(x, y)
+    if isinstance(other, int):
+      return Square.fromInts(self.x - other, self.y)
+    return Square.fromInts(self.x - other.x, self.y - other.y)
 
-  def __rshift__(self, other: Square) -> bool:
-    """Use of the right shift operator >> is taken to mean that the two
-    squares would be connected along a right-directed diagonal. Please note
-    that this is as seen from the player, which is the reverse of the
-    direction of the inner logic because PySide6 and Qt has the vertical
-    axis upside down.
+  def __rsub__(self, other: PieceMove | Square | complex | int) -> Square:
+    """Allowing adding from the left."""
+    if isinstance(other, Square):
+      return other - self
+    raise TypeError('Squares support only other squares for rsub')
 
-    The computation compares the different between ranks and files. If
-    they share a diagonal, the ratio between their differences in files
-    and ranks will be 1 or 1-. Since the PySide6 is positive from top to
-    down, a positive unit ratio means a left moving diagonal.
-    """
-    self._guardSelfComparison(other)
-    df = self.file - other.file
-    dr = self.rank - other.rank
-    return False if df + dr else True
+  def _getRight(self) -> Square:
+    """Getter-function for the square to the right of this square as seen
+    from the white side"""
+    return self + 1
 
-  def __lshift__(self, other: Square) -> bool:
-    """Left shift << is implemented to test the left moving diagonal. See
-    the docstring for the right shift above."""
-    self._guardSelfComparison(other)
-    df = self.file - other.file
-    dr = self.rank - other.rank
-    return True if df + dr else False
+  def _getInFront(self) -> Square:
+    """Getter-function for the square in front of this square"""
+    return self - 1j
 
-  def __sub__(self, other: Square) -> bool:
-    """The subtraction operator - is taken to mean horizontal match"""
-    self._guardSelfComparison(other)
-    return True if self.rank == other.rank else False
+  def _getLeft(self) -> Square:
+    """Getter-function for the square to the left of this square"""
+    return self - 1
 
-  x = property(getX, _noSet, _noSet)
-  y = property(getY, _noSet, _noSet)
-  file = property(_getFile, _noSet, _noSet)
-  rank = property(_getRank, _noSet, _noSet)
+  def _getBehind(self) -> Square:
+    """Getter-function for the square behind this square"""
+    return self + 1j
+
+  x = property(getX, _noAcc, _noAcc)
+  y = property(getY, _noAcc, _noAcc)
+  file = property(_getFile, _noAcc, _noAcc)
+  rank = property(_getRank, _noAcc, _noAcc)
+  right = property(_getRight, _noAcc, _noAcc)
+  front = property(_getInFront, _noAcc, _noAcc)
+  left = property(_getLeft, _noAcc, _noAcc)
+  behind = property(_getBehind, _noAcc, _noAcc)

@@ -22,6 +22,7 @@ class Rank(IntEnum):
   rank6 = 7 - 5
   rank7 = 7 - 6
   rank8 = 7 - 7
+  NULL = -1
 
   @classmethod
   def parse(cls, *args, **kwargs) -> Rank:
@@ -44,6 +45,8 @@ class Rank(IntEnum):
   @classmethod
   def fromValue(cls, y: int) -> Rank:
     """Finds the matching value"""
+    if y < 0 or 7 < y:
+      return Rank.NULL
     for rank in Rank:
       if rank.value == y:
         return rank
@@ -71,12 +74,19 @@ class Rank(IntEnum):
       if -1 < y < 8:
         out = self.value + y
       else:
-        msg = """The rank must be in the range from 0 to 7 inclusive, 
-        but received: %d""" % y
-        raise OverflowError(monoSpace(msg))
+        return Rank.NULL
       return self.fromValue(out)
     raise TypeError
 
   def __sub__(self, y: int) -> Rank:
     """Subtracts given value from self"""
     return self.__add__(-y)
+
+  def __bool__(self, ) -> bool:
+    """Only NULL is False."""
+    return False if self is Rank.NULL else True
+
+  def __eq__(self, other) -> bool:
+    """Tests equality between instances using the 'is' condition. Please
+    note, that NULL is not equal to itself"""
+    return True if self and other and self.value == other.value else False

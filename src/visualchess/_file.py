@@ -14,6 +14,7 @@ ic.configureOutput(includeContext=True)
 
 class File(IntEnum):
   """File enum"""
+  NULL = -1
   A = 0
   B = 1
   C = 2
@@ -44,6 +45,8 @@ class File(IntEnum):
   @classmethod
   def fromValue(cls, x: int) -> File:
     """Finds the matching value"""
+    if x < 0 or 7 < x:
+      return File.NULL
     for file in File:
       if file.value == x:
         return file
@@ -80,3 +83,12 @@ class File(IntEnum):
   def __sub__(self, x: int) -> File:
     """Subtracts given value from self"""
     return self.__add__(-x)
+
+  def __bool__(self, ) -> bool:
+    """Only NULL is False."""
+    return False if self is File.NULL else True
+
+  def __eq__(self, other) -> bool:
+    """Tests equality between instances using the 'is' condition. Please
+    note, that NULL is not equal to itself"""
+    return True if self and other and self.value == other.value else False

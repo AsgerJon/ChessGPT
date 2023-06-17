@@ -6,18 +6,16 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import NoReturn
 
-from PySide6.QtCore import Qt, QEvent, Signal
-from PySide6.QtGui import QPaintEvent, QPainter, QEnterEvent, QMouseEvent
+from PySide6.QtCore import QEvent, Signal
+from PySide6.QtGui import QPaintEvent, QEnterEvent, QMouseEvent
 from icecream import ic
 
 from workside.settings import flag, timer, Settings
-from workside.styles import lightSquareStyle, darkSquareStyle, labelStyle, \
-  outlineStyle
 from workside.widgets import CoreWidget, buttonFactory
 
 ic.configureOutput(includeContext=True)
 
-
+ 
 @buttonFactory('left')
 @buttonFactory('right')
 @buttonFactory('middle')

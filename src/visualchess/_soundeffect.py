@@ -45,7 +45,7 @@ class _SoundEffectProperties(QSoundEffect):
     if isinstance(deviceKwarg, str):
       deviceKwarg = cls.getOutputDeviceByName(deviceKwarg)
     deviceArg = maybeType(QAudioDevice, *args)
-    deviceDefault = cls.getOutputDeviceByName('Razer')
+    deviceDefault = cls.getOutputDeviceByName(Settings.deviceName)
     device = maybe(deviceKwarg, deviceArg, deviceDefault)
     if isinstance(device, QAudioDevice):
       return device

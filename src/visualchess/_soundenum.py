@@ -15,7 +15,7 @@ from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
 
 from moreworktoy import Iterify
-from visualchess import SoundEffect
+from visualchess import SoundEffect, Settings
 from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
@@ -48,7 +48,8 @@ class _SoundProperties(Iterify):
 
   def _createSoundEffect(self) -> NoReturn:
     """Creator-function for the sound effect"""
-    self._soundEffect = SoundEffect(self._getParent(), device='Razer')
+    self._soundEffect = SoundEffect(
+      self._getParent(), device=Settings.deviceName)
     self._soundEffect.setLoopCount(1)
     self._soundEffect.setSource(self.url)
 
