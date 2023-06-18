@@ -5,11 +5,8 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from PySide6.QtCore import Qt
 from icecream import ic
-from worktoy.core import maybe
 
-from visualchess import ChessPiece, Sound
 from workside.windows import LayoutWindow
 
 ic.configureOutput(includeContext=True)

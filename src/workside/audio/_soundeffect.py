@@ -3,6 +3,8 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+from typing import NoReturn
+
 from PySide6.QtCore import QObject
 from PySide6.QtMultimedia import QSoundEffect, QAudioDevice, QMediaDevices
 from PySide6.QtWidgets import QApplication
@@ -12,7 +14,7 @@ from worktoy.parsing import searchKeys, maybeType
 from worktoy.stringtools import stringList
 
 from moreworktoy import ArgumentError
-from visualchess import Settings
+from workside.audio import Settings
 from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
@@ -45,7 +47,7 @@ class _SoundEffectProperties(QSoundEffect):
     if isinstance(deviceKwarg, str):
       deviceKwarg = cls.getOutputDeviceByName(deviceKwarg)
     deviceArg = maybeType(QAudioDevice, *args)
-    deviceDefault = cls.getOutputDeviceByName(Settings.deviceName)
+    deviceDefault = cls.getOutputDeviceByName()
     device = maybe(deviceKwarg, deviceArg, deviceDefault)
     if isinstance(device, QAudioDevice):
       return device
@@ -56,8 +58,6 @@ class _SoundEffectProperties(QSoundEffect):
     """Parses arguments to QAudioDevice and QObject instances that are
     required for instances of this class. In particular, the parent
     QObject which ensures that instances do not get garbage collected."""
-    device = cls.parseDevice()
-    parent = QApplication.instance()
     device = cls.parseDevice(*args, **kwargs)
     parent = CoreWidget.parseParent(*args, **kwargs)
     parent = maybe(parent, QApplication.instance())

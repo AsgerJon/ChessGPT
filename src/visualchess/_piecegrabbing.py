@@ -12,7 +12,7 @@ from PySide6.QtGui import QMouseEvent, QPaintEvent, QPainter, QEnterEvent
 from PySide6.QtGui import QKeyEvent
 from icecream import ic
 
-from visualchess import ChessPiece, Square, BoardLayout, Sound
+from visualchess import ChessPiece, Square, BoardLayout
 from visualchess import _PieceGrabbingOperations
 from workside.styles import hoveredSquareStyle
 
@@ -83,6 +83,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
     point = event.position()
     if not boardRect.contains(point):
       self.getBoardState().leaveBoard()
+      self.getBoardState().soundGainFocus.play()
       return self.update()
     # <************************ Setting Hover True ***********************> #
     # ____________________________________________________________________
@@ -125,7 +126,7 @@ class PieceGrabbing(_PieceGrabbingOperations):
     if event.button() == Qt.MouseButton.LeftButton:
       hoverPiece = self.getBoardState().hoverPiece
       if not self.getBoardState().hoverTurn:
-        Sound.forbidden.play()
+        self.getBoardState().soundForbidden.play()
       if not hoverPiece:
         return
       if isinstance(hoverPiece, ChessPiece):

@@ -63,6 +63,8 @@ class ChessColor(Enum):
 
   def __str__(self, ) -> str:
     """String representation"""
+    if not self:
+      return 'Colorless'
     return self.name.capitalize()
 
   def __repr__(self, ) -> str:
@@ -71,7 +73,7 @@ class ChessColor(Enum):
 
   def __bool__(self, ) -> bool:
     """The null or empty color is False, white and black are True"""
-    return True if self.value else False
+    return True if self is ChessColor.BLACK or ChessColor.WHITE else False
 
   def __eq__(self, other: ChessColor) -> bool:
     """The equality operator implementation. Please note that the empty
@@ -79,6 +81,10 @@ class ChessColor(Enum):
     if self and other:
       return True if self is other else False
     return False
+
+  def __hash__(self, ) -> int:
+    """Implementation of hash"""
+    return 2 if not self else (3 if self is ChessColor.BLACK else 5)
 
   def getEnPassantRank(self) -> int:
     """Getter-function for the rank at which pawns of this color may en

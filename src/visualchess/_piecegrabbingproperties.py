@@ -11,7 +11,7 @@ from icecream import ic
 from worktoy.waitaminute import UnexpectedStateError
 
 from visualchess import ChessPiece, Square, BoardLayout, BoardState
-from visualchess import Settings, Sound
+from visualchess import Settings
 
 ic.configureOutput(includeContext=True)
 
@@ -35,7 +35,6 @@ class _PieceGrabbingProperties(BoardLayout):
     self._flagHoldingPiece = None
     self._flagMoving = None
     self._movingTimer = None
-    Sound.createAll()
 
   ################### Mouse Position Accessor Functions ###################
   # --------------------------------------------------------------------- #

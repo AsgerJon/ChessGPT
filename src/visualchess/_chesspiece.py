@@ -81,9 +81,13 @@ class ChessPiece(IntEnum):
       return ChessColor.WHITE
     return ChessColor.BLACK
 
-  def setColor(self, *_) -> Never:
-    """Illegal setter function"""
-    raise ReadOnlyError('color', 'set')
+  def getWhite(self, ) -> bool:
+    """Getter-function for white flag"""
+    return True if self.getColor() is ChessColor.WHITE else False
+
+  def getBlack(self, ) -> bool:
+    """Getter-function for black flag"""
+    return True if self.getColor() is ChessColor.BLACK else False
 
   def getPiece(self) -> PieceType:
     """Getter-function for piece"""
@@ -123,6 +127,17 @@ class ChessPiece(IntEnum):
   def getKingFlag(self, ) -> bool:
     """Getter-function for king flag indicating if piece is a king"""
     return True if self in self.getKings() else False
+
+  def getRangedFlag(self) -> bool:
+    """Getter-function for ranged flag indicating that a piece is either a
+    bishop, rook or queen."""
+    if self.getBishopFlag():
+      return True
+    if self.getRookFlag():
+      return True
+    if self.getQueenFlag():
+      return True
+    return False
 
   @classmethod
   def fromColorPiece(cls, *args, **kwargs) -> ChessPiece:
@@ -210,7 +225,19 @@ class ChessPiece(IntEnum):
     """Returns a list of long range pieces"""
     return [*cls.getQueens(), *cls.getRooks(), *cls.getBishops(), ]
 
-  color = property(getColor, setColor, setColor)
+  def __str__(self) -> str:
+    """String Representation"""
+    colorName = '%s' % (self.color)
+    pieceName = '%s' % (self.piece)
+    return '%s %s' % (colorName.capitalize(), pieceName.capitalize())
+
+  def __repr__(self) -> str:
+    """Code Representation"""
+    return self.name
+
+  color = property(getColor, _noAcc, _noAcc)
+  isBlack = property(getBlack, _noAcc, _noAcc)
+  isWhite = property(getWhite, _noAcc, _noAcc)
   piece = property(getPiece, setPiece, setPiece)
   isPawn = property(getPawnFlag, _noAcc, _noAcc)
   isKnight = property(getKnightFlag, _noAcc, _noAcc)
@@ -218,3 +245,4 @@ class ChessPiece(IntEnum):
   isRook = property(getRookFlag, _noAcc, _noAcc)
   isQueen = property(getQueenFlag, _noAcc, _noAcc)
   isKing = property(getKingFlag, _noAcc, _noAcc)
+  isRanged = property(getRangedFlag, _noAcc, _noAcc)
