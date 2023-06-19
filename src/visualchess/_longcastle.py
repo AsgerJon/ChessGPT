@@ -1,22 +1,17 @@
-"""KingMove subclasses ChessMove"""
+"""LongCastle subclasses ChessMove"""
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NoReturn
-
 from icecream import ic
 
-from visualchess import ChessMove
-
-if TYPE_CHECKING:
-  pass
+from visualchess import ChessMove, File, Rank
 
 ic.configureOutput(includeContext=True)
 
 
-class KingMove(ChessMove):
-  """KingMove subclasses RegularMove
+class LongCastle(ChessMove):
+  """LongCastle subclasses ChessMove
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
@@ -31,9 +26,11 @@ class KingMove(ChessMove):
   def isMovePossible(self, *args, **kwargs) -> bool:
     """All moves that are no longer than 1 square away from source are
     possible."""
-    dx, dy = self.sourceX - self.targetX, self.sourceY - self.targetY
-    return False if dx ** 2 > 1 or dy ** 2 > 1 else True
-
-  def updateBoardState(self) -> NoReturn:
-    """Places the king at the target square"""
-    self.state.setPiece(self.targetSquare, self.sourcePiece)
+    if self.sourceFile is not File.E:
+      return False
+    if not (self.sourceRank is Rank.rank1 or self.sourceRank is Rank.rank8):
+      return False
+    if self.targetFile is not File.C:
+      return False
+    if not (self.targetRank is Rank.rank1 or self.targetRank is Rank.rank8):
+      return False

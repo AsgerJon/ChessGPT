@@ -13,7 +13,7 @@ from visualchess import Square
 from visualchess._chessmoveproperties import _ChessMoveProperties
 
 if TYPE_CHECKING:
-  from visualchess import BoardState
+  pass
 
 ic.configureOutput(includeContext=True)
 
@@ -63,7 +63,7 @@ class ChessMove(_ChessMoveProperties):
     return out
 
   @abstractmethod
-  def updateBoardState(self, *args, **kwargs) -> BoardState:
+  def updateBoardState(self, *args, **kwargs) -> NoReturn:
     """This abstract method defines how the board should be updated if
     this move is validated. Subclasses must implement this method.
     Promotion of pawn logic should be implemented in this method."""
