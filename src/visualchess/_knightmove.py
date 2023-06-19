@@ -7,7 +7,7 @@ from typing import NoReturn
 
 from icecream import ic
 
-from visualchess import ChessMove, Square
+from visualchess import ChessMove, Square, ChessPiece, StateChange
 
 ic.configureOutput(includeContext=True)
 
@@ -31,6 +31,8 @@ class KnightMove(ChessMove):
     dy = abs(self.sourceY - self.targetY)
     return True if min(dx, dy) == 1 and max(dx, dy) == 2 else False
 
-  def updateBoardState(self, *args, **kwargs) -> NoReturn:
-    """Places the knight at the target square"""
-    self.state.setPiece(self.targetSquare, self.sourcePiece)
+  def updateBoardState(self) -> list[StateChange]:
+    """Places the king at the target square"""
+    out = [self.state.setPiece(self.targetSquare, self.sourcePiece),
+           self.state.setPiece(self.sourceSquare, ChessPiece.EMPTY)]
+    return out

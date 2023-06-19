@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, NoReturn
 
 from icecream import ic
 
-from visualchess import ChessMove
+from visualchess import ChessMove, StateChange, ChessPiece
 
 if TYPE_CHECKING:
   pass
@@ -34,6 +34,8 @@ class KingMove(ChessMove):
     dx, dy = self.sourceX - self.targetX, self.sourceY - self.targetY
     return False if dx ** 2 > 1 or dy ** 2 > 1 else True
 
-  def updateBoardState(self) -> NoReturn:
+  def updateBoardState(self) -> list[StateChange]:
     """Places the king at the target square"""
-    self.state.setPiece(self.targetSquare, self.sourcePiece)
+    out = [self.state.setPiece(self.targetSquare, self.sourcePiece),
+           self.state.setPiece(self.sourceSquare, ChessPiece.EMPTY)]
+    return out

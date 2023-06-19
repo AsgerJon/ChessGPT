@@ -3,7 +3,7 @@
     <option name="myName" value="Project Default" />
     <inspection_tool class="DuplicatedCode" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <Languages>
-        <language minSize="64" name="Python" />
+        <language minSize="79" name="Python" />
       </Languages>
     </inspection_tool>
     <inspection_tool class="LongLine" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
@@ -53,11 +53,5 @@
       <option name="myIgnoreTupleInReturn" value="true" />
     </inspection_tool>
     <inspection_tool class="PyTypeCheckerInspection" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
-    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ignoredIdentifiers">
-        <list>
-        </list>
-      </option>
-    </inspection_tool>
   </profile>
 </component>

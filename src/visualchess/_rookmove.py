@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from icecream import ic
 
-from visualchess import ChessMove, Square
+from visualchess import ChessMove, Square, StateChange, ChessPiece
 
 ic.configureOutput(includeContext=True)
 
@@ -28,3 +28,9 @@ class RookMove(ChessMove):
     their rank."""
     x0, y0, x1, y1 = self.sourceX, self.sourceY, self.targetX, self.targetY
     return False if (x1 - x0) * (y1 - y0) else True
+
+  def updateBoardState(self) -> list[StateChange]:
+    """Places the king at the target square"""
+    out = [self.state.setPiece(self.targetSquare, self.sourcePiece),
+           self.state.setPiece(self.sourceSquare, ChessPiece.EMPTY)]
+    return out

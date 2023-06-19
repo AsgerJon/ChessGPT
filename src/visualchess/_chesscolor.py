@@ -78,8 +78,10 @@ class ChessColor(Enum):
   def __eq__(self, other: ChessColor) -> bool:
     """The equality operator implementation. Please note that the empty
     color is not considered equal to itself."""
-    if self and other:
-      return True if self is other else False
+    if self is ChessColor.BLACK and other is ChessColor.BLACK:
+      return True
+    if self is ChessColor.WHITE and other is ChessColor.WHITE:
+      return True
     return False
 
   def __hash__(self, ) -> int:
@@ -87,12 +89,12 @@ class ChessColor(Enum):
     return 2 if not self else (3 if self is ChessColor.BLACK else 5)
 
   def getEnPassantRank(self) -> int:
-    """Getter-function for the rank at which pawns of this color may en
-    passant. Rank.rank5 for white and 4 for black"""
+    """Getter-function for the rank from which a pawn can capture en
+    passant. """
     if self is ChessColor.WHITE:
-      return 4
-    if self is ChessColor.BLACK:
       return 3
+    if self is ChessColor.BLACK:
+      return 4
     msg = """The empty color does not support en passant!"""
     raise AttributeError(msg)
 

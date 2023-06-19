@@ -20,7 +20,7 @@ class ChessAudio:
     self._allowedCapture = Sound.negaoryx_cry
     self._allowedMove = Sound.move
     self._illegalCapture = Sound.error
-    self._illegalMove = Sound.meme_nope
+    self._illegalMove = Sound.right2jail_rightaway
     self._cancelMove = Sound.risitas
     self._forbidden = Sound.gotcha
     self._gainFocus = Sound.slide

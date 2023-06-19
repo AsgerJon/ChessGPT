@@ -6,9 +6,11 @@ from __future__ import annotations
 from typing import NoReturn, Never
 
 from icecream import ic
+from worktoy.core import maybe
 from worktoy.waitaminute import ReadOnlyError
 
-from visualchess import ChessAudio, Square, ChessPiece, ChessColor, Move
+from visualchess import ChessAudio, Square, ChessPiece, ChessColor, Move, \
+  File
 
 ic.configureOutput(includeContext=True)
 
@@ -107,6 +109,23 @@ class _BoardStateProperties(ChessAudio):
     """Setter-function for the color whose turn it is."""
     self._colorTurn = chessColor
 
+  def _getEnPassantFile(self, ) -> File:
+    """Getter-function for the current en passant file. Please note the
+    use of 'File.NULL' indicating that no en passant move is possible."""
+    file = maybe(self._enPassant, File.NULL)
+    if isinstance(file, File):
+      self._enPassant = File.NULL
+      return file
+    raise TypeError
+
+  def _setEnPassantFile(self, file: File = None) -> NoReturn:
+    """Setter-function for the current en passant file."""
+    file = maybe(file, File.NULL)
+    if isinstance(file, File):
+      self._enPassant = file
+    else:
+      raise TypeError
+
   def toggleTurn(self) -> NoReturn:
     """Toggle-function switching the turn"""
     if self._colorTurn is ChessColor.BLACK:
@@ -195,3 +214,4 @@ class _BoardStateProperties(ChessAudio):
   whiteRookHMoved = property(_getWhiteRookHMovedFlag, _noAcc, _noAcc)
   blackRookAMoved = property(_getBlackRookAMovedFlag, _noAcc, _noAcc)
   blackRookHMoved = property(_getBlackRookHMovedFlag, _noAcc, _noAcc)
+  enPassantFile = property(_getEnPassantFile, _setEnPassantFile, _noAcc)

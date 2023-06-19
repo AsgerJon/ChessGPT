@@ -6,14 +6,14 @@ instantiating the class and using the properties of the instance."""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import Never
+from typing import Never, NoReturn
 
 from icecream import ic
 from worktoy.parsing import extractArg, maybeType
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
 
-from visualchess import ChessPiece, Square, ChessColor
+from visualchess import ChessPiece, Square, ChessColor, StateChange
 
 ic.configureOutput(includeContext=True)
 
@@ -24,12 +24,12 @@ class Move:
   @staticmethod
   def parseArguments(*args, **kwargs) -> dict:
     """Parses arguments to square and piece for source and target"""
-    baseMove = maybeType(Move, *args, *[v for (k, v) in kwargs.items()])
-    if isinstance(baseMove, Move):
-      return dict(source=dict(square=baseMove.sourceSquare,
-                              piece=baseMove.sourcePiece),
-                  target=dict(square=baseMove.targetSquare,
-                              piece=baseMove.targetPiece))
+    # baseMove = maybeType(Move, *args, *[v for (k, v) in kwargs.items()])
+    # if isinstance(baseMove, Move):
+    #   return dict(source=dict(square=baseMove.sourceSquare,
+    #                           piece=baseMove.sourcePiece),
+    #               target=dict(square=baseMove.targetSquare,
+    #                           piece=baseMove.targetPiece))
     sourceKeys = stringList('origin, source, start')
     targetKeys = stringList('target, capture, goal')
     sourceSquare, a, k = extractArg(Square, sourceKeys, *args, **kwargs)
@@ -45,6 +45,25 @@ class Move:
     self._sourcePiece = _data['source']['piece']
     self._targetSquare = _data['target']['square']
     self._targetPiece = _data['target']['piece']
+    self._stateChanges = None
+
+  def _createStateChanges(self) -> NoReturn:
+    """Creator-function for the list of state changes applied during this
+    move"""
+    self._stateChanges = [
+      StateChange(self.targetSquare, self.targetPiece, self.sourcePiece),
+      StateChange(self.sourceSquare, self.sourcePiece, ChessPiece.EMPTY)]
+
+  def _getStateChanges(self) -> list[StateChange]:
+    """Getter-function for the list of state changes applied during this
+    move"""
+    if self._stateChanges is None:
+      self._createStateChanges()
+      return self._getStateChanges()
+    if isinstance(self._stateChanges, list):
+      if all([isinstance(arg, StateChange) for arg in self._stateChanges]):
+        return self._stateChanges
+    raise TypeError
 
   def _getSourceSquare(self) -> Square:
     """Getter-function for the source square"""
@@ -116,3 +135,4 @@ class Move:
   targetPiece = property(_getTargetPiece, _noAcc, _noAcc, )
   sourceColor = property(_getSourceColor, _noAcc, _noAcc)
   targetColor = property(_getTargetColor, _noAcc, _noAcc)
+  stateChanges = property(_getStateChanges, _noAcc, _noAcc)

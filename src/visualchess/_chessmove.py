@@ -9,7 +9,7 @@ from typing import NoReturn, TYPE_CHECKING
 from icecream import ic
 from worktoy.core import plenty
 
-from visualchess import Square
+from visualchess import Square, StateChange
 from visualchess._chessmoveproperties import _ChessMoveProperties
 
 if TYPE_CHECKING:
@@ -63,14 +63,20 @@ class ChessMove(_ChessMoveProperties):
     return out
 
   @abstractmethod
-  def updateBoardState(self, *args, **kwargs) -> NoReturn:
+  def updateBoardState(self, *args, **kwargs) -> list[StateChange]:
     """This abstract method defines how the board should be updated if
     this move is validated. Subclasses must implement this method.
     Promotion of pawn logic should be implemented in this method."""
 
+  def applyUpdateBoardState(self, *args, **kwargs) -> NoReturn:
+    """Applies the update to the board state and returns a list of
+    positions allowing reversal."""
+    pass
+
   def kingChecked(self, *args, **kwargs) -> bool:
     """Return True if king is checked"""
-    return True if self.state.colorKingCheck(self.sourceColor) else False
+    # return True if self.state.colorKingCheck(self.sourceColor) else False
+    return False
 
   def baseValidation(self, *args, **kwargs) -> bool:
     """This method validates that sufficient piece information is
@@ -91,9 +97,8 @@ class ChessMove(_ChessMoveProperties):
 
   def applyMove(self, *args, **kwargs) -> bool:
     """This method applies the move to the board, if it passes validation"""
+    print('applyMove: 100 -> %s' % self.state.grabbedPiece)
     if not self.pieceCompatibility(*args, **kwargs):
-      return False
-    if not self.kingChecked(*args, **kwargs):
       return False
     if not self.baseValidation(*args, **kwargs):
       return False
@@ -102,5 +107,10 @@ class ChessMove(_ChessMoveProperties):
     for square in self.obstructSquares(*args, **kwargs):
       if self.state.getPiece(square):
         return False
-    self.updateBoardState(*args, **kwargs)
+    stateChanges = self.updateBoardState(*args, **kwargs)
+    # if self.kingChecked(*args, **kwargs):
+    #   for change in reversed(stateChanges):
+    #     self.state = self.state >> change
+    #   return False
+    self.state.toggleTurn()
     return True

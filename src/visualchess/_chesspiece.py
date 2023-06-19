@@ -166,9 +166,9 @@ class ChessPiece(IntEnum):
     equal to any, not even itself."""
     if not (self and other):
       return False
-    if self.color != other.color:
+    if self.color == ~other.color:
       return False
-    if self.piece != other.piece:
+    if self.piece == other.piece:
       return False
     return True
 

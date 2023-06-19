@@ -7,7 +7,7 @@ from typing import NoReturn
 
 from icecream import ic
 
-from visualchess import ChessMove, ChessPiece
+from visualchess import ChessMove, ChessPiece, StateChange
 
 ic.configureOutput(includeContext=True)
 
@@ -32,7 +32,9 @@ class QueenMove(ChessMove):
     dy = abs(self.sourceY - self.targetY)
     return False if (dx - dy) * dx * dy else True
 
-  def updateBoardState(self, *args, **kwargs) -> NoReturn:
-    """Updates the board"""
-    self.state.setPiece(self.targetSquare, self.sourcePiece)
-    self.state.setPiece(self.sourceSquare, ChessPiece.EMPTY)
+  def updateBoardState(self) -> list[StateChange]:
+    """Places the king at the target square"""
+    ic()
+    out = [self.state.setPiece(self.targetSquare, self.sourcePiece),
+           self.state.setPiece(self.sourceSquare, ChessPiece.EMPTY)]
+    return out

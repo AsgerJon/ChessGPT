@@ -89,4 +89,8 @@ class Rank(IntEnum):
   def __eq__(self, other) -> bool:
     """Tests equality between instances using the 'is' condition. Please
     note, that NULL is not equal to itself"""
-    return True if self and other and self.value == other.value else False
+    if self.name == 'NULL':
+      return False
+    if isinstance(other, int):
+      return self.value == other
+    return self.value == other.value

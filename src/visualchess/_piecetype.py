@@ -42,6 +42,10 @@ class PieceType(Enum):
       return False
     return False if self.value - other.value else True
 
+  def __hash__(self) -> int:
+    """LOL"""
+    return self.value
+
   def _getNameLower(self) -> str:
     """Getter-function for lower-case version of name"""
     return self.name.lower()

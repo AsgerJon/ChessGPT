@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from enum import Enum
+import os
 from typing import TYPE_CHECKING, Never
 
 from PySide6.QtCore import QRect, QRectF, QPointF
@@ -164,11 +165,15 @@ class Square(Enum):
   @classmethod
   def fromFileRank(cls, file: File, rank: Rank) -> Square:
     """Returns the instance of matching file and rank"""
-    if not (file and rank):
-      return Square.NULL
-    for square in Square:
-      if square.value[0] == file and square.value[1] == rank:
-        return square
+    try:
+      if not (file and rank):
+        return Square.NULL
+      for square in Square:
+        if square.value[0] == file and square.value[1] == rank:
+          return square
+    except RecursionError as e:
+      print(e)
+      os.abort()
     raise TypeError
 
   @classmethod

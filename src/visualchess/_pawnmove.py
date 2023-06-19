@@ -3,11 +3,13 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
+import os
 from typing import NoReturn
 
 from icecream import ic
 
-from visualchess import ChessMove, ChessColor, Square
+from visualchess import ChessMove, ChessColor, Square, ChessPiece, \
+  StateChange
 
 ic.configureOutput(includeContext=True)
 
@@ -30,6 +32,7 @@ class PawnMove(ChessMove):
     dx = abs(self.sourceX - self.targetX)
     dy = abs(self.sourceY - self.targetY)
     if dx == 1 and dy == 1:
+      ic()
       if self.sourceColor == self.targetColor:
         return False
       if self.sourceColor == ~self.targetColor:
@@ -62,6 +65,10 @@ class PawnMove(ChessMove):
     twoStep = Square.fromInts(self.sourceX, self.sourceY + 2 * r)
     return [oneStep, twoStep]
 
-  def updateBoardState(self, *args, **kwargs) -> NoReturn:
-    """Places the bishop at the target square"""
-    self.state.setPiece(self.targetSquare, self.sourcePiece)
+  def updateBoardState(self) -> list[StateChange]:
+    """Places the king at the target square"""
+    if abs(self.sourceY - self.targetY) == 2:
+      self.state.enPassantFile = self.sourceFile
+    out = [self.state.setPiece(self.targetSquare, self.sourcePiece),
+           self.state.setPiece(self.sourceSquare, ChessPiece.EMPTY)]
+    return out
