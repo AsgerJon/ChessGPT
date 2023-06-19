@@ -12,7 +12,7 @@ from worktoy.parsing import maybeType
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import ReadOnlyError, UnexpectedStateError
 
-from visualchess import File, Rank, PieceMove
+from visualchess import File, Rank
 
 if TYPE_CHECKING:
   from visualchess import Widget

@@ -15,10 +15,10 @@ from ._square import Square
 from ._castle import Castle
 from ._chesspiece import ChessPiece
 from ._move import Move
+from ._chessmove import ChessMove
 from ._settings import Settings
 from ._boardstate import BoardState
 from ._debugstate import DebugState
-from ._chessmove import ChessMove
 from ._regularmove import RegularMove
 from ._kingmove import KingMove
 from ._knightmove import KnightMove

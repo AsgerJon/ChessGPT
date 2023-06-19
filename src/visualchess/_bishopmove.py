@@ -1,22 +1,19 @@
-"""KingMove subclasses ChessMove"""
+"""BishopMove subclasses ChessMove """
 #  MIT Licence
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NoReturn
+from typing import NoReturn
 
 from icecream import ic
 
 from visualchess import ChessMove, Square
 
-if TYPE_CHECKING:
-  pass
-
 ic.configureOutput(includeContext=True)
 
 
-class KingMove(ChessMove):
-  """KingMove subclasses RegularMove
+class BishopMove(ChessMove):
+  """BishopMove subclasses ChessMove.
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
@@ -26,14 +23,15 @@ class KingMove(ChessMove):
   def pieceCompatibility(self, *args, **kwargs) -> bool:
     """This abstract method determines if the source piece is of a piece
     type supported by the subclass"""
-    return True if self.sourcePiece.isKing else False
+    return True if self.sourcePiece.isBishop else False
 
   def isMovePossible(self, *args, **kwargs) -> bool:
     """All moves that are no longer than 1 square away from source are
     possible."""
-    dx, dy = self.sourceX - self.targetX, self.sourceY - self.targetY
-    return False if dx ** 2 > 1 or dy ** 2 > 1 else True
+    dx = abs(self.sourceX - self.targetX)
+    dy = abs(self.sourceY - self.targetY)
+    return True if dx == dy else False
 
-  def updateBoardState(self) -> NoReturn:
-    """Places the king at the target square"""
+  def updateBoardState(self, *args, **kwargs) -> NoReturn:
+    """Places the bishop at the target square"""
     self.state.setPiece(self.targetSquare, self.sourcePiece)

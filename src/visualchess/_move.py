@@ -13,7 +13,7 @@ from worktoy.parsing import extractArg, maybeType
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
 
-from visualchess import ChessPiece, Square
+from visualchess import ChessPiece, Square, ChessColor
 
 ic.configureOutput(includeContext=True)
 
@@ -70,6 +70,24 @@ class Move:
       return self._targetPiece
     return ChessPiece.EMPTY
 
+  def _getSourceColor(self) -> ChessColor:
+    """Getter-function for the source color"""
+    sourcePiece = self._getSourcePiece()
+    if not sourcePiece:
+      return ChessColor.NULL
+    if isinstance(sourcePiece.color, ChessColor):
+      return sourcePiece.color
+    raise TypeError
+
+  def _getTargetColor(self) -> ChessColor:
+    """Getter-function for the target color"""
+    targetPiece = self._getTargetPiece()
+    if not targetPiece:
+      return ChessColor.NULL
+    if isinstance(targetPiece.color, ChessColor):
+      return targetPiece.color
+    raise TypeError
+
   def __str__(self, ) -> str:
     """String Representation"""
     srcPiece, srcSqr = self.sourcePiece, self.sourceSquare
@@ -96,3 +114,5 @@ class Move:
   targetSquare = property(_getTargetSquare, _noAcc, _noAcc, )
   sourcePiece = property(_getSourcePiece, _noAcc, _noAcc, )
   targetPiece = property(_getTargetPiece, _noAcc, _noAcc, )
+  sourceColor = property(_getSourceColor, _noAcc, _noAcc)
+  targetColor = property(_getTargetColor, _noAcc, _noAcc)

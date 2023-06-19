@@ -73,7 +73,7 @@ class ChessColor(Enum):
 
   def __bool__(self, ) -> bool:
     """The null or empty color is False, white and black are True"""
-    return True if self is ChessColor.BLACK or ChessColor.WHITE else False
+    return True if self.value else False
 
   def __eq__(self, other: ChessColor) -> bool:
     """The equality operator implementation. Please note that the empty
