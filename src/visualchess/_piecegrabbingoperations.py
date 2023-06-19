@@ -4,12 +4,11 @@ PieceGrabbing widget."""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from os import abort
 from typing import NoReturn
 from warnings import warn
 
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QEnterEvent, QMouseEvent
+from PySide6.QtGui import QMouseEvent
 from icecream import ic
 from worktoy.core import plenty
 from worktoy.waitaminute import ProceduralError
@@ -36,8 +35,8 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     if not self.getHoverBoardFlag():
       return False
     self.setNormalCursor()
-    self.delHoverSquare()
-    self.delHoverPiece()
+    self.getBoardState().delHoverSquare()
+    self.getBoardState().delHoverPiece()
     self.setHoverBoardFlag(False)
     self.update()
     return self.leaveEvent(event)
@@ -58,52 +57,34 @@ class _PieceGrabbingOperations(_PieceGrabbingProperties):
     point = event.position()
     boardRect = self.getBoardRect()
     square = Square.fromPointRect(point, boardRect)
-    if square == self.getHoverSquare():
+
+    if square == self.getBoardState().hoverSquare:
       return self.update()
-    self.setHoverSquare(square)
+    self.getBoardState().hoverSquare = square
     return self.update()
 
   def activateHoverPiece(self, event: QMouseEvent) -> NoReturn:
     """Applies hover to the piece at the square"""
-    if self.getGrabbedPiece():
+    boardState = self.getBoardState()
+    if boardState.grabbedPiece:
       return
     point = event.position()
     boardRect = self.getBoardRect()
     square = Square.fromPointRect(point, boardRect)
-    piece = self.getBoardState().getPiece(square)
-    if isinstance(piece, ChessPiece):
-      if piece != self.getHoverPiece():
-        self.setHoverPiece(piece)
-        if self.getHoverPiece():
-          self.setHoverCursor()
-        else:
-          self.setNormalCursor()
-      return self.update()
+    piece = boardState.getPiece(square)
+    self.getBoardState().hoverPiece = piece
 
   def beginGrabbing(self, piece: ChessPiece, origin: Square) -> NoReturn:
     """Operation responsible for starting a grabbing operation."""
     if not isinstance(piece, ChessPiece):
       raise TypeError
-    self.setGrabbedPiece(piece)
+    self.getBoardState().setGrabbedPiece(piece)
     self.setPieceCursor(piece)
     self.setOriginSquare(origin)
     self.getBoardState().setPiece(origin, ChessPiece.EMPTY)
     self.delHoverPiece()
     Sound.slide.play()
     self.update()
-
-  def checkTarget(self, ) -> bool:
-    """Checks if the target square is valid"""
-    grabbedPiece = self.getGrabbedPiece()
-    if grabbedPiece in ChessPiece.getQueenRookBishop():
-      lineOfSight = self.getBoardState().lineOfSight(
-        self.getOriginSquare(), self.getHoverSquare())
-      return True if lineOfSight else False
-    if grabbedPiece in [*ChessPiece.getKings(), *ChessPiece.getKnights()]:
-      return True
-    if grabbedPiece in ChessPiece.getPawns():
-      msg = """Pawn moves are not yet implemented!"""
-      raise NotImplementedError(msg)
 
   def cancelGrabbing(self) -> NoReturn:
     """Defines the operation which cancels any ongoing grabbing operation"""

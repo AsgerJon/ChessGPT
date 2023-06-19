@@ -77,8 +77,6 @@ class LayoutWindow(BaseWindow):
       return self._boardWidget
     raise TypeError
 
-  PieceGrabbing
-
   def _createHorizontalBoxLayout(self) -> NoReturn:
     """Creator function for the horizontal layout"""
     self._baseHorizontalBoxLayout = QHBoxLayout()
@@ -110,12 +108,12 @@ class LayoutWindow(BaseWindow):
     headerStyle @ self._baseHeaderWidget
     self._baseHeaderWidget.setText('Welcome!')
 
-  def _getBaseHeaderWidget(self) -> CoreWidget:
+  def _getBaseHeaderWidget(self) -> Label:
     """Getter-function for the header widget"""
     if self._baseHeaderWidget is None:
       self._createBaseHeaderWidget()
       return self._getBaseHeaderWidget()
-    if isinstance(self._baseHeaderWidget, CoreWidget):
+    if isinstance(self._baseHeaderWidget, Label):
       print(self._baseHeaderWidget.getText())
       return self._baseHeaderWidget
     raise TypeError
@@ -177,10 +175,10 @@ class LayoutWindow(BaseWindow):
 
   def setupWidgets(self) -> NoReturn:
     """Sets up the widgets"""
-    self._getBaseLayout().addWidget(self._getBaseHeaderWidget(), 0, 0, )
-
-    self._getBaseLayout().addWidget(self._getBoardWidget(), 1, 0, )
-    self._getBaseLayout().addWidget(self._getDebugButton(), 2, 0, )
+    self._getBaseLayout().addWidget(self._getBaseHeaderWidget(), 0, 0, 1, 2)
+    self._getBaseLayout().addWidget(self._getBoardWidget(), 1, 0, 1, 2)
+    self._getBaseLayout().addWidget(self._getHSpacer(), 2, 0, 1, 1)
+    self._getBaseLayout().addWidget(self._getDebugButton(), 2, 1, 1, 1)
     self._getBaseWidget().setLayout(self._getBaseLayout())
     self.setCentralWidget(self._getBaseWidget())
 

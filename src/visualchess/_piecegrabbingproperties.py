@@ -8,11 +8,9 @@ from typing import NoReturn
 
 from PySide6.QtCore import QPointF, QTimer
 from icecream import ic
-from worktoy.waitaminute import UnexpectedStateError
 
-from visualchess import ChessPiece, Square, BoardLayout, BoardState, \
-  DebugState
-from visualchess import Settings, Sound
+from visualchess import BoardLayout, BoardState
+from visualchess import Settings
 
 ic.configureOutput(includeContext=True)
 
@@ -36,7 +34,7 @@ class _PieceGrabbingProperties(BoardLayout):
     self._flagHoldingPiece = None
     self._flagMoving = None
     self._movingTimer = None
-    Sound.createAll()
+    # Sound.createAll()
 
   ################### Mouse Position Accessor Functions ###################
   # --------------------------------------------------------------------- #
@@ -79,10 +77,9 @@ class _PieceGrabbingProperties(BoardLayout):
   ################### Accessor Functions for Chess Board ##################
   def _createBoardState(self) -> bool:
     """Creator-function for BoardState instance"""
-    # self._boardState = BoardState.InitialPosition()
-    # self._boardState = BoardState.DebugPosition()
-    self._boardState = DebugState.DebugPosition()
+    self._boardState = BoardState.InitialPosition()
     if isinstance(self._boardState, BoardState):
+      self.update()
       return True
     raise TypeError
 
@@ -95,87 +92,27 @@ class _PieceGrabbingProperties(BoardLayout):
       return self._boardState
     raise TypeError
 
+  def resetBoardState(self, ) -> NoReturn:
+    """Resets board to initial position"""
+    self._boardState = BoardState.InitialPosition()
+    self.update()
+
   ############### END OF Accessor Functions for Chess Board ###############
   # --------------------------------------------------------------------- #
   ######################### Hover square accessors ########################
-  def getHoverSquare(self) -> Square:
-    """Getter-function for hovered rectangle"""
-    return self._hoverSquare
-
-  def setHoverSquare(self, square: Square) -> NoReturn:
-    """Setter-function for hovered rectangle"""
-    if self._hoverSquare == square:
-      return
-    self._hoverSquare = square
-
-  def delHoverSquare(self) -> NoReturn:
-    """Deleter-function for the hovered rectangle"""
-    if self._hoverSquare:
-      self._hoverSquare = None
 
   ##################### END of Hover square accessors #####################
   # --------------------------------------------------------------------- #
   ######################### Hover piece Accessors #########################
-  def getHoverPiece(self) -> object:
-    """Getter-function for hover piece"""
-    return self._hoverPiece
-
-  def setHoverPiece(self, hoverPiece: ChessPiece) -> NoReturn:
-    """Setter-function for hover piece"""
-    if hoverPiece == self._hoverPiece:
-      return
-    self._hoverPiece = hoverPiece
-
-  def delHoverPiece(self) -> NoReturn:
-    """Deleter-function for hover piece"""
-    if self._hoverPiece:
-      self._hoverPiece = None
 
   ###################### END of Hover piece accessors #####################
   ################## Accessor functions for grabbed piece #################
   #########################################################################
-  def getGrabbedPiece(self) -> ChessPiece:
-    """Getter-function for the currently grabbed piece."""
-    if not self._grabbedPiece:
-      return ChessPiece.EMPTY
-    if isinstance(self._grabbedPiece, ChessPiece):
-      return self._grabbedPiece
-    raise TypeError
-
-  def setGrabbedPiece(self, piece: ChessPiece) -> NoReturn:
-    """Getter-function for the currently grabbed piece."""
-    if piece is None:
-      self._grabbedPiece = ChessPiece.EMPTY
-      return
-    if isinstance(piece, ChessPiece):
-      self._grabbedPiece = piece
-      return
-    raise TypeError
-
-  def delGrabbedPiece(self) -> NoReturn:
-    """Deleter-function for the grabbed piece. Returns the grabbed piece."""
-    self.setGrabbedPiece(ChessPiece.EMPTY)
 
   #########################################################################
   ############## END OF Accessor functions for grabbed piece ##############
   ################## Accessor functions for origin square #################
   #########################################################################
-  def getOriginSquare(self) -> Square | bool:
-    """Getter-function for origin square"""
-    if self._originSquare is None:
-      return False
-    if isinstance(self._originSquare, Square):
-      return self._originSquare
-    raise TypeError
-
-  def setOriginSquare(self, square: Square) -> NoReturn:
-    """Setter-function for origin square"""
-    if square is None:
-      raise UnexpectedStateError
-    if isinstance(square, Square):
-      self._originSquare = square
-      return
-    raise TypeError
 
   #########################################################################
   ############## END OF Accessor functions for origin square ##############

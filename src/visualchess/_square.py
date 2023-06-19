@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import NoReturn, TYPE_CHECKING, Never
+from typing import TYPE_CHECKING, Never
 
 from PySide6.QtCore import QRect, QRectF, QPointF
 from icecream import ic
@@ -16,7 +16,6 @@ from visualchess import File, Rank
 
 if TYPE_CHECKING:
   from visualchess import Widget
-  from visualchess import PieceMove
 
 ic.configureOutput(includeContext=True)
 
@@ -98,6 +97,7 @@ class Square(Enum):
   H6 = (File.H, Rank.rank6)
   H7 = (File.H, Rank.rank7)
   H8 = (File.H, Rank.rank8)
+  NULL = (File.NULL, Rank.NULL)
 
   def getX(self, ) -> int:
     """Getter-function for the file number"""

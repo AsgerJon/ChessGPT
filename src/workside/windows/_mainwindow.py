@@ -25,6 +25,16 @@ class MainWindow(LayoutWindow):
     self.setMinimumHeight(640)
     self.setWindowTitle('Welcome to WorkSide!')
 
+  def setupActions(self) -> NoReturn:
+    """Sets up the actions"""
+    self._getDebugButton().leftPressHold.connect(
+      self._getBoardWidget().resetBoardState)
+
+  def show(self, ) -> NoReturn:
+    """Reimplementation"""
+    LayoutWindow.show(self)
+    self.setupActions()
+
   def debugFunc01(self) -> NoReturn:
     """omg"""
     self._getBoardWidget().getBoardState().debug()

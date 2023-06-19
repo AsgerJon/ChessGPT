@@ -13,6 +13,9 @@ from icecream import ic
 from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
 
+from moreworktoy import ArgumentError
+from visualchess import PieceType, ChessColor
+
 if TYPE_CHECKING:
   from visualchess import Widget
 
@@ -73,36 +76,43 @@ class ChessPiece(IntEnum):
     """Creates an instance of QCursor representing the piece and applies
     it to other widget. """
 
-  def getColor(self) -> str:
-    """Getter-function for color"""
-    if not self.value:
-      return 'empty'
-    if self.value < 0:
-      return 'white'
-    return 'black'
-
-  def setColor(self, *_) -> Never:
-    """Illegal setter function"""
-    raise ReadOnlyError('color', 'set')
-
-  def getPiece(self) -> str:
+  def getPiece(self) -> PieceType:
     """Getter-function for piece"""
-    if not self.value:
-      return 'empty'
-    return self.name.split('_')[-1]
+    return PieceType.fromString(self.name)
 
   def setPiece(self, *_) -> Never:
     """Illegal setter function"""
     raise ReadOnlyError('piece', 'set')
 
   @classmethod
-  def fromColorPiece(cls, color: str, piece: str) -> ChessPiece:
+  def fromColorPiece(cls, *args) -> ChessPiece:
     """Finds the piece given the color and piece type"""
-    for chessPiece in ChessPiece:
-      if chessPiece.value:
-        if chessPiece.getPiece().lower() == piece:
-          if chessPiece.getColor().lower() == color:
-            return chessPiece
+    color, piece = None, None
+    for arg in args:
+      if arg.__class__.__name__ == 'ChessColor' and color is None:
+        color = arg
+      if arg.__class__.__name__ == 'PieceType' and piece is None:
+        piece = arg
+    if color is None or piece is None:
+      raise ArgumentError('color or piece')
+    for instance in cls:
+      if instance.color is color and instance.piece is piece:
+        return instance
+
+  def getColor(self) -> ChessColor:
+    """Getter-function for color"""
+    if self is ChessPiece.EMPTY:
+      return ChessColor.NULL
+
+    if 0 < self.value:
+      return ChessColor.BLACK
+
+    if self.value < 0:
+      return ChessColor.WHITE
+
+  def setColor(self, *_) -> Never:
+    """Illegal setter function"""
+    raise ReadOnlyError('color', 'set')
 
   def __bool__(self) -> bool:
     """EMPTY is False, all other instances are True"""
@@ -111,19 +121,15 @@ class ChessPiece(IntEnum):
   def __eq__(self, other: ChessPiece) -> bool:
     """Pieces must have same color and piece to be equal. EMPTY is not
     equal to any, not even itself."""
-    if not (self and other):
+    if self is ChessPiece.EMPTY or other is ChessPiece.EMPTY:
       return False
-    if self.color != other.color:
-      return False
-    if self.piece != other.piece:
-      return False
-    return True
+    return True if self is other else False
 
   def __invert__(self, ) -> ChessPiece:
     """Returns the piece of the opposite color"""
-    if not self:
-      return self
-    return ChessPiece.fromInt(-self.value)
+    if self is ChessPiece.EMPTY:
+      return ChessPiece.EMPTY
+    return self.fromColorPiece(self.piece, ~self.color)
 
   @classmethod
   def getKings(cls) -> list[ChessPiece]:

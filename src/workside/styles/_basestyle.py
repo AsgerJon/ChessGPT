@@ -1,13 +1,13 @@
 """BaseStyle"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from typing import NoReturn, TYPE_CHECKING
 
 from PySide6.QtCore import Qt, QRect, QRectF
-from PySide6.QtGui import QBrush, QFont, QPen, QColor, QPainter, \
-  QFontMetrics, QFontMetricsF
+from PySide6.QtGui import QBrush, QFont, QPen, QColor, QPainter
+from PySide6.QtGui import QFontMetricsF
 from icecream import ic
 from worktoy.core import maybe
 from worktoy.typetools import TypeBag

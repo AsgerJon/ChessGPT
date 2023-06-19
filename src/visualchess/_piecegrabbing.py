@@ -44,14 +44,16 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # |  operation, the operation is cancelled.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.type() == QEvent.Type.MouseMove:
-      if self.getGrabbedPiece():
+      if self.getBoardState().grabbedPiece:
         self.cancelGrabbing()
     # <********************** Remove Hover on Leave **********************> #
     # ____________________________________________________________________
     # |  When leaving the board rectangle, no square or piece should
     # |  remain hovered. This is handled by the leave method.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
-    self.delHoverSquare() or self.delHoverPiece()
+    # self.delHoverSquare() or self.delHoverPiece()
+    del self.getBoardState().hoverSquare
+    del self.getBoardState().hoverPiece
     if event.type() == QEvent.Type.Leave:
       return super().leaveEvent(event)
 
@@ -124,8 +126,8 @@ class PieceGrabbing(_PieceGrabbingOperations):
     # |  release event, or in case a cancelling right click is received.
     # ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
     if event.button() == Qt.MouseButton.LeftButton:
-      hoverPiece = self.getHoverPiece()
-      hoverSquare = self.getHoverSquare()
+      hoverPiece = self.getBoardState().hoverPiece
+      hoverSquare = self.getBoardState().hoverSquare
       if not hoverPiece:
         return
       if isinstance(hoverPiece, ChessPiece):
@@ -166,9 +168,10 @@ class PieceGrabbing(_PieceGrabbingOperations):
     BoardLayout.paintEvent(self, event)
     painter = QPainter()
     painter.begin(self)
-    if self.getHoverSquare():
+    boardState = self.getBoardState()
+    if boardState.hoverSquare:
       hoveredSquareStyle @ painter
-      painter.drawRect(self.getHoverSquare() @ self.getBoardRect())
+      painter.drawRect(boardState.hoverSquare @ self.getBoardRect())
     for (square, piece) in self.getBoardState().items():
       if isinstance(square, Square):
         target = square @ self.getBoardRect()
