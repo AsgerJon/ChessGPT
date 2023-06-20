@@ -13,17 +13,17 @@ from ._chesscolor import ChessColor
 from ._piecetype import PieceType
 from ._square import Square
 from ._chesspiece import ChessPiece
-from ._chessmove import ChessMove
+# from ._chessmove import ChessMove
 from ._settings import Settings
 from ._chessboard import ChessBoard
 from ._boardstate import BoardState
-from ._debugstate import DebugState
-from ._regularmove import RegularMove
+# from ._debugstate import DebugState
+# from ._regularmove import RegularMove
 from ._boardlayout import BoardLayout
 from ._piecegrabbingproperties import _PieceGrabbingProperties
 from ._piecegrabbingoperations import _PieceGrabbingOperations
 from ._piecegrabbing import PieceGrabbing
-from ._checkbutton import CheckButton
+# from ._checkbutton import CheckButton
 
 from workside.widgets import CoreWidget
 

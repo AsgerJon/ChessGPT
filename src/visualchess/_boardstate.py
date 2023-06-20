@@ -9,14 +9,13 @@ from typing import NoReturn
 from PySide6.QtCore import QRect, QRectF
 from chess import Move, parse_square
 from icecream import ic
-from worktoy.core import plenty, maybe
+from worktoy.core import maybe
 from worktoy.parsing import maybeType
 from worktoy.stringtools import stringList
 from worktoy.typetools import TypeBag
 from worktoy.waitaminute import UnexpectedStateError
 
-from visualchess import ChessPiece, Square, ChessColor, Rank, File, \
-  PieceType, ChessMove
+from visualchess import ChessPiece, Square, ChessColor, Rank, File
 from visualchess._boardstateproperties import _BoardStateProperties
 from visualchess.chesspieces import initialPosition
 
