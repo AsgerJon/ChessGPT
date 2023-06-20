@@ -5,9 +5,11 @@ from __future__ import annotations
 
 from typing import NoReturn
 
+import chess
+import chess.svg
 from icecream import ic
-from worktoy.core import maybe
 
+from workside.audio import Sound
 from workside.windows import LayoutWindow
 
 ic.configureOutput(includeContext=True)
@@ -35,21 +37,23 @@ class MainWindow(LayoutWindow):
 
   def handleLeftPressHold(self) -> NoReturn:
     """Handles the left press hold signal"""
-    self._getBoardWidget().getGameState().setInitialPosition()
+    self._getBoardWidget().getBoardState().resetInitialPosition()
     self._getBoardWidget().update()
 
   def debugFunc01(self) -> NoReturn:
     """omg"""
-    board = self._getBoardWidget()
-    names = ['__name__', '__class__', '__mro__', '__bases__']
-    for name in names:
-      print(maybe(getattr(board, name, None), '%s not found' % name))
+    Sound.error.play()
 
   def debugFunc02(self) -> NoReturn:
     """omg"""
+    img = chess.svg.board(self._getBoardWidget().getBoardState().board)
+    print(type(img))
 
   def debugFunc03(self) -> NoReturn:
     """omg"""
+    img = chess.svg.board(self._getBoardWidget().getBoardState().board)
+    with open('lol.svg', 'w') as f:
+      f.write(img)
 
   def debugFunc04(self) -> NoReturn:
     """omg"""

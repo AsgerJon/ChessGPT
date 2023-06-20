@@ -6,16 +6,19 @@ from __future__ import annotations
 
 from worktoy.typetools import TypeBag
 
+from ._chessaudio import ChessAudio
 from ._file import File
 from ._rank import Rank
 from ._chesscolor import ChessColor
+from ._piecetype import PieceType
 from ._square import Square
-from ._piecetype import PieceType, OctRose, GameState
+from ._chesspiece import ChessPiece
+from ._chessmove import ChessMove
 from ._settings import Settings
-from ._soundeffect import SoundEffect
-from ._soundenum import Sound
-from ._speaker import Speaker
-from ._soundenum import Sound
+from ._chessboard import ChessBoard
+from ._boardstate import BoardState
+from ._debugstate import DebugState
+from ._regularmove import RegularMove
 from ._boardlayout import BoardLayout
 from ._piecegrabbingproperties import _PieceGrabbingProperties
 from ._piecegrabbingoperations import _PieceGrabbingOperations

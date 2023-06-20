@@ -1,6 +1,6 @@
 """Settings provides a centrally defined collection of settings"""
-#  Copyright (c) 2023 Asger Jon Vistisen
 #  MIT Licence
+#  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
 from PySide6.QtCore import QSize
@@ -15,6 +15,7 @@ class Settings:
   #  MIT Licence"""
 
   headerLabelWidth = 60
+  soundName = 'razer'
 
   movingDelayTime = 200
   releaseDeadLineTime = 350

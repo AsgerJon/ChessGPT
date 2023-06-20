@@ -8,13 +8,14 @@ import os
 
 from icecream import ic
 from worktoy.parsing import extractArg
-from worktoy.stringtools import stringList
+from worktoy.stringtools import stringList, monoSpace
 
 ic.configureOutput(includeContext=True)
 
 
 class File(IntEnum):
   """File enum"""
+  NULL = -1
   A = 0
   B = 1
   C = 2
@@ -45,6 +46,8 @@ class File(IntEnum):
   @classmethod
   def fromValue(cls, x: int) -> File:
     """Finds the matching value"""
+    if x < 0 or 7 < x:
+      return File.NULL
     for file in File:
       if file.value == x:
         return file
@@ -66,3 +69,32 @@ class File(IntEnum):
   def __repr__(self, ) -> str:
     """Code Representation"""
     return """File.%s""" % self.name
+
+  def __add__(self, x: int) -> File:
+    """Adds other to self"""
+    if isinstance(x, int):
+      if -1 < x < 8:
+        out = self.value + x
+      else:
+        msg = """The file must be in the range from 0 to 7 inclusive, 
+        but received: %d""" % x
+        raise OverflowError(monoSpace(msg))
+      return File.fromValue(out)
+    raise TypeError
+
+  def __sub__(self, x: int) -> File:
+    """Subtracts given value from self"""
+    return self.__add__(-x)
+
+  def __bool__(self, ) -> bool:
+    """Only NULL is False."""
+    return False if self is File.NULL else True
+
+  def __eq__(self, other) -> bool:
+    """Tests equality between instances using the 'is' condition. Please
+    note, that NULL is not equal to itself"""
+    return True if self and other and self.value == other.value else False
+
+  def __hash__(self, ) -> int:
+    """LOL"""
+    return self.value

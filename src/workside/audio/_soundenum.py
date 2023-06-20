@@ -15,7 +15,7 @@ from worktoy.stringtools import stringList
 from worktoy.waitaminute import ReadOnlyError
 
 from moreworktoy import Iterify
-from visualchess import SoundEffect
+from workside.audio import SoundEffect, Settings
 from workside.widgets import CoreWidget
 
 ic.configureOutput(includeContext=True)
@@ -27,6 +27,9 @@ class _SoundProperties(Iterify):
   @staticmethod
   def _getSoundPath() -> str:
     """Getter-function for sound path"""
+    fromEnv = os.getenv('WORKSIDE_AUDIO_FILES')
+    if fromEnv:
+      return fromEnv
     root = os.getenv('CHESSGPT')
     there = os.path.join(
       *stringList('src, visualchess, chesspieces, sounds'))
@@ -48,7 +51,8 @@ class _SoundProperties(Iterify):
 
   def _createSoundEffect(self) -> NoReturn:
     """Creator-function for the sound effect"""
-    self._soundEffect = SoundEffect(self._getParent(), device='Razer')
+    self._soundEffect = SoundEffect(
+      self._getParent(), Settings.deviceName)
     self._soundEffect.setLoopCount(1)
     self._soundEffect.setSource(self.url)
 
@@ -116,10 +120,6 @@ class _SoundProperties(Iterify):
 
 class Sound(_SoundProperties):
   """Each sound effect is defined here as Sound enum"""
-
-  whoosh = None
-  move = None
-  slide = None
 
   @classmethod
   def createAll(cls, *args) -> NoReturn:
