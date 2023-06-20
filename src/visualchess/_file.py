@@ -92,3 +92,7 @@ class File(IntEnum):
     """Tests equality between instances using the 'is' condition. Please
     note, that NULL is not equal to itself"""
     return True if self and other and self.value == other.value else False
+
+  def __hash__(self, ) -> int:
+    """LOL"""
+    return self.value

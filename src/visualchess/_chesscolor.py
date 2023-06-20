@@ -6,6 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional, Never
 
+import chess
 from icecream import ic
 from worktoy.core import maybe
 from worktoy.parsing import maybeTypes, extractArg
@@ -20,6 +21,15 @@ class ChessColor(Enum):
   WHITE = -1
   NULL = 0
   BLACK = 1
+
+  def toChess(self) -> Optional[bool]:
+    """Creates an enum used by chess package"""
+    if self is ChessColor.NULL:
+      return None
+    if self is ChessColor.BLACK:
+      return False
+    if self is ChessColor.WHITE:
+      return True
 
   @classmethod
   def parse(cls, *args, **kwargs) -> ChessColor:

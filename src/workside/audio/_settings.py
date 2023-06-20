@@ -17,4 +17,4 @@ class Settings:
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
-  deviceName = 'Razer'
+  deviceName = 'razer'

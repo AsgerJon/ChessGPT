@@ -3,14 +3,14 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from abc import abstractmethod
-from typing import NoReturn, TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
 
+import chess
+from chess import Move
 from icecream import ic
-from worktoy.core import plenty
+from worktoy.parsing import maybeTypes
 
-from visualchess import Square, StateChange
-from visualchess._chessmoveproperties import _ChessMoveProperties
+from visualchess import Square, ChessPiece
 
 if TYPE_CHECKING:
   pass
@@ -18,99 +18,25 @@ if TYPE_CHECKING:
 ic.configureOutput(includeContext=True)
 
 
-class ChessMove(_ChessMoveProperties):
+class ChessMove:
   """ChessMove is a class specifying the type of move about to be applied
   #  MIT Licence
   #  Copyright (c) 2023 Asger Jon Vistisen"""
 
   def __init__(self, *args, **kwargs) -> None:
-    _ChessMoveProperties.__init__(self, *args, **kwargs)
+    squares = maybeTypes(Square, *args, padLen=2, padChar=None)
+    pieces = maybeTypes(ChessPiece, *args, padLen=2, padChar=None)
+    self._sourceSquare, self._targetSquare = squares
+    self._sourcePiece, self._targetPiece = pieces
+    self._kingSideCastling = None
+    self._queenSideCastling = None
 
-  def __str__(self, ) -> str:
-    """String Representation"""
-    return 'ChessMove'
+  def __str__(self) -> str:
+    """String representation usable by chess python package"""
 
-  def __repr__(self, ) -> str:
-    """Code Representation"""
-    return 'ChessMove(\'...\')'
-
-  @abstractmethod
-  def pieceCompatibility(self, *args, **kwargs) -> bool:
-    """This abstract method determines if the source piece is of a piece
-    type supported by the subclass"""
-
-  @abstractmethod
-  def isMovePossible(self, *args, **kwargs) -> bool:
-    """This abstract method determines if the proposed move would be a
-    valid instance of the present subclass. Suggested moves for which
-    this method returns False may still be possible, just not as an
-    instance of this class. Subclasses must implement this method."""
-
-  def obstructSquares(self, *args, **kwargs) -> list[Square]:
-    """Returns a list of the squares the piece travel through during the
-    move and which must be empty."""
-    out = []
-    dx = abs(self.sourceX - self.targetX)
-    dy = abs(self.sourceY - self.targetY)
-    if (dx - dy) * dx * dy:
-      return []
-    x0, y0 = self.sourceX, self.sourceY
-    d = max(dx, dy)
-    rx = self.state.sign(self.sourceX - self.targetX)
-    ry = self.state.sign(self.sourceY - self.targetY)
-    for i in range(1, d):
-      out.append(Square.fromInts(x0 + rx * i, y0 + ry * i))
-    return out
-
-  @abstractmethod
-  def updateBoardState(self, *args, **kwargs) -> list[StateChange]:
-    """This abstract method defines how the board should be updated if
-    this move is validated. Subclasses must implement this method.
-    Promotion of pawn logic should be implemented in this method."""
-
-  def applyUpdateBoardState(self, *args, **kwargs) -> NoReturn:
-    """Applies the update to the board state and returns a list of
-    positions allowing reversal."""
-    pass
-
-  def kingChecked(self, *args, **kwargs) -> bool:
-    """Return True if king is checked"""
-    # return True if self.state.colorKingCheck(self.sourceColor) else False
-    return False
-
-  def baseValidation(self, *args, **kwargs) -> bool:
-    """This method validates that sufficient piece information is
-    available and that the move is not capturing a piece of same color as
-    the capturing piece. Subclasses having implemented the abstract
-    methods will not receive moves that fail this basic validation. Unless
-    the subclass directly reimplements this method."""
-    self._updateMove(*args, **kwargs)
-    if not plenty(self.sourceSquare,
-                  self.sourcePiece,
-                  self.targetSquare,
-                  self.targetPiece):
-      return False  # Ensures that all are not None
-    if not all([self.sourceSquare, self.sourcePiece, self.targetSquare]):
-      return False  # Ensures that required information is present
-    if self.sourceColor == self.targetColor:
-      return False  # Prevents capture of same color.
-
-  def applyMove(self, *args, **kwargs) -> bool:
-    """This method applies the move to the board, if it passes validation"""
-    print('applyMove: 100 -> %s' % self.state.grabbedPiece)
-    if not self.pieceCompatibility(*args, **kwargs):
-      return False
-    if not self.baseValidation(*args, **kwargs):
-      return False
-    if not self.isMovePossible(*args, **kwargs):
-      return False
-    for square in self.obstructSquares(*args, **kwargs):
-      if self.state.getPiece(square):
-        return False
-    stateChanges = self.updateBoardState(*args, **kwargs)
-    # if self.kingChecked(*args, **kwargs):
-    #   for change in reversed(stateChanges):
-    #     self.state = self.state >> change
-    #   return False
-    self.state.toggleTurn()
-    return True
+  def validate(self, validation: bool) -> NoReturn:
+    """Validation setter"""
+    # self._valid = True if validation else False
+    # self._kingSideCastling = chess.Board.is_kingside_castling(board, move)
+    # self._queenSideCastling = chess.Board.is_queenside_castling(board,
+    # move)

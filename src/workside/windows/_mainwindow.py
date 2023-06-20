@@ -5,8 +5,11 @@ from __future__ import annotations
 
 from typing import NoReturn
 
+import chess
+import chess.svg
 from icecream import ic
 
+from workside.audio import Sound
 from workside.windows import LayoutWindow
 
 ic.configureOutput(includeContext=True)
@@ -39,13 +42,18 @@ class MainWindow(LayoutWindow):
 
   def debugFunc01(self) -> NoReturn:
     """omg"""
-    print(self._getDebugButton().__name__)
+    Sound.error.play()
 
   def debugFunc02(self) -> NoReturn:
     """omg"""
+    img = chess.svg.board(self._getBoardWidget().getBoardState().board)
+    print(type(img))
 
   def debugFunc03(self) -> NoReturn:
     """omg"""
+    img = chess.svg.board(self._getBoardWidget().getBoardState().board)
+    with open('lol.svg', 'w') as f:
+      f.write(img)
 
   def debugFunc04(self) -> NoReturn:
     """omg"""

@@ -3,14 +3,18 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from typing import NoReturn, Never
+from typing import NoReturn, Never, TYPE_CHECKING
 
+import chess
 from icecream import ic
 from worktoy.core import maybe
 from worktoy.waitaminute import ReadOnlyError
 
-from visualchess import ChessAudio, Square, ChessPiece, ChessColor, Move, \
-  File
+from visualchess import ChessAudio, Square, ChessPiece, ChessColor
+from visualchess import File, ChessBoard
+
+if TYPE_CHECKING:
+  from visualchess import PieceGrabbing
 
 ic.configureOutput(includeContext=True)
 
@@ -29,6 +33,8 @@ class _BoardStateProperties(ChessAudio):
     self._grabbedSquare = Square.NULL
     self._hoverSquare = Square.NULL
     self._hoverPiece = ChessPiece.EMPTY
+    self._widget = None
+    self._board = None
     self._whiteKingHasMoved = False
     self._blackKingHasMoved = False
     self._whiteRookAHasMoved = False
@@ -195,6 +201,26 @@ class _BoardStateProperties(ChessAudio):
     return Move(self._getGrabbedPiece(), self._getGrabbedSquare(),
                 self._getHoverPiece(), self._getHoverSquare())
 
+  def _getWidget(self) -> PieceGrabbing:
+    """Getter-function for the widget"""
+    return self._widget
+
+  def _setWidget(self, widget: PieceGrabbing) -> NoReturn:
+    self._widget = widget
+
+  def _createChessBoard(self) -> NoReturn:
+    """Creates the board instance from the chess package"""
+    self._board = ChessBoard(self)
+
+  def _getBoard(self) -> ChessBoard:
+    """Getter-function for chess board"""
+    if self._board is None:
+      self._createChessBoard()
+      return self._getBoard()
+    if isinstance(self._board, ChessBoard):
+      return self._board
+    raise TypeError
+
   def _noAcc(self, *_) -> Never:
     """Illegal Accessor Function"""
     raise ReadOnlyError('General illegal accessor')
@@ -215,3 +241,5 @@ class _BoardStateProperties(ChessAudio):
   blackRookAMoved = property(_getBlackRookAMovedFlag, _noAcc, _noAcc)
   blackRookHMoved = property(_getBlackRookHMovedFlag, _noAcc, _noAcc)
   enPassantFile = property(_getEnPassantFile, _setEnPassantFile, _noAcc)
+  widget = property(_getWidget, _setWidget, _noAcc)
+  board = property(_getBoard, _noAcc, _noAcc)

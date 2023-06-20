@@ -3,9 +3,6 @@
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-import os
-from typing import NoReturn
-
 from icecream import ic
 
 from visualchess import ChessMove, ChessColor, Square, ChessPiece, \
@@ -32,7 +29,6 @@ class PawnMove(ChessMove):
     dx = abs(self.sourceX - self.targetX)
     dy = abs(self.sourceY - self.targetY)
     if dx == 1 and dy == 1:
-      ic()
       if self.sourceColor == self.targetColor:
         return False
       if self.sourceColor == ~self.targetColor:

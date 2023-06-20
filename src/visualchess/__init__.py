@@ -13,20 +13,9 @@ from ._chesscolor import ChessColor
 from ._piecetype import PieceType
 from ._square import Square
 from ._chesspiece import ChessPiece
-from ._statechange import StateChange
-from ._move import Move
 from ._chessmove import ChessMove
-from ._castle import Castle
-from ._kingmove import KingMove
-from ._knightmove import KnightMove
-from ._emptymove import EmptyMove
-from ._bishopmove import BishopMove
-from ._rookmove import RookMove
-from ._queenmove import QueenMove
-from ._pawnmove import PawnMove
-from ._enpassant import EnPassantMove
-from ._castle import KingSideCastle, QueenSideCastle
 from ._settings import Settings
+from ._chessboard import ChessBoard
 from ._boardstate import BoardState
 from ._debugstate import DebugState
 from ._regularmove import RegularMove

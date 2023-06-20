@@ -17,41 +17,41 @@ class ChessAudio:
   """Sound Settings"""
 
   def __init__(self, ) -> None:
-    self._allowedCapture = Sound.negaoryx_cry
-    self._allowedMove = Sound.move
-    self._illegalCapture = Sound.error
-    self._illegalMove = Sound.right2jail_rightaway
-    self._cancelMove = Sound.risitas
-    self._forbidden = Sound.gotcha
-    self._gainFocus = Sound.slide
+    self._soundAllowedCapture = Sound.whoosh
+    self._soundAllowedMove = Sound.move
+    self._soundIllegalCapture = Sound.error
+    self._soundIllegalMove = Sound.right2jail_rightaway
+    self._soundCancelMove = Sound.error
+    self._soundForbidden = Sound.error
+    self._soundGainFocus = Sound.slide
 
   def _getAllowedCapture(self) -> Sound:
     """Getter-function for allowed capture sound"""
-    return self._allowedCapture
+    return self._soundAllowedCapture
 
   def _getAllowedMove(self) -> Sound:
     """Getter-function for allowed move sound"""
-    return self._allowedMove
+    return self._soundAllowedMove
 
   def _getIllegalCapture(self) -> Sound:
     """Getter-function for illegal capture sound"""
-    return self._illegalCapture
+    return self._soundIllegalCapture
 
   def _getIllegalMove(self) -> Sound:
     """Getter-function for illegal move sound"""
-    return self._illegalMove
+    return self._soundIllegalMove
 
   def _getCancelMove(self) -> Sound:
     """Getter-function for cancel move sound"""
-    return self._cancelMove
+    return self._soundCancelMove
 
   def _getForbidden(self) -> Sound:
     """Getter-function for sound indicating a general forbidden action"""
-    return self._forbidden
+    return self._soundForbidden
 
   def _getFocusGain(self) -> Sound:
     """Getter-function for sound indicating a general forbidden action"""
-    return self._gainFocus
+    return self._soundGainFocus
 
   def _noAcc(self, *args) -> Never:
     """Illegal Accessor"""
