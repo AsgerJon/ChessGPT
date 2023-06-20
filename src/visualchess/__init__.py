@@ -12,10 +12,16 @@ from ._chesscolor import ChessColor
 from ._square import Square
 from ._piecetype import PieceType, OctRose, GameState
 from ._settings import Settings
+<<<<<<< Updated upstream
 from ._soundeffect import SoundEffect
 from ._soundenum import Sound
 from ._speaker import Speaker
 from ._soundenum import Sound
+=======
+from ._chessboard import ChessBoard
+from ._boardstate import BoardState
+from ._regularmove import RegularMove
+>>>>>>> Stashed changes
 from ._boardlayout import BoardLayout
 from ._piecegrabbingproperties import _PieceGrabbingProperties
 from ._piecegrabbingoperations import _PieceGrabbingOperations

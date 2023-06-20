@@ -10,8 +10,8 @@ from PySide6.QtCore import QPointF, QTimer
 from icecream import ic
 from worktoy.waitaminute import UnexpectedStateError
 
-from visualchess import Square, BoardLayout, GameState, PieceType
-from visualchess import Settings, Sound
+from visualchess import Square, BoardLayout, PieceType
+from visualchess import Settings
 
 ic.configureOutput(includeContext=True)
 
@@ -37,7 +37,6 @@ class _PieceGrabbingProperties(BoardLayout):
     self._movingTimer = None
     self._gameState = None
     self._legalSquares = []
-    Sound.createAll()
 
   ################### Mouse Position Accessor Functions ###################
   # --------------------------------------------------------------------- #
@@ -78,19 +77,6 @@ class _PieceGrabbingProperties(BoardLayout):
   ################ END OF Mouse Position Accessor Functions ###############
   # --------------------------------------------------------------------- #
   ################# Accessor Functions for Chess GameState ################
-
-  def _createGameState(self) -> NoReturn:
-    """Creator-function for the game state"""
-    self._gameState = GameState()
-
-  def getGameState(self) -> GameState:
-    """Getter-function for the game state"""
-    if self._gameState is None:
-      self._createGameState()
-      return self.getGameState()
-    if isinstance(self._gameState, GameState):
-      return self._gameState
-    raise TypeError('gameState')
 
   ############ END OF Accessor Functions for Chess GameState ##############
   # --------------------------------------------------------------------- #

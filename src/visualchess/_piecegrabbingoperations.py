@@ -13,7 +13,7 @@ from icecream import ic
 from worktoy.core import plenty
 from worktoy.waitaminute import ProceduralError
 
-from visualchess import _PieceGrabbingProperties, Sound, PieceType
+from visualchess import _PieceGrabbingProperties, PieceType
 from visualchess import Square, Settings
 
 ic.configureOutput(includeContext=True)
