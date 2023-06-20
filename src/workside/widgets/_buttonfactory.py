@@ -57,10 +57,9 @@ def buttonFactory(button: Qt.MouseButton | str) -> CallMeMaybe:
     oldInit = getattr(cls, '__init__', None)
 
     def postInit(self, *args, **kwargs) -> NoReturn:
-      """Extra initialization"""
+      """Estra initialization"""
       oldInit(self, *args, **kwargs)
-      # setattr(cls, _buttonName, MouseButton(cls, button))
-      setattr(cls, _buttonName, MouseButton(button))
+      setattr(cls, _buttonName, MouseButton(cls, button))
       getattr(getattr(cls, _buttonName, ), 'pressHold').connect(
         getattr(self, pressHoldName).emit)
       getattr(getattr(cls, _buttonName, ), 'singleClick').connect(

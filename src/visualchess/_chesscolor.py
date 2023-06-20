@@ -6,7 +6,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional, Never
 
-import chess
 from icecream import ic
 from worktoy.core import maybe
 from worktoy.parsing import maybeTypes, extractArg
@@ -21,15 +20,6 @@ class ChessColor(Enum):
   WHITE = -1
   NULL = 0
   BLACK = 1
-
-  def toChess(self) -> Optional[bool]:
-    """Creates an enum used by chess package"""
-    if self is ChessColor.NULL:
-      return None
-    if self is ChessColor.BLACK:
-      return False
-    if self is ChessColor.WHITE:
-      return True
 
   @classmethod
   def parse(cls, *args, **kwargs) -> ChessColor:
@@ -73,8 +63,6 @@ class ChessColor(Enum):
 
   def __str__(self, ) -> str:
     """String representation"""
-    if not self:
-      return 'Colorless'
     return self.name.capitalize()
 
   def __repr__(self, ) -> str:
@@ -88,23 +76,17 @@ class ChessColor(Enum):
   def __eq__(self, other: ChessColor) -> bool:
     """The equality operator implementation. Please note that the empty
     color is not considered equal to itself."""
-    if self is ChessColor.BLACK and other is ChessColor.BLACK:
-      return True
-    if self is ChessColor.WHITE and other is ChessColor.WHITE:
-      return True
+    if self and other:
+      return True if self is other else False
     return False
 
-  def __hash__(self, ) -> int:
-    """Implementation of hash"""
-    return 2 if not self else (3 if self is ChessColor.BLACK else 5)
-
   def getEnPassantRank(self) -> int:
-    """Getter-function for the rank from which a pawn can capture en
-    passant. """
+    """Getter-function for the rank at which pawns of this color may en
+    passant. Rank.rank5 for white and 4 for black"""
     if self is ChessColor.WHITE:
-      return 3
-    if self is ChessColor.BLACK:
       return 4
+    if self is ChessColor.BLACK:
+      return 3
     msg = """The empty color does not support en passant!"""
     raise AttributeError(msg)
 
@@ -126,11 +108,5 @@ class ChessColor(Enum):
         for instance in cls:
           if name.lower() == instance.nameLower:
             return instance
-
-  def __invert__(self) -> ChessColor:
-    """NULL inverted is NULL. Otherwise ~BLACK==WHITE"""
-    if self is ChessColor.NULL:
-      return ChessColor.NULL
-    return ChessColor.WHITE if self is ChessColor.BLACK else ChessColor.BLACK
 
   nameLower = property(_getNameLower, _noAcc, _noAcc, )

@@ -4,7 +4,6 @@ various functionality for use in more specific subclasses"""
 #  Copyright (c) 2023 Asger Jon Vistisen
 from __future__ import annotations
 
-from random import randint
 from typing import NoReturn, Never
 
 from PySide6.QtCore import Qt
@@ -24,12 +23,6 @@ class DebugButton(AbstractButton):
   various functionality for use in more specific subclasses
   #  Copyright (c) 2023 Asger Jon Vistisen
   #  MIT Licence"""
-
-  def __new__(cls, *args, **kwargs) -> DebugButton:
-    """LOL"""
-    out = super().__new__(cls)
-    setattr(out, '__name__', 'LOL%d' % (randint(0, 255)))
-    return out
 
   def __init__(self, *args, **kwargs) -> None:
     self._text = None

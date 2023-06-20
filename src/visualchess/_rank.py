@@ -7,7 +7,7 @@ from enum import IntEnum
 
 from icecream import ic
 from worktoy.parsing import extractArg
-from worktoy.stringtools import stringList, monoSpace
+from worktoy.stringtools import stringList
 
 ic.configureOutput(includeContext=True)
 
@@ -22,7 +22,6 @@ class Rank(IntEnum):
   rank6 = 7 - 5
   rank7 = 7 - 6
   rank8 = 7 - 7
-  NULL = -1
 
   @classmethod
   def parse(cls, *args, **kwargs) -> Rank:
@@ -45,8 +44,6 @@ class Rank(IntEnum):
   @classmethod
   def fromValue(cls, y: int) -> Rank:
     """Finds the matching value"""
-    if y < 0 or 7 < y:
-      return Rank.NULL
     for rank in Rank:
       if rank.value == y:
         return rank
@@ -67,30 +64,3 @@ class Rank(IntEnum):
   def __repr__(self, ) -> str:
     """Code Representation"""
     return """Rank.%s""" % self.name
-
-  def __add__(self, y: int) -> Rank:
-    """Adds other to self"""
-    if isinstance(y, int):
-      if -1 < y < 8:
-        out = self.value + y
-      else:
-        return Rank.NULL
-      return self.fromValue(out)
-    raise TypeError
-
-  def __sub__(self, y: int) -> Rank:
-    """Subtracts given value from self"""
-    return self.__add__(-y)
-
-  def __bool__(self, ) -> bool:
-    """Only NULL is False."""
-    return False if self is Rank.NULL else True
-
-  def __eq__(self, other) -> bool:
-    """Tests equality between instances using the 'is' condition. Please
-    note, that NULL is not equal to itself"""
-    if self.name == 'NULL':
-      return False
-    if isinstance(other, int):
-      return self.value == other
-    return self.value == other.value
